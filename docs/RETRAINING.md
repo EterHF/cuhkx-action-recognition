@@ -55,6 +55,13 @@ The suite runner embeds absolute input paths and hashes in `receipt.json`.
 This makes a run auditable without treating a checkpoint filename as proof of
 provenance.
 
+`data/external/` is explicitly outside this strictV3 retraining contract.
+NTU RGB+D and PKU-MMD are not needed to reproduce the canonical 0.97512
+package. A fully-external research run must use a separate manifest, initialise
+a fresh 40-way head inside every outer fold, and keep its outputs outside
+`checkpoints/strict_v3/`. External archives and source-derived experimental
+weights are not redistributed by this repository.
+
 ## Temporal baseline
 
 Run all five folds and the full epoch-5 model:
@@ -135,13 +142,14 @@ separately frozen 0.960474 candidate: CPU/GPU numerical differences moved one
 outer-train grid tie to an adjacent weight. The retrained result is therefore
 evidence of potential, not a promoted release.
 
-Two further temporal generalisation hypotheses were preregistered and run as
+Three further temporal generalisation hypotheses were preregistered and run as
 train-only screens (3 seeds × 5 folds, CPU, fixed epoch 5, no test input):
 
 | Candidate | Temporal seed-mean | Fold / seed stability | Decision |
 | --- | ---: | --- | --- |
 | Epoch-resampled reversal/noise | 0.937747 (2,847/3,036; no change) | 5/5 folds and 3/3 seeds non-degrading | Rejected at stage 1: required at least 2,848 correct rows |
 | Uniform FP32 weight mean, epochs 3–5 | 0.938076 (2,848/3,036; +1 row) | 4/5 folds and 3/3 seeds non-degrading | Passed temporal gate; rejected at release gate |
+| Same-class cross-user temporal-residual mix, fixed 0.25 | 0.937747 (2,847/3,036; no top-1 change) | 5/5 folds and 3/3 seeds tied | Rejected at stage 1: required at least 2,848 correct rows |
 
 For the weight-average candidate, macro recall improved by 0.000327 and
 subject-macro by 0.000208; worst-user and worst-fold were unchanged. Its
@@ -152,6 +160,24 @@ existing candidate: 0.960474 (2,916 rows), zero changed predictions,
 against a required 2,917 rows. Historical control replay reproduced both the
 nested logits and final probability array exactly. The stop rule therefore
 prevented full-data training, test inference and packaging.
+
+The cross-user mix selected a same-class partner from a different outer-train
+subject and mixed 25% of its zero-mean temporal residual into the anchor clip.
+All checkpoints and OOF logits changed, but the seed-mean prediction did not;
+the frozen stop rule prohibited a strength or probability scan.
+
+A separate fully-external NTU revisit completed 3 seeds × 5 subject folds on
+GPU. It used the Kinetics + 25% NTU60 encoder, a fresh target head, epoch 1
+head-only training, and epochs 2–15 layer4 + head training. This was a true
+scope change, unlike the historical head-LR warmup in which layer4 remained
+trainable from the first step. The paired single-seed mean was 0.660848 versus
+0.660518 (+0.000329; required +0.002). Per-seed deltas were −0.010870,
++0.009223 and +0.002635; only 2/4/3 folds per seed jointly avoided micro and
+subject-macro regression. Mean worst-user delta was −0.001517 and the largest
+cell drop was −0.035461. The treatment failed five of six frozen criteria, so
+the stop rule prohibited full-data training, test inference, fusion,
+packaging, and submission. PKU-MMD was not rerun while its publication terms
+remain unresolved.
 
 The audit is still **partial**: a new full fusion deployment package, two
 byte-identical raw replays and an authorized Kaggle confirmation have not been

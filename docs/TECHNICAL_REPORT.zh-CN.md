@@ -124,14 +124,21 @@ YOLO crop 的 R(2+1)D-18 → R(2+1)D-34 int5/int6 + YOLO11n 路线将纯视觉�
 
 ### 4.3 外部数据扩展（已穷尽）
 
-项目对 NTU Depth / Skeleton 预训练与 PKU-MMD bridge 做了大量探索。审计汇总如下：
+项目对 NTU Depth / Skeleton 预训练与 PKU-MMD bridge 做了大量探索。最终本地清点
+显示：NTU 共 248 GB，包含全部 32 个 masked-depth setup 压缩包和两个 skeleton
+压缩包，但 IR 仅有 9 个 setup；PKU-MMD Phase 2 共 156 GB，manifest 含 6,952 个
+裁剪后的深度样本、13 个推断 subject 和 41 类。因此，现有数据足以支持诚实的
+Depth/Skeleton 研究，但不能宣称完整覆盖 NTU Depth+IR 配对数据。相比原始体量，实测
+迁移结果更重要：
 
 | 实验 | 结果 | 结论 |
 | --- | ---: | --- |
 | NTU masked-depth 预训练 + R(2+1)D-18 | 62.98%（control 58.27%），5/5 fold 提升，worst-user +12.50 pp | 小 backbone 上存在真实正迁移信号 |
 | NTU60 / NTU120 直接监督 R(2+1)D-34 | 58.56% / 58.89% | 大规模源域监督训练会**遗忘** Kinetics 表示 |
 | Kinetics anchor + 25% NTU60 encoder 插值 | 65.18% | 应保留 Kinetics anchor，但未改善最终 strict-v3 |
-| NTU Skeleton student | source val 在 epoch 25 达到 64.68% | 外部 Skeleton encoder 可用，但仍需五折目标域验证 |
+| 相同 NTU60 插值 + 真正的 epoch-1 head-only 渐进解冻 | 单 seed 配对均值 66.0848%，control 66.0518%（+0.033 pp）；worst-user 均值 −0.152 pp | 未通过预注册的稳定性 / worst-user 门禁；在融合与部署前停止 |
+| 仅使用本地 9 个完整 setup 的 NTU Depth+IR | fold C/E 为 63.62% / 61.59%，depth-only 为 68.04% / 61.38% | 迁移结果混合（C −4.42 pp、E +0.21 pp）；没有理由仅为扩展该分支下载其余 IR |
+| NTU Skeleton student | source val 64.68%；目标 A–E micro 46.81%、macro 39.51%、worst-user 25.00% | 源域拟合未通过目标域跨用户验证 |
 | PKU-MMD source-only 预训练 | source val 75.30%，source train 在 epoch 15 约 99% | 6,952 条记录明显过拟合；源域验证无法代理目标域迁移 |
 | Kinetics → PKU → CUHK-X | 61.92%（control 63.27%） | 直接 PKU continued-training 是**负迁移** |
 | 用 PKU visual 替换 strict-v3 visual | 95.191%（control 95.619%）；nested mean weight = 0 | 不能作为第 4 个 logit 分支 |
@@ -164,7 +171,12 @@ YOLO crop 的 R(2+1)D-18 → R(2+1)D-34 int5/int6 + YOLO11n 路线将纯视觉�
 ### 4.6 合规与规则边界（保留为证据）
 
 * **LLM 使用规则**：仅禁止在预测阶段使用 LLM，允许 AI 编程助手。该结论经 Kaggle discussion 回复确认，并在清理前保留于历史审计。
-* **PKU-MMD 许可证**：公开页面没有授予奖金竞赛中的再分发权；在获得书面许可或澄清前，V3 GPU handoff **保持暂停**。
+* **NTU RGB+D 条款**：[官方提供页面](https://rose1.ntu.edu.sg/dataset/actionRecognition/)
+  将数据用途限制为学术研究，并限制再分发和商业使用。本地压缩包及 NTU 派生研究
+  checkpoint 均保持在开源发布包之外。
+* **PKU-MMD 许可证**：[官方项目页面](https://struct002.github.io/PKUMMD/)
+  提供数据资源，但未写明明确许可证，也未授予再分发或奖金竞赛使用权。因此，在获得
+  书面许可或澄清前，PKU 的执行与发布均**保持暂停**。
 * **MViTv2-S**：官方 checkpoint 约 131.9 MB，超过 100 MB 限制。**暂时搁置**，等待组织方书面分类意见。
 * **TorchVision 许可证提醒**：预训练权重可能继承其训练数据条款，已记录在 External-Compliance 审查中。
 
@@ -226,24 +238,60 @@ External-only 的 strict 定义是：外部表示、公开架构和确定性训�
 
 ### 5.5 2026-09-03 时序泛化检查（已完成并否决）
 
-两个单变量候选都在执行 A–E 前完成锁定。二者使用相同的训练 frame-logit SHA
+三个单变量候选都在执行 A–E 前完成锁定。三者使用相同的训练 frame-logit SHA
 `76e6c11…7102e`、metadata SHA `bf2e93e5…9f099`、随机种子
 2026/2027/2028、五个固定 sched30 epochs，并延迟读取 held 指标。Suite 以
-OOF-only 模式运行：15/15 jobs 完成，未生成 full-data 模型或测试文件，每份
+OOF-only 模式分别运行：每个候选 15/15 jobs 完成，未生成 full-data 模型或测试文件，每份
 receipt 都记录 `test_data_loaded=false`。
 
 | 候选 | 相对 fresh sched30 的 temporal 结果 | 泛化门禁 | Release 门禁 / 决策 |
 | --- | --- | --- | --- |
 | 每 epoch 确定性重采样 reversal/noise | 2,847/3,036 = 0.937747；seed 2026 多 1 行，但 seed mean 的预测变化为 0 | macro、subject-macro、worst-user、worst-fold 及 5/5 folds 持平；未达到预注册的净增 1 行门槛 | stage 1 停止并否决 |
 | 对 post-update epoch 3–5 的 FP32 TCN 参数做均匀平均 | 2,848/3,036 = 0.938076（+1 行）；macro +0.000327；subject-macro +0.000208；worst 指标持平 | 4/5 folds、3/3 matching seeds 非退化；通过 stage 1 | nested 分支为 2,920/3,036 = 0.961792（比历史分支 +1 行），但固定 50/50 strictV3 consensus 仍为 2,916/3,036 = 0.960474，预测变化为 0；门槛为 2,917，因此在 stage 2 否决 |
+| 固定 0.25 的同类跨用户时序残差混合 | 2,847/3,036 = 0.937747；三个 seed 和 5/5 fold 分数均持平，top-1 变化为 0 | macro、subject-macro、worst-user、worst-fold 持平，但未达到净增 1 行门槛 | stage 1 停止并否决；不扫描强度或概率 |
 
 train-only nested evaluator 先用历史 sched30 输入做控制回放：保存的 nested logits
 与最终 probability array 均逐元素相等（`max_abs=0`）。证据 hash 为：epoch 重采样
 receipt `dd135d65…df24`、OOF `0ddb3bdd…67c0`；尾部权重平均 receipt
 `40510e90…26ac`、OOF `99a0df0b…5960`；最终 nested-gate metrics
-`d8edb37a…044b2`。停止规则禁止 full-data 训练、匿名测试推理、打包，以及在看到
-A–E 后修改系数。按照仓库清理策略，否决机制仅保留在本报告中，不成为长期训练 flag
-或模型文件。
+`d8edb37a…044b2`。对于本轮数据/训练候选，每个 outer-train 折的每个类别都至少有
+两个用户；确定性选择同类、不同 outer-train 用户的伙伴，将其零均值 16 帧残差以 25%
+混入，同时保持 anchor clip 均值不变。15 个 checkpoint 全部不同于 control，OOF logits
+也确实变化（`max_abs=0.115523`），证明 treatment 已执行，但 3,036 个决策无一改变。
+其 receipt 为 `8f1e8612…787b`、OOF 为 `1cb107ed…6a12`、否决 decision 为
+`7e20e00e…a01a`。
+
+停止规则禁止 full-data 训练、匿名测试推理、打包，以及在看到 A–E 后修改系数。按照
+仓库清理策略，否决机制仅保留在本报告中，不成为长期训练 flag 或模型文件。
+
+### 5.6 2026-09-03 NTU 渐进解冻复核（已完成并否决）
+
+历史 `head_warmup_epochs=2` 网格只对新 head 的学习率做爬升，**并未**冻结 layer4。
+因此，本轮在训练前锁定了一个真正不同的变量：R(2+1)D-34 从冻结的
+Kinetics + 25% NTU60 masked-depth encoder 初始化；epoch 1 仅训练新的 40 类 head，
+epoch 2–15 再训练 layer4 + head。Cache、按 fold 的 affine contract、optimizer group、
+cosine schedule、augmentation、BN policy、fold、seed 和固定最终 checkpoint 选择均与
+matched control 相同。
+
+全部 15 个 GPU 作业（3 seeds × 5 个 subject folds）完成。Runner 断言 epoch 1 的
+layer4 逐 bit 不变而 head 确实改变，并断言解冻后 layer4 确实更新。每个 epoch-15
+checkpoint 都先写盘并重新加载，之后才唯一一次评估 held 标签。
+
+| 冻结 endpoint | Control | 渐进解冻 | Delta / 门禁 |
+| --- | ---: | ---: | --- |
+| 单 seed 配对 micro 均值 | 0.660518 | 0.660848 | +0.000329；要求 ≥ +0.002 |
+| subject-macro 均值 | 0.653176 | 0.654989 | +0.001813；仅该方向通过 |
+| 各 seed micro delta（2026 / 2027 / 2028） | — | — | −0.010870 / +0.009223 / +0.002635 |
+| 各 seed 同时满足 micro+subject 非退化的 fold 数 | — | — | 2 / 4 / 3；要求每个 seed 均 ≥ 4 |
+| worst-user 平均 delta / 单格最大下降 | — | — | −0.001517 / −0.035461；两项均失败 |
+| 三 seed logit mean（仅诊断，不是门禁） | 0.669960（2,034 行） | 0.672596（2,042 行） | +8 行，但 worst-user 从 0.44375 降至 0.425 |
+
+六项预注册判据中，仅 subject-macro 方向通过，其余五项失败。因此，该候选被否决；
+不扫描 warmup 长度或 LR，不执行 strictV3 融合、full-data 训练、匿名测试访问、
+checkpoint 打包或 Kaggle 提交。冻结证据标识为：preregistration
+`1b21f4ef…ddadc`、runner `c923a4d9…f556`、summary `ee2fc114…49380`、decision
+`57776a38…f949bd`、seed-mean OOF logits `a339f104…3cb10`。PKU-MMD 未重新训练，
+因为其历史目标域迁移为负，且发布条款仍未解决。
 
 ---
 
@@ -267,7 +315,7 @@ A–E 后修改系数。按照仓库清理策略，否决机制仅保留在本�
 
 1. **完成 nested / shared-state multi-pooling 的两轮原始数据重放**，覆盖 `sched30` 和 `fp32_consensus`。门禁通过后将其提升至提交队列首位。
 2. 为从零训练的 TSM/S3D 路线完成 outer-train-only normalization builder 与 matched CV runner 的 **CPU materialisation**；只读取有标签训练 cache 与 metadata，绝不打开 held/test/anonymous/submission。运行 80 个 inner 与 30 个 outer synthetic regression。
-3. **只有 1 和 2 仍无法突破公开榜前二时**，才为优先级 4 的外部研究队列申请新的 preregistration。
+3. **不得重启** NTU 渐进解冻或 PKU bridge 路线。只有 1 和 2 仍无法突破公开榜前二、上游权利明确，且机制确实全新时，才可为优先级 4 的外部研究队列申请新 preregistration。
 4. 任何新机制候选均须同步记录到 `BEST_REPORT_EVIDENCE_MANIFEST_*.json`（包含 SHA 和决策）以及 `EXTERNAL_ONLY_RESEARCH_ROADMAP_20260830.md`（将原方向标记为 authorized 或 rejected）。
 5. 报告与证据收尾：上述每个已执行步骤都必须将结果写入对应报告的 fact-freeze-date 段落，并附上新的 manifest SHA。
 

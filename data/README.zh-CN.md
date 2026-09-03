@@ -65,6 +65,16 @@ cd Testing/data && unzip small_model_track_test.zip   # -> small_model_track_tes
 - 40 个动作类别
 - 405 个测试 clip
 
+## 外部研究数据集
+
+`data/external/` 被 Git 明确忽略，且**不属于** strictV3 的发布或重训练契约。
+NTU RGB+D 与 PKU-MMD 仅用于隔离的、带 manifest/hash 的研究实验；复现已发布的
+0.97512 提交不需要这两个数据集。
+
+请从官方提供方获取外部数据，并在使用前自行审查其条款。本仓库不会再分发其压缩包、
+解压帧、标签或由源数据产生的实验 checkpoint。外部 manifest/cache 必须与 CUHK-X
+训练/测试 cache 分离，避免来源检查静默跨越数据边界。
+
 ## 快速开始
 
 ```python

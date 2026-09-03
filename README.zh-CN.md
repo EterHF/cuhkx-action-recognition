@@ -38,6 +38,11 @@ docs/TECHNICAL_REPORT.md     实验历史与设计依据
 
 生成的 cache、数据集和训练运行不会纳入版本控制。
 
+NTU RGB+D 与 PKU-MMD 是外部研究输入，而非 strictV3 发布依赖。本仓库不包含其
+压缩包或源数据派生的实验 checkpoint；标准 0.97512 验证与重放不会读取
+`data/external/`。进行外部数据研究前，请先阅读[数据边界](data/README.zh-CN.md#外部研究数据集)
+及技术报告。
+
 分支 `experiment/strictv3-consensus` 维护两个通过 OOF 资格检查的 consensus 候选。其冻结包、原始重放 hash 和审计命令记录在 [`results/experiments/README.zh-CN.md`](results/experiments/README.zh-CN.md)；两者均未提交 Kaggle。
 
 ## 安装
@@ -132,11 +137,18 @@ visual-head 与历史各 fold 的差异不超过 3 个验证样本。独立重�
 也没有替换另行审计的 0.960474 候选包。准确命令、fold 结果和仍待完成的完整部署
 验收门禁见 [`docs/RETRAINING.zh-CN.md`](docs/RETRAINING.zh-CN.md)。
 
-另有两项预注册的 train-only 检查被否决。每个 epoch 重新采样相同时序增强后，
+另有三项预注册的 train-only 检查被否决。每个 epoch 重新采样相同时序增强后，
 三 seed 平均预测仍为 0.937747；对 epoch 3–5 的 TCN 权重做均匀平均后达到
 0.938076（3,036 行中净增 1 行），但固定 nested 50/50 发布候选仍精确为
-0.960474，预测变化为 0。两项检查均未打开测试数据、未训练 full-data 模型，
-也未修改已发布 package。
+0.960474，预测变化为 0。固定 0.25 的同类跨用户时序残差混合改变了 logits，
+但 3,036 行 top-1 决策无一移动。三项检查均未打开测试数据、未训练 full-data
+模型，也未修改已发布 package。
+
+另行执行的 fully-external NTU 检查完成了 GPU 上的 3 seeds × 5 个 subject folds。
+真正的 epoch-1 head-only 阶段之后再进行 layer4 + head 适配，单 seed 配对均值仅提升
+0.000329（门槛为 0.002），seed 2026 回退 0.010870，worst-user 鲁棒性也下降。
+六项冻结判据中有五项失败，因此未生成 full model，也未进行测试推理、融合、打包或
+提交。PKU-MMD 的发布条款仍未解决，故未重新训练。标准 strictV3 package 保持不变。
 
 ## 许可证
 

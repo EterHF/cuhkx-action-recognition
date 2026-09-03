@@ -43,6 +43,12 @@ docs/TECHNICAL_REPORT.md     experiment history and design rationale
 
 Generated caches, datasets and training runs are not versioned.
 
+NTU RGB+D and PKU-MMD are external research inputs, not strictV3 release
+dependencies. Their archives and source-derived experimental checkpoints are
+excluded from this repository; the canonical 0.97512 verification and replay
+do not read `data/external/`. See the [data boundary](data/README.md#external-research-datasets)
+and technical report before attempting external-data research.
+
 Two OOF-qualified consensus candidates are maintained on the
 `experiment/strictv3-consensus` branch. Their frozen packages, raw replay
 hashes and audit command are documented in
@@ -156,12 +162,22 @@ has **not** replaced the frozen strictV3 release or the separately audited
 full-deployment acceptance gates are in
 [`docs/RETRAINING.md`](docs/RETRAINING.md).
 
-Two additional preregistered, train-only checks were rejected. Resampling the
+Three additional preregistered, train-only checks were rejected. Resampling the
 same temporal augmentation each epoch left the three-seed prediction mean at
 0.937747. Uniformly averaging the epoch 3–5 TCN weights reached 0.938076
 (+1/3,036 row), but its fixed nested 50/50 release candidate remained exactly
-0.960474 with zero changed predictions. Neither check opened test data,
-trained full-data models, or changed the published package.
+0.960474 with zero changed predictions. A fixed 0.25 same-class cross-user
+temporal-residual mix changed the logits but moved none of 3,036 top-1
+decisions. None of the checks opened test data, trained full-data models, or
+changed the published package.
+
+A separate fully-external NTU check ran 3 seeds × 5 subject folds on GPU. A
+true epoch-1 head-only stage followed by layer4 + head adaptation improved the
+paired single-seed mean by only 0.000329 (required 0.002), regressed seed 2026
+by 0.010870, and reduced worst-user robustness. It failed five of six frozen
+criteria, so no full model, test inference, fusion, package or submission was
+created. PKU-MMD was not rerun while its publication terms remain unresolved.
+The canonical strictV3 package is unchanged.
 
 ## License
 

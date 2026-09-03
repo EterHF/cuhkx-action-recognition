@@ -85,6 +85,19 @@ See `sample_submission.csv` for the format.
 - 40 action classes
 - 405 test clips
 
+## External research datasets
+
+`data/external/` is intentionally ignored by Git and is **not** part of the
+strictV3 release or retraining contract. NTU RGB+D and PKU-MMD were evaluated
+only in isolated, manifest-hashed research runs. Reproducing the published
+0.97512 submission does not require either dataset.
+
+Obtain external datasets from their official providers and review their terms
+before use. This repository does not redistribute their archives, extracted
+frames, labels, or source-derived experimental checkpoints. Keep external
+manifests and caches separate from the CUHK-X train/test cache so provenance
+checks cannot silently cross the data boundary.
+
 ## Quick start
 
 ```python

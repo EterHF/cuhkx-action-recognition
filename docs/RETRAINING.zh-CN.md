@@ -39,6 +39,11 @@ metadata.npz            bf2e93e558b4ae148b14835c1f65c943828bff97dfaaf224a39c249c
 
 Suite runner 会将绝对输入路径和 hash 写入 `receipt.json`。因此无需把 checkpoint 文件名误当作来源证明，也能独立审计一次运行。
 
+`data/external/` 明确位于本 strictV3 重训练契约之外。复现标准 0.97512 package
+不需要 NTU RGB+D 或 PKU-MMD。完全外部数据研究必须使用独立 manifest，在每个
+outer fold 内重新初始化 40 类 head，并将输出保存在 `checkpoints/strict_v3/` 之外。
+本仓库不会再分发外部数据压缩包或由源数据产生的实验权重。
+
 ## 时序基线
 
 运行全部五个 fold 和 full epoch-5 模型：
@@ -101,13 +106,14 @@ A–E 分别为 6、0、5、9、4，fusion 分别为 0、1、4、14、0。历史
 另行冻结的 0.960474 候选：CPU/GPU 数值差异使一个 outer-train grid 并列项选择了
 相邻权重。因此，本次重训练只证明该方向有潜力，不构成发布晋升。
 
-随后又预注册并执行了两项 train-only 时序泛化检查（3 seeds × 5 folds、CPU、
+随后又预注册并执行了三项 train-only 时序泛化检查（3 seeds × 5 folds、CPU、
 固定 epoch 5、无测试输入）：
 
 | 候选 | Temporal seed-mean | Fold / seed 稳定性 | 决策 |
 | --- | ---: | --- | --- |
 | 每 epoch 重采样 reversal/noise | 0.937747（2,847/3,036；无变化） | 5/5 folds、3/3 seeds 非退化 | stage 1 否决：门槛至少为 2,848 行正确 |
 | epoch 3–5 FP32 权重均匀平均 | 0.938076（2,848/3,036；+1 行） | 4/5 folds、3/3 seeds 非退化 | 通过 temporal 门禁；release 门禁否决 |
+| 固定 0.25 的同类跨用户时序残差混合 | 0.937747（2,847/3,036；top-1 无变化） | 5/5 folds、3/3 seeds 持平 | stage 1 否决：门槛至少为 2,848 行正确 |
 
 权重平均候选的 macro recall 提升 0.000327，subject-macro 提升 0.000208，
 worst-user 与 worst-fold 持平。其 train-only nested 分支达到 0.961792
@@ -115,6 +121,20 @@ worst-user 与 worst-fold 持平。其 train-only nested 分支达到 0.961792
 50/50 概率 ensemble 仍与现有候选的逐行预测完全一致：0.960474（2,916 行）、
 预测变化为 0，未达到 2,917 行门槛。历史 control 回放精确复现了 nested logits
 和最终 probability array。因此停止规则阻止了 full-data 训练、测试推理和打包。
+
+跨用户混合从不同 outer-train subject 中确定性选择同类伙伴，并将其零均值时序残差
+以 25% 混入 anchor clip。全部 checkpoint 与 OOF logits 均发生变化，但 seed-mean
+预测没有变化；冻结的停止规则禁止继续扫描混合强度或概率。
+
+另行执行的 fully-external NTU 复核在 GPU 上完成了 3 seeds × 5 个 subject folds。
+它使用 Kinetics + 25% NTU60 encoder 与全新目标 head：epoch 1 仅训练 head，
+epoch 2–15 训练 layer4 + head。这是真正的 scope 变化；历史 head-LR warmup 中，
+layer4 从第一步起就保持可训练。单 seed 配对均值为 0.660848，control 为 0.660518
+（+0.000329；门槛 +0.002）；各 seed delta 为 −0.010870、+0.009223、+0.002635，
+各 seed 同时避免 micro 与 subject-macro 回退的 fold 数仅为 2/4/3。worst-user 平均
+delta 为 −0.001517，单格最大下降为 −0.035461。六项冻结判据中五项失败，停止规则
+因此禁止 full-data 训练、测试推理、融合、打包和提交。PKU-MMD 的发布条款仍未解决，
+故未重新训练。
 
 本次审计仍为 **partial**：尚未生成新的 full fusion 部署包，也未完成两次逐字节一致的
 原始数据重放和经授权的 Kaggle 确认。标准 0.97512 package 保持不变。

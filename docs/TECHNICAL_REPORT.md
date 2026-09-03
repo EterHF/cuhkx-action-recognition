@@ -175,14 +175,21 @@ selection rule (no leaderboard feedback, no sample/user ID leakage).
 ### 4.3 External-data scaling (exhausted)
 
 NTU Depth / Skeleton pretraining and PKU-MMD bridge were explored
-heavily. The audit summary:
+heavily. The final local inventory audit found 248 GB of NTU material (all 32
+masked-depth setup archives, both skeleton archives, but only 9 IR setup
+archives) and 156 GB of PKU-MMD Phase 2 material (6,952 trimmed depth records,
+13 inferred subjects and 41 classes). Thus the available data support honest
+depth / skeleton studies, but not a claim of complete paired NTU Depth+IR
+coverage. The measured transfer summary is more important than raw volume:
 
 | Experiment | Result | Verdict |
 | --- | ---: | --- |
 | NTU masked-depth pretraining + R(2+1)D-18 | 62.98% (control 58.27%), 5/5 fold gain, worst-user +12.50 pp | Real positive-transfer signal at small backbone |
 | NTU60 / NTU120 direct R(2+1)D-34 supervision | 58.56% / 58.89% | Large source-domain supervised training **forgets** the Kinetics representation |
 | Kinetics-anchor + 25% NTU60 encoder interpolation | 65.18% | Keep Kinetics anchor, but did not improve final strict-v3 |
-| NTU Skeleton student | source val 64.68% at epoch 25 | External skeleton encoder usable; still needs 5-fold target validation |
+| Same NTU60 interpolation + true epoch-1 head-only progressive unfreeze | paired single-seed mean 66.0848% versus 66.0518% (+0.033 pp); worst-user mean −0.152 pp | Failed the preregistered stability / worst-user gate; stopped before fusion or deployment |
+| NTU Depth+IR on the 9 complete local setups | fold C/E 63.62% / 61.59% versus depth-only 68.04% / 61.38% | Mixed transfer (C −4.42 pp, E +0.21 pp); no basis for downloading the missing IR solely to scale this branch |
+| NTU Skeleton student | source val 64.68%; target A–E micro 46.81%, macro 39.51%, worst-user 25.00% | Source fit did not survive target cross-user validation |
 | PKU-MMD source-only pretraining | source val 75.30%, source train ~99% at epoch 15 | 6,952 records clearly over-fit; source validation does not proxy target transfer |
 | Kinetics → PKU → CUHK-X | 61.92% (control 63.27%) | Direct PKU continued-training is **negative transfer** |
 | PKU visual replacing strict-v3 visual | 95.191% (control 95.619%); nested mean weight = 0 | Cannot serve as a 4th logit branch |
@@ -230,9 +237,15 @@ These were the *穷尽* (exhausted) directions.
 * **LLM use rule**: only prediction-time LLM use is forbidden; AI coding
   assistants are allowed. This was confirmed via a Kaggle discussion reply
   and retained in the historical audit before cleanup.
-* **PKU-MMD licence**: the public page does not grant redistribution
-  rights for prize competitions; the V3 GPU handoff is *paused* until
-  a written permission / clarification is obtained.
+* **NTU RGB+D terms**: the [official provider page](https://rose1.ntu.edu.sg/dataset/actionRecognition/)
+  limits the dataset to academic research and restricts redistribution and
+  commercial use. Local archives and NTU-derived research checkpoints remain
+  outside the open-source package.
+* **PKU-MMD licence**: the [official project page](https://struct002.github.io/PKUMMD/)
+  provides the data resources but does not state an explicit licence or grant
+  redistribution / prize-competition rights. PKU execution and publication
+  therefore remain *paused* until written permission or clarification is
+  obtained.
 * **MViTv2-S**: official checkpoint ≈ 131.9 MB, exceeds the 100 MB
   budget. **Held in limbo** — pending written organiser classification.
 * **TorchVision licence reminder**: pretrained weights may inherit
@@ -359,26 +372,68 @@ history / post-hoc leaderboard feedback.
 
 ### 5.5 Temporal generalisation checks, 2026-09-03 (completed; rejected)
 
-Two one-variable candidates were locked before their A–E runs. Both used the
+Three one-variable candidates were locked before their A–E runs. All used the
 same train frame-logit SHA `76e6c11…7102e`, metadata SHA `bf2e93e5…9f099`,
 seeds 2026/2027/2028, five fixed sched30 epochs and deferred held metrics.
-The suite ran in OOF-only mode: 15/15 jobs completed, no full-data model or
+Each suite ran in OOF-only mode: 15/15 jobs completed, no full-data model or
 test file was created, and every receipt recorded `test_data_loaded=false`.
 
 | Candidate | Temporal result vs fresh sched30 | Generalisation gate | Release gate / decision |
 | --- | --- | --- | --- |
 | Epoch-varying deterministic reversal/noise | 2,847/3,036 = 0.937747; seed 2026 gained one row but the seed mean changed zero predictions | macro, subject-macro, worst-user, worst-fold and 5/5 folds tied; failed the preregistered +1-row minimum | Stopped at stage 1; rejected |
 | Uniform FP32 TCN parameter average, post-update epochs 3–5 | 2,848/3,036 = 0.938076 (+1 row); macro +0.000327; subject-macro +0.000208; worst metrics tied | 4/5 folds and 3/3 matching seeds non-degrading; passed stage 1 | nested branch 2,920/3,036 = 0.961792 (+1 vs historical branch), but fixed 50/50 strictV3 consensus stayed 2,916/3,036 = 0.960474 with zero changed predictions; required 2,917, so rejected at stage 2 |
+| Same-class cross-user temporal-residual mix, fixed 0.25 | 2,847/3,036 = 0.937747; all three seed scores and 5/5 fold scores tied; zero top-1 changes | macro, subject-macro, worst-user and worst-fold tied, but the +1-row minimum failed | Stopped at stage 1; rejected; no strength/probability scan |
 
 The train-only nested evaluator was first checked against the historical
 sched30 inputs: both the saved nested logits and the final probability array
 were exactly equal (`max_abs=0`). Evidence hashes are: epoch-resampled receipt
 `dd135d65…df24`, OOF `0ddb3bdd…67c0`; tail-average receipt
 `40510e90…26ac`, OOF `99a0df0b…5960`; final nested-gate metrics
-`d8edb37a…044b2`. The stop rules prohibited full-data training, anonymous-test
-inference, packaging and coefficient changes after seeing A–E. In accordance
-with repository cleanup policy, the rejected mechanisms remain documented
-here rather than as permanent training flags or model files.
+`d8edb37a…044b2`. For the data/training candidate, every outer-train class had
+at least two users. A deterministic same-class partner from a different
+outer-train user contributed 25% of the zero-mean 16-frame residual while the
+anchor clip mean stayed unchanged. All 15 checkpoints differed from control
+and the OOF logits changed (`max_abs=0.115523`), proving that the treatment ran,
+but none of 3,036 decisions moved. Its receipt is `8f1e8612…787b`, OOF is
+`1cb107ed…6a12`, and rejection decision is `7e20e00e…a01a`.
+
+The stop rules prohibited full-data training, anonymous-test inference,
+packaging and coefficient changes after seeing A–E. In accordance with
+repository cleanup policy, the rejected mechanisms remain documented here
+rather than as permanent training flags or model files.
+
+### 5.6 NTU progressive-unfreeze revisit, 2026-09-03 (completed; rejected)
+
+The historical `head_warmup_epochs=2` grid only ramped the fresh head's
+learning rate; it did **not** freeze layer4. One genuinely different variable
+was therefore locked before training: initialise R(2+1)D-34 from the frozen
+Kinetics + 25% NTU60 masked-depth encoder, train only the fresh 40-way head in
+epoch 1, then train layer4 + head in epochs 2–15. Cache, affine contracts,
+optimizer groups, cosine schedule, augmentation, BN policy, folds, seeds and
+fixed-final checkpoint selection were identical to the matched control.
+
+All 15 jobs (3 seeds × 5 subject folds) completed on GPU. The runner asserted
+that layer4 was bitwise unchanged while the head changed in epoch 1, and that
+layer4 changed after unfreezing. Held labels were evaluated once only after
+each epoch-15 checkpoint had been written and reloaded.
+
+| Frozen endpoint | Control | Progressive | Delta / gate |
+| --- | ---: | ---: | --- |
+| Mean paired single-seed micro | 0.660518 | 0.660848 | +0.000329; required ≥ +0.002 |
+| Mean subject-macro | 0.653176 | 0.654989 | +0.001813; passed direction only |
+| Per-seed micro delta (2026 / 2027 / 2028) | — | — | −0.010870 / +0.009223 / +0.002635 |
+| Joint micro+subject non-degraded folds per seed | — | — | 2 / 4 / 3; required ≥ 4 for every seed |
+| Mean worst-user delta / largest cell drop | — | — | −0.001517 / −0.035461; both failed |
+| Three-seed logit mean (diagnostic, not the gate) | 0.669960 (2,034 rows) | 0.672596 (2,042 rows) | +8 rows, but worst-user 0.44375 → 0.425 |
+
+Only the subject-macro direction passed; five of six preregistered criteria
+failed. The candidate was therefore rejected without a warmup-length or LR
+scan, strictV3 fusion, full-data training, anonymous-test access, checkpoint
+packaging or Kaggle submission. The frozen evidence identifiers are:
+preregistration `1b21f4ef…ddadc`, runner `c923a4d9…f556`, summary
+`ee2fc114…49380`, decision `57776a38…f949bd`, and seed-mean OOF logits
+`a339f104…3cb10`. PKU-MMD was not rerun because its earlier target transfer
+was negative and its publication terms remain unresolved.
 
 ---
 
@@ -419,8 +474,10 @@ here rather than as permanent training flags or model files.
    (reads only labelled-train cache + metadata; never opens
    held/test/anonymous/submission). Run 80 inner + 30 outer synthetic
    regression.
-3. **Only when 1 + 2 still fail to crack the public top-2**, apply
-   for a new preregistration in the priority-4 external queue.
+3. **Do not reopen** the NTU progressive-unfreeze or PKU bridge routes. Only
+   when 1 + 2 still fail to crack the public top-2, upstream rights are clear,
+   and the mechanism is genuinely new may the priority-4 external queue get a
+   new preregistration.
 4. Any new mechanism candidate is mirrored into
    `BEST_REPORT_EVIDENCE_MANIFEST_*.json` (with SHA + decision) and
    into `EXTERNAL_ONLY_RESEARCH_ROADMAP_20260830.md` (the prior
