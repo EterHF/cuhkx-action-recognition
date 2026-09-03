@@ -1,0 +1,49 @@
+{
+  "schema_version": "cuhkx-strict-v3-experiments/v1",
+  "baseline": {
+    "oof_accuracy": 0.9561923583662714,
+    "submission_sha256": "e25094918e57f357e23346f479050bd9bf09dc907c849d4c8938a66812003343"
+  },
+  "candidates": {
+    "sched30_consensus": {
+      "method": "fixed 50/50 probability mean of strictV3 and a three-seed sched30 temporal release",
+      "package": "checkpoints/experiments/sched30_consensus.pt",
+      "package_sha256": "c69d27583b650368ff0954420fecd0257d9842951563a60b8616f3791f06e153",
+      "package_bytes": 93297583,
+      "metrics": "results/experiments/sched30_consensus/metrics.json",
+      "metrics_sha256": "8ea949fc6e663492a2741db7745c566aa9581591373b56480ce3982f2f585227",
+      "oof": "results/experiments/sched30_consensus/train_oof_probabilities.npy",
+      "oof_sha256": "1c5c6a94e19b109f5a0d428e2d6d772d31871fceddf5d1f4a98143b1536d1f94",
+      "oof_kind": "probabilities",
+      "oof_accuracy": 0.9604743083003953,
+      "raw_replay": "results/experiments/sched30_consensus/raw_replay.json",
+      "raw_replay_sha256": "782dac31b1a6fba35a6c41593599862bf2ae4d7c6173f5c2f2611882d501c25a",
+      "submission": "results/experiments/sched30_consensus/submission.csv",
+      "submission_sha256": "f33e0569518be4c92fd3a41efe837a40f7de55f972e3eb49b39c5cc21a4679f3"
+    },
+    "temporal_pool_consensus": {
+      "method": "majority prediction over shared-state motion-energy, top-2 and top-4 temporal pooling",
+      "package": "checkpoints/experiments/temporal_pool_consensus.pt",
+      "package_sha256": "a116e6e715b33c60072efef7cf4c077c5bc332d05c4e1abe9c2acc80db919122",
+      "package_bytes": 91350725,
+      "metrics": "results/experiments/temporal_pool_consensus/metrics.json",
+      "metrics_sha256": "ce49ac92d8890fa9340d578353fc4c1a6765ce1c597449420b55977a572073eb",
+      "oof": "results/experiments/temporal_pool_consensus/train_oof_predictions.npy",
+      "oof_sha256": "012797270f80f4362e249baca10520b82f5ec3d05be306a126252ea312821cbb",
+      "oof_kind": "predictions",
+      "oof_accuracy": 0.9598155467720685,
+      "raw_replay": "results/experiments/temporal_pool_consensus/raw_replay.json",
+      "raw_replay_sha256": "02e2cfbb5691a952c3b8206ee4d1012c75040787119b9900e4949ed290d78e73",
+      "submission": "results/experiments/temporal_pool_consensus/submission.csv",
+      "submission_sha256": "6a3204865cb250319e858e2d8e3699847f27290eaed63aa1508b206e9f25416c"
+    }
+  },
+  "selection_policy": {
+    "test_labels_used": false,
+    "test_statistics_used": false,
+    "leaderboard_used_for_selection": false,
+    "require_all_folds_non_degraded": true,
+    "require_raw_replay_hash_match": true,
+    "kaggle_submission_status": "not_submitted"
+  }
+}

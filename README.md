@@ -27,6 +27,12 @@ docs/TECHNICAL_REPORT.md     experiment history and design rationale
 
 Generated caches, datasets and training runs are not versioned.
 
+Two OOF-qualified consensus candidates are maintained on the
+`experiment/strictv3-consensus` branch. Their frozen packages, raw replay
+hashes and audit command are documented in
+[`results/experiments/README.md`](results/experiments/README.md); neither has
+been submitted to Kaggle.
+
 ## Installation
 
 ```bash

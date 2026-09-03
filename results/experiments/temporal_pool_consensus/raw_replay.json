@@ -1,0 +1,154 @@
+{
+  "output": ".cache/temporal_pool_consensus_replay.csv",
+  "rows": 405,
+  "unique_classes": 40,
+  "class_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39
+  ],
+  "raw_work_dir": ".cache/temporal_pool_consensus_replay",
+  "detector": "checkpoints/strict_v3/yolo11n.pt",
+  "detector_sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+  "test_detection_rate": 0.9753086419753086,
+  "branch_shapes": {
+    "fusion": [
+      405,
+      40
+    ],
+    "visual": [
+      405,
+      40
+    ],
+    "temporal": [
+      405,
+      40
+    ]
+  },
+  "mean_gate_weights": [
+    0.12142740863141863,
+    0.20757286830696897,
+    0.6709997230616123
+  ],
+  "probability_ensemble": {
+    "mode": "fixed_three_member_release_prediction_consensus",
+    "members": [
+      {
+        "name": "motion_energy_softmax",
+        "view": "shared",
+        "weight": 0.3333333333333333,
+        "mean_gate_weights": [
+          0.12142740863141863,
+          0.20757286830696897,
+          0.6709997230616123
+        ],
+        "branch_shapes": {
+          "fusion": [
+            405,
+            40
+          ],
+          "visual": [
+            405,
+            40
+          ],
+          "temporal": [
+            405,
+            40
+          ]
+        }
+      },
+      {
+        "name": "top2_frame_mean",
+        "view": "shared",
+        "weight": 0.3333333333333333,
+        "mean_gate_weights": [
+          0.12367547825836542,
+          0.2033990760138153,
+          0.6729254457278192
+        ],
+        "branch_shapes": {
+          "fusion": [
+            405,
+            40
+          ],
+          "visual": [
+            405,
+            40
+          ],
+          "temporal": [
+            405,
+            40
+          ]
+        }
+      },
+      {
+        "name": "top4_frame_mean",
+        "view": "shared",
+        "weight": 0.3333333333333333,
+        "mean_gate_weights": [
+          0.13732344821441458,
+          0.20356915397850756,
+          0.6591073978070777
+        ],
+        "branch_shapes": {
+          "fusion": [
+            405,
+            40
+          ],
+          "visual": [
+            405,
+            40
+          ],
+          "temporal": [
+            405,
+            40
+          ]
+        }
+      }
+    ],
+    "tie_fallback": "top4_frame_mean"
+  },
+  "package_sha256": "a116e6e715b33c60072efef7cf4c077c5bc332d05c4e1abe9c2acc80db919122",
+  "preprocessing_contract_embedded": true,
+  "preprocessing_contract_fallback": null,
+  "test_labels_used": false,
+  "test_statistics_used": false,
+  "timestamp_metadata_used": false
+}

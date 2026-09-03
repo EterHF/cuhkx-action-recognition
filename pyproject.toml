@@ -21,6 +21,7 @@ dependencies = [
 [project.scripts]
 cuhkx-verify = "yolo_r2plus1d.strict_v3.release.verify:main"
 cuhkx-replay = "yolo_r2plus1d.strict_v3.release.replay:main"
+cuhkx-audit-experiments = "yolo_r2plus1d.experiments.audit:main"
 
 [tool.setuptools.packages.find]
 include = ["yolo_r2plus1d*"]

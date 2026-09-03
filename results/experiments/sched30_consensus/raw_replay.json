@@ -1,0 +1,105 @@
+{
+  "output": ".cache/sched30_consensus_replay.csv",
+  "rows": 405,
+  "unique_classes": 40,
+  "class_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39
+  ],
+  "raw_work_dir": ".cache/sched30_consensus_replay",
+  "detector": "checkpoints/strict_v3/yolo11n.pt",
+  "detector_sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+  "test_detection_rate": 0.9753086419753086,
+  "branch_shapes": {
+    "fusion": [
+      405,
+      40
+    ],
+    "visual": [
+      405,
+      40
+    ],
+    "temporal": [
+      405,
+      40
+    ]
+  },
+  "mean_gate_weights": [
+    0.12731814569006664,
+    0.25588267552791416,
+    0.6167991787820197
+  ],
+  "probability_ensemble": {
+    "mode": "fixed_probability_ensemble",
+    "anchor_weight": 0.5,
+    "candidate_weight": 0.5,
+    "anchor_mean_gate_weights": [
+      0.07222519564920016,
+      0.15304793571974684,
+      0.7747268686310529
+    ],
+    "candidate_mean_gate_weights": [
+      0.12731814569006664,
+      0.25588267552791416,
+      0.6167991787820197
+    ],
+    "anchor_branch_shapes": {
+      "fusion": [
+        405,
+        40
+      ],
+      "visual": [
+        405,
+        40
+      ],
+      "temporal": [
+        405,
+        40
+      ]
+    }
+  },
+  "package_sha256": "c69d27583b650368ff0954420fecd0257d9842951563a60b8616f3791f06e153",
+  "preprocessing_contract_embedded": true,
+  "preprocessing_contract_fallback": null,
+  "test_labels_used": false,
+  "test_statistics_used": false,
+  "timestamp_metadata_used": false
+}
