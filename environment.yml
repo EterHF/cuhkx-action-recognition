@@ -1,0 +1,19 @@
+name: cuhkx
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy=2.4.6
+  - pandas=3.0.5
+  - scikit-learn=1.9.0
+  - pillow=12.3.0
+  - pip
+  - pytest
+  - ruff
+  - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cu129
+      - torch==2.13.0+cu129
+      - torchvision==0.28.0+cu129
+      - imageio==2.37.4
+      - imageio-ffmpeg==0.6.0
+      - ultralytics==8.3.203

@@ -1,0 +1,228 @@
+{
+  "protocol": "five_fold_subject_wise_nested_temperature_quality_gate",
+  "branches": [
+    "fusion",
+    "visual",
+    "temporal"
+  ],
+  "thermal_release_weight": 0.0,
+  "per_sample_zscore": false,
+  "missingness_policy": "no_presence_gate; skeleton mask is encoder-input validity only",
+  "skeleton_mask_used_in_blend": false,
+  "mean_weights": {
+    "fusion": 0.11000000000000001,
+    "visual": 0.21999999999999997,
+    "temporal": 0.6699999999999999
+  },
+  "mean_temperatures": {
+    "fusion": 1.1025434195205899,
+    "visual": 1.5271351958543506,
+    "temporal": 1.1651778344146086
+  },
+  "aggregate_oof_accuracy": 0.9561923583662714,
+  "mean_fold_oof_accuracy": 0.9548228278284112,
+  "worst_fold_oof_accuracy": 0.9269311064718163,
+  "folds": [
+    {
+      "fold": "A",
+      "held_users": [
+        1,
+        6,
+        17,
+        22
+      ],
+      "rows": 716,
+      "selected_train_accuracy": 0.9594827586206897,
+      "held_accuracy": 0.9594972067039106,
+      "temperatures": {
+        "fusion": 1.148698354997035,
+        "visual": 1.569168195793501,
+        "temporal": 1.189207115002721
+      },
+      "weights": {
+        "fusion": 0.2,
+        "visual": 0.25,
+        "temporal": 0.55
+      },
+      "skeleton_present_rate": 0.9874301675977654,
+      "mean_gate_weights": [
+        0.192575373763609,
+        0.2596042989407412,
+        0.5478203272956498
+      ],
+      "class_coverage": 40
+    },
+    {
+      "fold": "B",
+      "held_users": [
+        2,
+        7,
+        18,
+        23
+      ],
+      "rows": 673,
+      "selected_train_accuracy": 0.9589504866694879,
+      "held_accuracy": 0.9554234769687965,
+      "temperatures": {
+        "fusion": 1.148698354997035,
+        "visual": 1.4640856959456252,
+        "temporal": 1.189207115002721
+      },
+      "weights": {
+        "fusion": 0.0,
+        "visual": 0.25,
+        "temporal": 0.75
+      },
+      "skeleton_present_rate": 0.9806835066864784,
+      "mean_gate_weights": [
+        0.0,
+        0.2584626350693364,
+        0.7415373649306636
+      ],
+      "class_coverage": 40
+    },
+    {
+      "fold": "C",
+      "held_users": [
+        3,
+        8,
+        19,
+        24
+      ],
+      "rows": 679,
+      "selected_train_accuracy": 0.9563003818413237,
+      "held_accuracy": 0.9690721649484536,
+      "temperatures": {
+        "fusion": 1.0717734625362931,
+        "visual": 1.569168195793501,
+        "temporal": 1.189207115002721
+      },
+      "weights": {
+        "fusion": 0.15000000000000002,
+        "visual": 0.2,
+        "temporal": 0.6499999999999999
+      },
+      "skeleton_present_rate": 0.9882179675994109,
+      "mean_gate_weights": [
+        0.12818794604414563,
+        0.21277462994233584,
+        0.6590374240135188
+      ],
+      "class_coverage": 40
+    },
+    {
+      "fold": "D",
+      "held_users": [
+        4,
+        9,
+        20
+      ],
+      "rows": 489,
+      "selected_train_accuracy": 0.9583824106792305,
+      "held_accuracy": 0.9631901840490797,
+      "temperatures": {
+        "fusion": 1.0717734625362931,
+        "visual": 1.569168195793501,
+        "temporal": 1.148698354997035
+      },
+      "weights": {
+        "fusion": 0.1,
+        "visual": 0.2,
+        "temporal": 0.7
+      },
+      "skeleton_present_rate": 0.9693251533742331,
+      "mean_gate_weights": [
+        0.09490161485730379,
+        0.1889238026208995,
+        0.7161745825217969
+      ],
+      "class_coverage": 38
+    },
+    {
+      "fold": "E",
+      "held_users": [
+        5,
+        16,
+        21
+      ],
+      "rows": 479,
+      "selected_train_accuracy": 0.9651935862338679,
+      "held_accuracy": 0.9269311064718163,
+      "temperatures": {
+        "fusion": 1.0717734625362931,
+        "visual": 1.4640856959456252,
+        "temporal": 1.109569472067845
+      },
+      "weights": {
+        "fusion": 0.1,
+        "visual": 0.2,
+        "temporal": 0.7
+      },
+      "skeleton_present_rate": 0.8747390396659708,
+      "mean_gate_weights": [
+        0.0930643969841325,
+        0.19357149850725502,
+        0.7133641045086133
+      ],
+      "class_coverage": 37
+    }
+  ],
+  "train_skeleton_present_rate": 0.9654150197628458,
+  "test_skeleton_present_rate": 1.0,
+  "test_classes": 40,
+  "test_class_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39
+  ],
+  "missing_test_class_ids": [],
+  "test_labels_used": false,
+  "test_statistics_used": false,
+  "timestamp_metadata_used": false,
+  "preprocessing_contract": "artifacts/yolo_r2plus1d/train_only_preprocessing.json",
+  "preprocessing_source_split": "train",
+  "oof_preprocessing_contracts": {
+    "A": "artifacts/yolo_r2plus1d/legal_strict_v3/preproc_affine/contract_foldA.json",
+    "B": "artifacts/yolo_r2plus1d/legal_strict_v3/preproc_affine/contract_foldB.json",
+    "C": "artifacts/yolo_r2plus1d/legal_strict_v3/preproc_affine/contract_foldC.json",
+    "D": "artifacts/yolo_r2plus1d/legal_strict_v3/preproc_affine/contract_foldD.json",
+    "E": "artifacts/yolo_r2plus1d/legal_strict_v3/preproc_affine/contract_foldE.json"
+  }
+}

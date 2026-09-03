@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Conda environment (managed separately, recreated from environment.yml)
+.conda/
+
+# Torch / model caches
+.cache/
+
+# Generated training and replay outputs
+runs/
+results/strict_v3/reproduced_submission.csv
+
+# IDE / tooling
+.vscode/
+.agents/
+.codex/
+
+# Source datasets (regenerable from competition archives)
+data/
+
+# Git LFS pointer files are tracked separately
+.gitattributes
