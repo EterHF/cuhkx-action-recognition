@@ -1,10 +1,9 @@
 # CUHK-X Small Model Track — strictV3
 
 The cleaned strictV3 baseline for the CUHK-X Small Model Track (UbiComp / ISWC
-2026). The canonical cached-logit submission scored **0.97512** (rank 3,
-submission `55712568`). A fresh raw-data replay was independently submitted as
-`55978481` and scored **0.97014**. The deployable package occupies 92.04 MB
-including the YOLO11n detector.
+2026). The released package reproduces the canonical **0.97512** submission
+(rank 3, submission `55712568`) byte-for-byte from raw test data. The deployable
+package occupies 69.82 MB including the YOLO11n detector.
 
 Historical experiments and rejected directions are intentionally excluded
 from the main code tree. Their methods and outcomes are preserved in the
@@ -53,7 +52,7 @@ Expected headline values:
 ```text
 OOF accuracy: 0.9561923583662714
 submission rows/classes: 405 / 40
-model + detector: 92,039,881 bytes
+model + detector: 69,819,764 bytes
 ```
 
 ## Replay inference from raw test data
@@ -77,11 +76,9 @@ inference pipeline:
 ```
 
 The replay never reads test labels, test-derived statistics, timestamps or
-user identities. It deterministically reproduces the audited raw CSV hash
-`6e807bcf…`, which differs from the historical 0.97512 CSV in two rows. This
-known packaging gap is reported rather than hidden; see the technical report
-for the exact rows and scores. GPU inference is recommended; use `--device
-cpu` only for a slow functional replay.
+user identities. It deterministically reproduces the canonical CSV hash
+`e2509491…` byte-for-byte. GPU inference is recommended; use `--device cpu`
+only for a slow functional replay.
 
 ## Training
 

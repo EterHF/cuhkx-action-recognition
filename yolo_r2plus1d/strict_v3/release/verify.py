@@ -15,14 +15,16 @@ import torch
 from yolo_r2plus1d.strict_v3.paths import CHECKPOINT_DIR, RESULT_DIR
 
 EXPECTED = {
-    "model.pt": "55e429cf8a9516d0cb266f5c5e94938ec65ea6a6d1954183a0709a5d615939c1",
+    "model.pt": "c1feb649267aaa41ef490a93660735a76af4eae4629a687a90a102ac4e63bd75",
     "yolo11n.pt": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
-    "release_manifest.json": "862bb397962c1af866e74431d974210794b1cf23662123d01cfdc7dbb23c0ff0",
+    "release_manifest.json": "32bdaa22b2bd9abd9f1e1029c2bcd818d251e8a28da2ce4df8496058937ebcd6",
+    "metrics.json": "af8446407d6c38a004f9b07f271c8e4bb85bb5466601118c08c11648f341f04a",
+    "metadata.npz": "bf2e93e558b4ae148b14835c1f65c943828bff97dfaaf224a39c249c7599f099",
     "submission.csv": "e25094918e57f357e23346f479050bd9bf09dc907c849d4c8938a66812003343",
     "train_oof_logits.npy": "4dde2be7d0754f895f76b46c4ed3be291ecfd7b4fd9e4aa77d6000cf1712ee31",
-    "test_logits.npy": "87cee4639769eff2e603a761618c846a977d9791434362c91b5aac6c0b3f0f93",
+    "test_logits.npy": "d700e4cf680f9958c23294d8e468855579289e37a468b481a8a1a5abe974fe3e",
 }
-EXPECTED_RAW_REPLAY = "6e807bcf22c872ae72658f391a68644c05a55fbba8aebf227a274c0f968123d9"
+EXPECTED_RAW_REPLAY = "e25094918e57f357e23346f479050bd9bf09dc907c849d4c8938a66812003343"
 
 
 def digest(path: Path) -> str:
@@ -79,6 +81,8 @@ def main() -> None:
         raise SystemExit("OOF score differs from metrics.json")
     if manifest["sha256"]["submission.csv"] != digest(paths["submission.csv"]):
         raise SystemExit("manifest submission hash mismatch")
+    if manifest["test_replay"]["package_sha256"] != digest(paths["model.pt"]):
+        raise SystemExit("manifest replay package hash mismatch")
 
     package = torch.load(paths["model.pt"], map_location="cpu", weights_only=True)
     contract = package.get("release_contract", {})
@@ -100,6 +104,8 @@ def main() -> None:
         raise SystemExit("preprocessing contract is not train-only")
     if raw_pipeline.get("frames") != 16 or raw_pipeline.get("image_size") != 128:
         raise SystemExit("raw inference contract mismatch")
+    if not np.isclose(float(contract.get("visual_package_output_scale", 0.0)), 0.5):
+        raise SystemExit("visual package output scale mismatch")
     combined_bytes = (
         paths["model.pt"].stat().st_size + paths["yolo11n.pt"].stat().st_size
     )
@@ -110,6 +116,9 @@ def main() -> None:
     replay_differences = None
     if args.replayed_csv is not None:
         replay = pd.read_csv(args.replayed_csv)
+        replay_hash = digest(args.replayed_csv)
+        if replay_hash != EXPECTED_RAW_REPLAY:
+            raise SystemExit(f"unexpected raw replay hash: {replay_hash}")
         replay_matches = replay.equals(submission)
         if not replay_matches:
             replay_differences = int(
@@ -118,14 +127,7 @@ def main() -> None:
                     != submission["prediction"].to_numpy()
                 ).sum()
             )
-            if (
-                digest(args.replayed_csv) != EXPECTED_RAW_REPLAY
-                or replay_differences != 2
-            ):
-                raise SystemExit(
-                    f"unexpected raw replay: hash={digest(args.replayed_csv)}, "
-                    f"differences={replay_differences}"
-                )
+            raise SystemExit(f"raw replay differs in {replay_differences} predictions")
 
     print(
         json.dumps(

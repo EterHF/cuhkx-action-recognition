@@ -224,5 +224,16 @@
     "C": "artifacts/yolo_r2plus1d/legal_strict_v3/preproc_affine/contract_foldC.json",
     "D": "artifacts/yolo_r2plus1d/legal_strict_v3/preproc_affine/contract_foldD.json",
     "E": "artifacts/yolo_r2plus1d/legal_strict_v3/preproc_affine/contract_foldE.json"
-  }
+  },
+  "test_fusion_source": "artifacts/yolo_r2plus1d/legal_strict_v3/selfcontained_baseline_replay_work/fusion_logits.npy",
+  "test_temporal_source": "artifacts/yolo_r2plus1d/legal_strict_v3/selfcontained_baseline_replay_work/temporal_logits.npy",
+  "test_visual_source": "artifacts/yolo_r2plus1d/legal_strict_v3/selfcontained_baseline_replay_work/visual_logits.npy",
+  "test_replay_package": "artifacts/yolo_r2plus1d/canonical_raw_release_20260829/strict_multibranch_packed.pt",
+  "test_replay_package_sha256": "c1feb649267aaa41ef490a93660735a76af4eae4629a687a90a102ac4e63bd75",
+  "test_replay_mean_gate_weights": [
+    0.07223192537205594,
+    0.15303978152771558,
+    0.7747282931002297
+  ],
+  "visual_package_output_scale": 0.5
 }

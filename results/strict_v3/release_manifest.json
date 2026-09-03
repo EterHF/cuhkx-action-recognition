@@ -21,7 +21,8 @@
       "visual": "always",
       "temporal": "fixed; no cohort mask"
     },
-    "missingness_policy": "no_presence_gate; skeleton mask is encoder-input validity only"
+    "missingness_policy": "no_presence_gate; skeleton mask is encoder-input validity only",
+    "visual_package_output_scale": 0.5
   },
   "oof_sources": [
     {
@@ -289,14 +290,14 @@
     }
   ],
   "test_sources": {
-    "fusion": "artifacts/yolo_r2plus1d/legal_strict_v3/preproc_affine/fusion_test.npy",
-    "visual": "artifacts/yolo_r2plus1d/legal_strict_v3/preproc_affine/visual_full_head_test.npy",
-    "temporal": "artifacts/yolo_r2plus1d/public_cuhkx_dstformer/logit_tcn_full_epoch5/test_logits.npy"
+    "fusion": "artifacts/yolo_r2plus1d/legal_strict_v3/selfcontained_baseline_replay_work/fusion_logits.npy",
+    "visual": "artifacts/yolo_r2plus1d/legal_strict_v3/selfcontained_baseline_replay_work/visual_logits.npy",
+    "temporal": "artifacts/yolo_r2plus1d/legal_strict_v3/selfcontained_baseline_replay_work/temporal_logits.npy"
   },
   "test_source_sha256": {
-    "fusion": "693101557a828b588cc944c523cb985906330dfa53699c2fae704d69b71a3278",
+    "fusion": "6b28f0c48498e60f2f2dc2d25773436c95c7fb465641a848a44dc64f1ae764df",
     "visual": "8ba08a23677e4f70db63e7b8360f7257414465fa2c11848e6fd47ee683859ed2",
-    "temporal": "5246558c17cc9fe7676bf257710749de1ef40065ea114521624574828c299e62"
+    "temporal": "b20004021a8cee04af271348e63f2f30a43b19c209917227441b6ef6184edb30"
   },
   "visual_test_checkpoint": {
     "path": "artifacts/yolo_r2plus1d/affine_head_full/best_fp16.pt",
@@ -330,7 +331,7 @@
   "submission": "submission.csv",
   "sha256": {
     "train_oof_logits.npy": "4dde2be7d0754f895f76b46c4ed3be291ecfd7b4fd9e4aa77d6000cf1712ee31",
-    "test_logits.npy": "87cee4639769eff2e603a761618c846a977d9791434362c91b5aac6c0b3f0f93",
+    "test_logits.npy": "d700e4cf680f9958c23294d8e468855579289e37a468b481a8a1a5abe974fe3e",
     "submission.csv": "e25094918e57f357e23346f479050bd9bf09dc907c849d4c8938a66812003343"
   },
   "test_labels_used": false,
@@ -363,5 +364,18 @@
   "audits": {
     "missingness": "artifacts/yolo_r2plus1d/legal_strict_v3/missingness_audit.json",
     "preprocessing_shift": "artifacts/yolo_r2plus1d/preprocessing_shift_audit.json"
+  },
+  "test_replay": {
+    "package": "artifacts/yolo_r2plus1d/canonical_raw_release_20260829/strict_multibranch_packed.pt",
+    "package_sha256": "c1feb649267aaa41ef490a93660735a76af4eae4629a687a90a102ac4e63bd75",
+    "raw_work_dir": "artifacts/yolo_r2plus1d/legal_strict_v3/selfcontained_baseline_replay_work",
+    "raw_work_branch_sha256": {
+      "fusion": "6b28f0c48498e60f2f2dc2d25773436c95c7fb465641a848a44dc64f1ae764df",
+      "visual": "8ba08a23677e4f70db63e7b8360f7257414465fa2c11848e6fd47ee683859ed2",
+      "temporal": "b20004021a8cee04af271348e63f2f30a43b19c209917227441b6ef6184edb30"
+    },
+    "test_labels_used": false,
+    "test_statistics_used": false,
+    "timestamp_metadata_used": false
   }
 }

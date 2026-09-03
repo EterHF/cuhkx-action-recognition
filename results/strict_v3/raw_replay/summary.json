@@ -1,28 +1,21 @@
 {
   "replay_date": "2026-09-03",
-  "submission_sha256": "6e807bcf22c872ae72658f391a68644c05a55fbba8aebf227a274c0f968123d9",
-  "package_sha256": "55e429cf8a9516d0cb266f5c5e94938ec65ea6a6d1954183a0709a5d615939c1",
+  "submission_sha256": "e25094918e57f357e23346f479050bd9bf09dc907c849d4c8938a66812003343",
+  "canonical_submission_sha256": "e25094918e57f357e23346f479050bd9bf09dc907c849d4c8938a66812003343",
+  "package_sha256": "c1feb649267aaa41ef490a93660735a76af4eae4629a687a90a102ac4e63bd75",
   "detector_sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1",
+  "package_bytes": 64206000,
+  "combined_model_bytes": 69819764,
   "rows": 405,
   "unique_classes": 40,
   "test_detection_rate": 0.9753086419753086,
-  "canonical_prediction_differences": 2,
-  "differences": [
-    {
-      "path": "small_model_track_test/SM_test_0214/",
-      "canonical": 9,
-      "raw_replay": 10
-    },
-    {
-      "path": "small_model_track_test/SM_test_0378/",
-      "canonical": 6,
-      "raw_replay": 23
-    }
-  ],
+  "canonical_prediction_differences": 0,
+  "byte_equal_to_canonical": true,
   "kaggle": {
-    "reference": 55978481,
-    "public_score": 0.97014,
-    "status": "complete"
+    "reference": 55712568,
+    "public_score": 0.97512,
+    "status": "complete",
+    "note": "The fresh raw replay is byte-identical to this previously scored submission."
   },
   "test_labels_used": false,
   "test_statistics_used": false,

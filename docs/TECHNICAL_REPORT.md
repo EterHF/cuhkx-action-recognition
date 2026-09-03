@@ -57,24 +57,23 @@ under `fully-external-pretrained strict`.
 
 ## 3. The current best: `legal_strict_v3`
 
-The cached-logit `legal_strict_v3` submission reached **0.97512** (rank 3,
-ref `55712568`). The September repository audit found that its deployable
-package does not recreate that CSV exactly: a fresh raw-data replay changes
-two predictions and scores **0.97014** (ref `55978481`). Both results are kept
-below so the stronger historical score is not confused with the reproducible
-deployment score.
+The `legal_strict_v3` submission reached **0.97512** (rank 3, ref `55712568`).
+The current package recreates that scored CSV byte-for-byte from raw test data.
+The key deployment fix is an explicit `visual_package_output_scale=0.5`: one
+retained 5-bit visual member represents its half-weight contribution without
+storing a second near-duplicate network.
 
 | Property | Value |
 | --- | --- |
-| Package | `checkpoints/strict_v3/model.pt` (86,426,117 bytes) |
+| Package | `checkpoints/strict_v3/model.pt` (64,206,000 bytes) |
 | Canonical submission | `results/strict_v3/submission.csv` (405 rows, 40 classes) |
 | Raw-replay submission | `results/strict_v3/raw_replay/submission.csv` (405 rows, 40 classes) |
-| Total with YOLO11n | 92,039,881 bytes (under 100 MB) |
-| Historical cached-logit score | **0.97512**, ref `55712568` |
-| Reproduced raw-data score | **0.97014**, ref `55978481` |
+| Total with YOLO11n | 69,819,764 bytes (under 100 MB) |
+| Public score | **0.97512**, ref `55712568` |
+| Reproduced raw-data score | **0.97512**, byte-identical to ref `55712568` |
 | OOF (release-strict) | aggregate `0.956192`, mean fold `0.954823`, worst fold `0.926931`, macro recall `0.953143` |
 | Protocol | `five_fold_subject_wise_nested_temperature_quality_gate` (full contract in `release_manifest.json`) |
-| Raw-replay evidence | deterministic SHA-256 `6e807bcf…`; differs from canonical rows 214 and 378 (zero-based indices 213 and 377) |
+| Raw-replay evidence | deterministic SHA-256 `e2509491…`; byte-identical to the canonical CSV |
 
 ### 3.1 What the strict-v3 release actually contains
 
@@ -86,20 +85,11 @@ is recorded in `release_manifest.json`:
   fixed recipe.
 * **Fusion head**: the legacy multibranch Fusion4 logits, also replayed.
 
-The historical packer attempted to freeze deployment-side tensors against the
-training OOF. The cleanup audit showed that the 4-bit deployable visual
-ensemble does not reproduce the cached 5/6-bit visual logits used to build the
-0.97512 CSV. The resulting fused prediction changes are:
-
-| sample | canonical | raw replay |
-| --- | ---: | ---: |
-| `SM_test_0214` | 9 | 10 |
-| `SM_test_0378` | 6 | 23 |
-
-The raw replay itself is deterministic: the August replay and the fresh
-September replay have the same SHA-256 (`6e807bcf…`). The mismatch therefore
-predates repository cleanup and is a packaging/evidence mismatch, not a
-refactor regression.
+The first cleanup package incorrectly replaced the source 5/6-bit visual
+ensemble with two 4-bit members. Its deterministic replay changed
+`SM_test_0214` and `SM_test_0378` and scored 0.97014 (ref `55978481`). The
+current package restores the previously audited compact representation and
+eliminates both differences while remaining well below the size limit.
 
 The best public history, in one table:
 
@@ -129,9 +119,9 @@ were **refused by the public leaderboard**; they are no longer candidates.
   --replayed-csv results/strict_v3/reproduced_submission.csv
 ```
 
-The verifier reports the known two-row divergence and rejects any other raw
-replay hash. The recipe is recorded in `release_manifest.json`; any change to
-the inference contract requires a new package and manifest.
+The verifier requires the raw replay to be byte-identical to the canonical
+CSV. The recipe is recorded in `release_manifest.json`; any change to the
+inference contract requires a new package and manifest.
 
 ---
 
@@ -398,8 +388,7 @@ history / post-hoc leaderboard feedback.
 ## 8. Reproducing and auditing strictV3
 
 The artifact-level check reproduces the reported OOF score and canonical CSV.
-The raw-data replay reproduces the deployable 0.97014 result and explicitly
-reports the two-row gap to the historical 0.97512 CSV:
+The raw-data replay reproduces the scored 0.97512 CSV byte-for-byte:
 
 ```zsh
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.verify
@@ -409,8 +398,7 @@ reports the two-row gap to the historical 0.97512 CSV:
   --replayed-csv results/strict_v3/reproduced_submission.csv
 ```
 
-Any replay other than the audited raw hash or an exact canonical match fails
-closed.
+Any replay other than the exact canonical hash fails closed.
 
 ## 9. Compliance and rules summary
 
@@ -425,7 +413,7 @@ summarised inline in §4.6.
 * `checkpoints/strict_v3/model.pt` and `yolo11n.pt` — deployable model.
 * `results/strict_v3/release_manifest.json` and `metrics.json` — release
   contract and OOF evidence.
-* `results/strict_v3/submission.csv` — historical 0.97512 cached-logit CSV.
-* `results/strict_v3/raw_replay/` — deterministic 0.97014 raw-data replay.
+* `results/strict_v3/submission.csv` — scored 0.97512 canonical CSV.
+* `results/strict_v3/raw_replay/` — byte-identical raw-data replay.
 * `yolo_r2plus1d/strict_v3/release/verify.py` and `replay.py` — public
   verification and end-to-end replay entry points.
