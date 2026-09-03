@@ -343,9 +343,10 @@ The external-only research queue (verbatim from the prior roadmap):
 2. **Deterministic depth / lag-1 temporal-difference channels** —
    fixed, auditable; pre-declared auxiliary weight. No held-driven
    channel-recipe search.
-3. **Proper SWA** — pre-declared averaging interval, LR schedule,
-   parameter scope, BN treatment. The averaged checkpoint is the one
-   candidate, **never** the best held epoch.
+3. **Predeclared tail weight averaging (executed; rejected)** — the fixed
+   epoch 3–5 interval, LR schedule, parameter scope and BN treatment were
+   declared before A–E. The averaged checkpoint was the only candidate;
+   results are frozen in §5.5 and no post-hoc SWA schedule scan is allowed.
 4. **SlowFast / X3D** — same subject folds, seed budget, source-only
    data boundary; measure compute / accuracy locally first.
 5. **MixStyle / ASAM** — last in queue, because small-fold spurious
@@ -355,6 +356,29 @@ External-only is *strict*: external representation / public
 architecture / deterministic training transform. **Never** the test /
 anonymous labels / IDs / samples / submission scores / prediction
 history / post-hoc leaderboard feedback.
+
+### 5.5 Temporal generalisation checks, 2026-09-03 (completed; rejected)
+
+Two one-variable candidates were locked before their A–E runs. Both used the
+same train frame-logit SHA `76e6c11…7102e`, metadata SHA `bf2e93e5…9f099`,
+seeds 2026/2027/2028, five fixed sched30 epochs and deferred held metrics.
+The suite ran in OOF-only mode: 15/15 jobs completed, no full-data model or
+test file was created, and every receipt recorded `test_data_loaded=false`.
+
+| Candidate | Temporal result vs fresh sched30 | Generalisation gate | Release gate / decision |
+| --- | --- | --- | --- |
+| Epoch-varying deterministic reversal/noise | 2,847/3,036 = 0.937747; seed 2026 gained one row but the seed mean changed zero predictions | macro, subject-macro, worst-user, worst-fold and 5/5 folds tied; failed the preregistered +1-row minimum | Stopped at stage 1; rejected |
+| Uniform FP32 TCN parameter average, post-update epochs 3–5 | 2,848/3,036 = 0.938076 (+1 row); macro +0.000327; subject-macro +0.000208; worst metrics tied | 4/5 folds and 3/3 matching seeds non-degrading; passed stage 1 | nested branch 2,920/3,036 = 0.961792 (+1 vs historical branch), but fixed 50/50 strictV3 consensus stayed 2,916/3,036 = 0.960474 with zero changed predictions; required 2,917, so rejected at stage 2 |
+
+The train-only nested evaluator was first checked against the historical
+sched30 inputs: both the saved nested logits and the final probability array
+were exactly equal (`max_abs=0`). Evidence hashes are: epoch-resampled receipt
+`dd135d65…df24`, OOF `0ddb3bdd…67c0`; tail-average receipt
+`40510e90…26ac`, OOF `99a0df0b…5960`; final nested-gate metrics
+`d8edb37a…044b2`. The stop rules prohibited full-data training, anonymous-test
+inference, packaging and coefficient changes after seeing A–E. In accordance
+with repository cleanup policy, the rejected mechanisms remain documented
+here rather than as permanent training flags or model files.
 
 ---
 

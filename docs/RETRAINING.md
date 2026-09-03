@@ -98,6 +98,11 @@ and the device. A candidate passes only if its aggregate, macro, subject-macro,
 worst-user and worst-fold metrics do not regress, at least four folds do not
 regress, and raw replay matches the newly generated submission.
 
+For a confirmatory OOF screen that must not touch anonymous test assets, omit
+`--test-frame-logits` and add `--oof-only`. This mode refuses a test-logit
+argument, skips all full-data jobs, writes `null` for test paths and hashes,
+and records `test_data_loaded: false` in `receipt.json`.
+
 ## Observed retraining audit (2026-09-03)
 
 The following jobs were actual training runs, not frozen-checkpoint replays.
@@ -129,6 +134,24 @@ recalibrated with the frozen visual/fusion branches, the candidate scored
 separately frozen 0.960474 candidate: CPU/GPU numerical differences moved one
 outer-train grid tie to an adjacent weight. The retrained result is therefore
 evidence of potential, not a promoted release.
+
+Two further temporal generalisation hypotheses were preregistered and run as
+train-only screens (3 seeds × 5 folds, CPU, fixed epoch 5, no test input):
+
+| Candidate | Temporal seed-mean | Fold / seed stability | Decision |
+| --- | ---: | --- | --- |
+| Epoch-resampled reversal/noise | 0.937747 (2,847/3,036; no change) | 5/5 folds and 3/3 seeds non-degrading | Rejected at stage 1: required at least 2,848 correct rows |
+| Uniform FP32 weight mean, epochs 3–5 | 0.938076 (2,848/3,036; +1 row) | 4/5 folds and 3/3 seeds non-degrading | Passed temporal gate; rejected at release gate |
+
+For the weight-average candidate, macro recall improved by 0.000327 and
+subject-macro by 0.000208; worst-user and worst-fold were unchanged. Its
+train-only nested branch reached 0.961792 (2,920 rows), one row above the
+historical nested sched30 branch. The preregistered fixed 50/50 probability
+ensemble with strictV3 nevertheless remained prediction-identical to the
+existing candidate: 0.960474 (2,916 rows), zero changed predictions,
+against a required 2,917 rows. Historical control replay reproduced both the
+nested logits and final probability array exactly. The stop rule therefore
+prevented full-data training, test inference and packaging.
 
 The audit is still **partial**: a new full fusion deployment package, two
 byte-identical raw replays and an authorized Kaggle confirmation have not been

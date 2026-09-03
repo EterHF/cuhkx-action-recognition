@@ -117,6 +117,10 @@ data/processed/test/small_model_track_test/SM_test_*/
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.training.temporal --help
 ```
 
+若只执行 train-only 确认性检查，请省略 `--test-frame-logits` 并添加
+`--oof-only`。此时 suite 会跳过全部 full-data 任务、拒绝接收 test-logit
+参数，并在 receipt 中记录 `test_data_loaded: false`。
+
 按用户划分的 folds 和冻结的发布超参数记录在 `results/strict_v3/release_manifest.json`。不得使用排行榜反馈或匿名测试集属性进行模型选择。
 
 ## 重训练状态（2026-09-03）
@@ -127,6 +131,12 @@ visual-head 与历史各 fold 的差异不超过 3 个验证样本。独立重�
 `sched30` 候选取得 0.959486 OOF，因此它**没有**替换冻结的 strictV3 发布版本，
 也没有替换另行审计的 0.960474 候选包。准确命令、fold 结果和仍待完成的完整部署
 验收门禁见 [`docs/RETRAINING.zh-CN.md`](docs/RETRAINING.zh-CN.md)。
+
+另有两项预注册的 train-only 检查被否决。每个 epoch 重新采样相同时序增强后，
+三 seed 平均预测仍为 0.937747；对 epoch 3–5 的 TCN 权重做均匀平均后达到
+0.938076（3,036 行中净增 1 行），但固定 nested 50/50 发布候选仍精确为
+0.960474，预测变化为 0。两项检查均未打开测试数据、未训练 full-data 模型，
+也未修改已发布 package。
 
 ## 许可证
 

@@ -218,11 +218,32 @@ YOLO crop 的 R(2+1)D-18 → R(2+1)D-34 int5/int6 + YOLO11n 路线将纯视觉�
 
 1. **VideoMAE-S ≈ MViTv2-S**：“≈”表示相同调查优先级，而非二者在本数据集等价。在打开任何 CUHK-X fold 前冻结外部 checkpoint、架构、预处理和 seed map。
 2. **确定性 depth / lag-1 temporal-difference channel**：配方固定、可审计，并预先声明辅助权重；不得根据 held 结果搜索 channel recipe。
-3. **正确的 SWA**：预先声明平均区间、LR schedule、参数范围和 BN 处理方式。平均后的 checkpoint 是唯一候选，**绝不能**选择 held 上的最佳 epoch。
+3. **预声明的尾部权重平均（已执行并否决）**：在打开 A–E 前声明固定 epoch 3–5 区间、LR schedule、参数范围和 BN 处理方式；平均后的 checkpoint 是唯一候选，结果冻结于 §5.5，禁止事后扫描其他 SWA schedule。
 4. **SlowFast / X3D**：沿用相同 subject folds、seed budget 和 source-only 数据边界；先在本地测量计算量和准确率。
 5. **MixStyle / ASAM**：排在最后，因为小 fold 上的偶然增益往往损害跨 seed 稳定性。
 
 External-only 的 strict 定义是：外部表示、公开架构和确定性训练变换。**绝不能**使用测试/匿名标签、ID、样本、提交分数、预测历史或事后排行榜反馈。
+
+### 5.5 2026-09-03 时序泛化检查（已完成并否决）
+
+两个单变量候选都在执行 A–E 前完成锁定。二者使用相同的训练 frame-logit SHA
+`76e6c11…7102e`、metadata SHA `bf2e93e5…9f099`、随机种子
+2026/2027/2028、五个固定 sched30 epochs，并延迟读取 held 指标。Suite 以
+OOF-only 模式运行：15/15 jobs 完成，未生成 full-data 模型或测试文件，每份
+receipt 都记录 `test_data_loaded=false`。
+
+| 候选 | 相对 fresh sched30 的 temporal 结果 | 泛化门禁 | Release 门禁 / 决策 |
+| --- | --- | --- | --- |
+| 每 epoch 确定性重采样 reversal/noise | 2,847/3,036 = 0.937747；seed 2026 多 1 行，但 seed mean 的预测变化为 0 | macro、subject-macro、worst-user、worst-fold 及 5/5 folds 持平；未达到预注册的净增 1 行门槛 | stage 1 停止并否决 |
+| 对 post-update epoch 3–5 的 FP32 TCN 参数做均匀平均 | 2,848/3,036 = 0.938076（+1 行）；macro +0.000327；subject-macro +0.000208；worst 指标持平 | 4/5 folds、3/3 matching seeds 非退化；通过 stage 1 | nested 分支为 2,920/3,036 = 0.961792（比历史分支 +1 行），但固定 50/50 strictV3 consensus 仍为 2,916/3,036 = 0.960474，预测变化为 0；门槛为 2,917，因此在 stage 2 否决 |
+
+train-only nested evaluator 先用历史 sched30 输入做控制回放：保存的 nested logits
+与最终 probability array 均逐元素相等（`max_abs=0`）。证据 hash 为：epoch 重采样
+receipt `dd135d65…df24`、OOF `0ddb3bdd…67c0`；尾部权重平均 receipt
+`40510e90…26ac`、OOF `99a0df0b…5960`；最终 nested-gate metrics
+`d8edb37a…044b2`。停止规则禁止 full-data 训练、匿名测试推理、打包，以及在看到
+A–E 后修改系数。按照仓库清理策略，否决机制仅保留在本报告中，不成为长期训练 flag
+或模型文件。
 
 ---
 

@@ -136,6 +136,10 @@ live in `training/`. The temporal suites have a single auditable runner:
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.training.temporal --help
 ```
 
+For a train-only confirmatory run, omit `--test-frame-logits` and add
+`--oof-only`. The suite then skips every full-data job, refuses a test-logit
+argument, and records `test_data_loaded: false` in its receipt.
+
 Subject-wise folds and frozen release hyperparameters are recorded in
 `results/strict_v3/release_manifest.json`. Do not use leaderboard feedback or
 anonymous-test attributes for model selection.
@@ -151,6 +155,13 @@ has **not** replaced the frozen strictV3 release or the separately audited
 0.960474 candidate package. Exact commands, fold results and the remaining
 full-deployment acceptance gates are in
 [`docs/RETRAINING.md`](docs/RETRAINING.md).
+
+Two additional preregistered, train-only checks were rejected. Resampling the
+same temporal augmentation each epoch left the three-seed prediction mean at
+0.937747. Uniformly averaging the epoch 3–5 TCN weights reached 0.938076
+(+1/3,036 row), but its fixed nested 50/50 release candidate remained exactly
+0.960474 with zero changed predictions. Neither check opened test data,
+trained full-data models, or changed the published package.
 
 ## License
 

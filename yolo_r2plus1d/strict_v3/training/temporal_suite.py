@@ -117,14 +117,21 @@ def main() -> None:
     parser.add_argument("--batch", type=int, default=128)
     parser.add_argument("--workers", type=int, default=2)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument(
+        "--oof-only",
+        action="store_true",
+        help="run held-subject jobs without loading test inputs or training full models",
+    )
     args = parser.parse_args()
 
     for path in (args.frame_logits, args.metadata):
         if not path.is_file():
             parser.error(f"input does not exist: {path}")
-    if args.test_frame_logits is None:
+    if args.oof_only and args.test_frame_logits is not None:
+        parser.error("--test-frame-logits must be omitted with --oof-only")
+    if not args.oof_only and args.test_frame_logits is None:
         parser.error("--test-frame-logits is required because every suite includes a full job")
-    if not args.test_frame_logits.is_file():
+    if args.test_frame_logits is not None and not args.test_frame_logits.is_file():
         parser.error(f"input does not exist: {args.test_frame_logits}")
 
     seeds = [2026] if args.recipe == "strict" else [2026, 2027, 2028]
@@ -138,20 +145,23 @@ def main() -> None:
                 output,
                 args.resume,
             )
-        output = args.output / f"full_seed{seed}"
-        run_job(
-            command(args, output, seed, None, sched30, full=True),
-            output,
-            args.resume,
-        )
+        if not args.oof_only:
+            output = args.output / f"full_seed{seed}"
+            run_job(
+                command(args, output, seed, None, sched30, full=True),
+                output,
+                args.resume,
+            )
 
     oof, metrics = assemble_oof(args.output, seeds, args.metadata)
     np.save(args.output / "temporal_oof_logits.npy", oof)
-    tests = [
-        np.load(args.output / f"full_seed{seed}" / "test_logits.npy") for seed in seeds
-    ]
-    test_logits = np.mean(tests, axis=0, dtype=np.float32)
-    np.save(args.output / "temporal_test_logits.npy", test_logits)
+    if not args.oof_only:
+        tests = [
+            np.load(args.output / f"full_seed{seed}" / "test_logits.npy")
+            for seed in seeds
+        ]
+        test_logits = np.mean(tests, axis=0, dtype=np.float32)
+        np.save(args.output / "temporal_test_logits.npy", test_logits)
     receipt = {
         "schema_version": "cuhkx-temporal-retrain/v1",
         "recipe": args.recipe,
@@ -161,16 +171,30 @@ def main() -> None:
         "inputs": {
             "frame_logits": str(args.frame_logits.resolve()),
             "frame_logits_sha256": sha256(args.frame_logits),
-            "test_frame_logits": str(args.test_frame_logits.resolve()),
-            "test_frame_logits_sha256": sha256(args.test_frame_logits),
+            "test_frame_logits": (
+                None
+                if args.test_frame_logits is None
+                else str(args.test_frame_logits.resolve())
+            ),
+            "test_frame_logits_sha256": (
+                None
+                if args.test_frame_logits is None
+                else sha256(args.test_frame_logits)
+            ),
             "metadata": str(args.metadata.resolve()),
             "metadata_sha256": sha256(args.metadata),
         },
         **metrics,
         "outputs": {
             "oof_sha256": sha256(args.output / "temporal_oof_logits.npy"),
-            "test_sha256": sha256(args.output / "temporal_test_logits.npy"),
+            "test_sha256": (
+                None
+                if args.oof_only
+                else sha256(args.output / "temporal_test_logits.npy")
+            ),
         },
+        "oof_only": args.oof_only,
+        "test_data_loaded": not args.oof_only,
     }
     (args.output / "receipt.json").write_text(
         json.dumps(receipt, indent=2) + "\n", encoding="utf-8"

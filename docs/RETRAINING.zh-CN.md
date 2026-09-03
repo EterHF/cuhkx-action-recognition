@@ -71,6 +71,10 @@ CUDA_VISIBLE_DEVICES=0 .conda/envs/cuhkx/bin/python \
 
 支持使用 `--device cpu --workers 0` 进行独立数值检查。当 outer-train 分数并列时，CPU 和 A100 运行可能选择相邻的 blend-grid 点，因此部署校准必须同时记录所选权重和设备。候选只有在 aggregate、macro、subject-macro、worst-user 和 worst-fold 指标均不回退，至少四个 fold 不回退，并且原始数据重放与新生成提交一致时才算通过。
 
+若确认性 OOF 筛选不得接触匿名测试资产，请省略 `--test-frame-logits` 并添加
+`--oof-only`。该模式会拒绝 test-logit 参数、跳过全部 full-data 任务，将测试路径和
+hash 写为 `null`，并在 `receipt.json` 中记录 `test_data_loaded: false`。
+
 ## 已执行的重训练审计（2026-09-03）
 
 下列结果来自真实训练，而不是冻结 checkpoint 重放。任务在一张 A100 上串行执行；
@@ -96,6 +100,21 @@ A–E 分别为 6、0、5、9、4，fusion 分别为 0、1、4、14、0。历史
 候选 OOF 为 0.959486（相对 strictV3 提升 0.003294，5/5 fold 非退化）。该结果低于
 另行冻结的 0.960474 候选：CPU/GPU 数值差异使一个 outer-train grid 并列项选择了
 相邻权重。因此，本次重训练只证明该方向有潜力，不构成发布晋升。
+
+随后又预注册并执行了两项 train-only 时序泛化检查（3 seeds × 5 folds、CPU、
+固定 epoch 5、无测试输入）：
+
+| 候选 | Temporal seed-mean | Fold / seed 稳定性 | 决策 |
+| --- | ---: | --- | --- |
+| 每 epoch 重采样 reversal/noise | 0.937747（2,847/3,036；无变化） | 5/5 folds、3/3 seeds 非退化 | stage 1 否决：门槛至少为 2,848 行正确 |
+| epoch 3–5 FP32 权重均匀平均 | 0.938076（2,848/3,036；+1 行） | 4/5 folds、3/3 seeds 非退化 | 通过 temporal 门禁；release 门禁否决 |
+
+权重平均候选的 macro recall 提升 0.000327，subject-macro 提升 0.000208，
+worst-user 与 worst-fold 持平。其 train-only nested 分支达到 0.961792
+（2,920 行），比历史 nested sched30 分支多 1 行；但预注册的 strictV3 固定
+50/50 概率 ensemble 仍与现有候选的逐行预测完全一致：0.960474（2,916 行）、
+预测变化为 0，未达到 2,917 行门槛。历史 control 回放精确复现了 nested logits
+和最终 probability array。因此停止规则阻止了 full-data 训练、测试推理和打包。
 
 本次审计仍为 **partial**：尚未生成新的 full fusion 部署包，也未完成两次逐字节一致的
 原始数据重放和经授权的 Kaggle 确认。标准 0.97512 package 保持不变。
