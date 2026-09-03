@@ -18,6 +18,7 @@ from yolo_r2plus1d.strict_v3.models.fusion import TemporalFusionClassifier
 from yolo_r2plus1d.strict_v3.models.muon import NDimMuon
 from yolo_r2plus1d.strict_v3.paths import CHECKPOINT_DIR, REPO_ROOT, RESULT_DIR
 from yolo_r2plus1d.strict_v3.training.base import MEAN, STD
+from yolo_r2plus1d.strict_v3.training.public_finetune import dequantize_state
 
 THERMAL_MEAN = 0.39306015
 THERMAL_STD = 0.21199141
@@ -442,12 +443,28 @@ def main() -> None:
         help="frozen train-only affine statistics; no test statistics are read",
     )
     parser.add_argument("--seed", type=int, default=2026)
+    parser.add_argument(
+        "--cuda-memory-fraction",
+        type=float,
+        default=None,
+        help="optional per-process CUDA allocator cap in (0,1]",
+    )
+    parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="prefer deterministic cuDNN kernels (may be slower)",
+    )
     args = parser.parse_args()
 
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA is required; launch with CUDA_VISIBLE_DEVICES=0")
+    if args.cuda_memory_fraction is not None:
+        if not 0.0 < args.cuda_memory_fraction <= 1.0:
+            raise ValueError("--cuda-memory-fraction must be in (0,1]")
+        torch.cuda.set_per_process_memory_fraction(args.cuda_memory_fraction, 0)
     seed_everything(args.seed)
-    torch.backends.cudnn.benchmark = True
+    torch.backends.cudnn.benchmark = not args.deterministic
+    torch.backends.cudnn.deterministic = args.deterministic
     with np.load(args.metadata) as data:
         labels, users = data["train_y"], data["train_users"]
     val_mask = (
@@ -545,13 +562,17 @@ def main() -> None:
         skeleton_channels=skeleton_channels,
         visual_channels=5 if args.thermal_cache is not None else 4,
     )
-    checkpoint = torch.load(
-        args.visual_checkpoint, map_location="cpu", weights_only=True
-    )
-    model.load_visual_checkpoint(checkpoint["model_state"])
-    if args.resume is not None:
+    if args.resume is None:
+        checkpoint = torch.load(
+            args.visual_checkpoint, map_location="cpu", weights_only=True
+        )
+        model.load_visual_checkpoint(checkpoint["model_state"])
+    else:
         resumed = torch.load(args.resume, map_location="cpu", weights_only=True)
-        state = resumed.get("model_state", resumed)
+        if "fusion_4bit" in resumed:
+            state = dequantize_state(resumed["fusion_4bit"]["model_state_packed"])
+        else:
+            state = resumed.get("model_state", resumed)
         missing, unexpected = model.load_state_dict(state, strict=False)
         if missing or unexpected:
             raise RuntimeError(
@@ -692,6 +713,17 @@ def main() -> None:
         "improvement": best_accuracy - 0.6323076923076923,
         "best_epoch": best_epoch,
         "validation_users": args.val_users,
+        "epochs": args.epochs,
+        "batch_size": args.batch_size,
+        "workers": args.workers,
+        "seed": args.seed,
+        "visual_learning_rate": args.visual_lr,
+        "new_learning_rate": args.new_lr,
+        "auxiliary_weight": args.auxiliary_weight,
+        "cuda_memory_fraction": args.cuda_memory_fraction,
+        "deterministic": args.deterministic,
+        "visual_checkpoint": str(args.visual_checkpoint),
+        "resume_checkpoint": str(args.resume) if args.resume is not None else None,
         "freeze_visual": args.freeze_visual,
         "class_balanced": args.class_balanced,
         "class_balance_power": args.class_balance_power,

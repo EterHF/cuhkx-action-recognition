@@ -20,8 +20,10 @@ results/strict_v3/reproduced_submission.csv
 .agents/
 .codex/
 
-# Source datasets (regenerable from competition archives)
-data/
+# Source datasets (regenerable from competition archives). Keep root docs only.
+/data/*
+!/data/README.md
+!/data/README.zh-CN.md
 
 # Git LFS pointer files are tracked separately
 .gitattributes

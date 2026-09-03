@@ -301,6 +301,24 @@ def dequantize_state(state: Mapping[str, object]) -> dict[str, torch.Tensor]:
     return output
 
 
+def visual_member_state(
+    package: Mapping[str, object], model_index: int
+) -> Mapping[str, object]:
+    """Return one packed visual state from a supported release schema."""
+    members = package.get("visual_members")
+    if isinstance(members, list):
+        return members[model_index]["model_state_packed"]
+    member = package.get("visual_member0")
+    if isinstance(member, Mapping):
+        if model_index != 0:
+            raise IndexError("the compact strictV3 package contains only visual member 0")
+        return member["model_state_packed"]
+    legacy = package.get("models_packed")
+    if isinstance(legacy, list):
+        return legacy[model_index]
+    raise KeyError("checkpoint has no supported packed visual member")
+
+
 def quantize_signed(tensor: torch.Tensor, bits: int) -> dict[str, object]:
     """Quantize a weight exactly in the release's per-output-channel format."""
     tensor = tensor.detach().float().cpu()
@@ -629,6 +647,17 @@ def main() -> None:
         help="linearly warm the freshly initialized target head for this many epochs",
     )
     parser.add_argument("--seed", type=int, default=2026)
+    parser.add_argument(
+        "--cuda-memory-fraction",
+        type=float,
+        default=None,
+        help="optional per-process CUDA allocator cap in (0,1]",
+    )
+    parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="prefer deterministic cuDNN kernels (may be slower)",
+    )
     parser.add_argument("--no-flip-augment", action="store_true")
     parser.add_argument(
         "--style-augment",
@@ -728,7 +757,13 @@ def main() -> None:
         args.hard_example_multiplier
     ):
         raise ValueError("--hard-example-multiplier must be finite and at least one")
+    if args.cuda_memory_fraction is not None:
+        if not 0.0 < args.cuda_memory_fraction <= 1.0:
+            raise ValueError("--cuda-memory-fraction must be in (0,1]")
+        torch.cuda.set_per_process_memory_fraction(args.cuda_memory_fraction, 0)
     seed_everything(args.seed)
+    torch.backends.cudnn.benchmark = not args.deterministic
+    torch.backends.cudnn.deterministic = args.deterministic
     device = torch.device("cuda:0")
     args.output_dir.mkdir(parents=True, exist_ok=True)
     with np.load(args.metadata) as metadata:
@@ -785,11 +820,7 @@ def main() -> None:
         )
     else:
         packed = torch.load(args.packed, map_location="cpu", weights_only=True)
-        members = packed.get("visual_members")
-        if members:
-            state = dequantize_state(members[args.model_index]["model_state_packed"])
-        else:
-            state = dequantize_state(packed["models_packed"][args.model_index])
+        state = dequantize_state(visual_member_state(packed, args.model_index))
         if args.input_adapter:
             # The released member has a 4-channel replacement stem.  The adapter
             # variant restores the original pretrained 3-channel kernels.
@@ -1176,11 +1207,26 @@ def main() -> None:
             packed = torch.load(args.packed, map_location="cpu", weights_only=True)
         replacement = packed_model(checkpoint["model_state"], args.bits)
         candidate = dict(packed)
-        models = list(candidate["models_packed"])
-        models[args.model_index] = replacement
-        candidate["models_packed"] = models
-        candidate["bits"] = list(candidate["bits"])
-        candidate["bits"][args.model_index] = args.bits
+        if "visual_member0" in candidate:
+            if args.model_index != 0:
+                raise IndexError("the compact strictV3 package contains only visual member 0")
+            member = dict(candidate["visual_member0"])
+            member["model_state_packed"] = replacement
+            member["bits"] = args.bits
+            candidate["visual_member0"] = member
+        elif "visual_members" in candidate:
+            members = list(candidate["visual_members"])
+            member = dict(members[args.model_index])
+            member["model_state_packed"] = replacement
+            member["bits"] = args.bits
+            members[args.model_index] = member
+            candidate["visual_members"] = members
+        else:
+            models = list(candidate["models_packed"])
+            models[args.model_index] = replacement
+            candidate["models_packed"] = models
+            candidate["bits"] = list(candidate["bits"])
+            candidate["bits"][args.model_index] = args.bits
         packed_path = args.output_dir / "ensemble_packed.pt"
         torch.save(candidate, packed_path)
     else:
@@ -1222,6 +1268,12 @@ def main() -> None:
         else str(args.secondary_cache.resolve()),
         "secondary_cache_probability": 0.5 if args.secondary_cache is not None else 0.0,
         "user_balanced": bool(args.user_balanced),
+        "epochs": args.epochs,
+        "batch_size": args.batch_size,
+        "workers": args.workers,
+        "seed": args.seed,
+        "cuda_memory_fraction": args.cuda_memory_fraction,
+        "deterministic": args.deterministic,
         "val_users": args.val_users,
         "train_clips": len(train_indices),
         "validation_clips": len(val_indices),

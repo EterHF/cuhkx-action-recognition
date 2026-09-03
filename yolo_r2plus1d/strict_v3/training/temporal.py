@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -11,6 +12,14 @@ import numpy as np
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 class Set(Dataset):
@@ -87,12 +96,22 @@ class Residual(nn.Module):
 @torch.inference_mode()
 def pred(model, path, idx, y, dev, batch, workers):
     ds = Set(path, idx, y, False)
-    ld = DataLoader(ds, batch, False, num_workers=workers, pin_memory=True)
+    ld = DataLoader(
+        ds,
+        batch,
+        False,
+        num_workers=workers,
+        pin_memory=dev.type == "cuda",
+    )
     out = np.zeros((len(idx), 40), np.float32)
     loc = {int(v): i for i, v in enumerate(idx)}
     model.eval()
     for x, ii in ld:
-        with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+        with torch.autocast(
+            device_type=dev.type,
+            dtype=torch.bfloat16,
+            enabled=dev.type == "cuda",
+        ):
             z = model(x.to(dev, non_blocking=True))
         for r, v in enumerate(ii.numpy()):
             out[loc[int(v)]] = z[r].float().cpu().numpy()
@@ -191,7 +210,7 @@ def main():
         shuffle=sampler is None,
         sampler=sampler,
         num_workers=args.workers,
-        pin_memory=True,
+        pin_memory=dev.type == "cuda",
         drop_last=True,
         persistent_workers=args.workers > 0,
     )
@@ -203,7 +222,11 @@ def main():
         total = 0.0
         for x, t in ld:
             opt.zero_grad(set_to_none=True)
-            with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+            with torch.autocast(
+                device_type=dev.type,
+                dtype=torch.bfloat16,
+                enabled=dev.type == "cuda",
+            ):
                 z = model(x.to(dev, non_blocking=True))
                 loss = lossfn(z, t.to(dev, non_blocking=True))
             loss.backward()
@@ -288,6 +311,15 @@ def main():
         json.dumps(
             {
                 "kind": args.kind,
+                "device": str(dev),
+                "epochs": args.epochs,
+                "batch": args.batch,
+                "workers": args.workers,
+                "learning_rate": args.lr,
+                "seed": args.seed,
+                "reverse_probability": args.reverse_prob,
+                "noise_standard_deviation": args.noise_std,
+                "label_smoothing": args.label_smoothing,
                 "val_users": val_users,
                 "best_val_acc": best,
                 "checkpoint_epoch": checkpoint["epoch"],
@@ -295,6 +327,20 @@ def main():
                 "scheduler_epochs": scheduler_epochs,
                 "balance_power": args.balance_power,
                 "defer_val_metrics": args.defer_val_metrics,
+                "inputs": {
+                    "frame_logits": str(args.logits.resolve()),
+                    "frame_logits_sha256": sha256(args.logits),
+                    "test_frame_logits": (
+                        None
+                        if args.test_logits is None
+                        else str(args.test_logits.resolve())
+                    ),
+                    "test_frame_logits_sha256": (
+                        None if args.test_logits is None else sha256(args.test_logits)
+                    ),
+                    "metadata": str(args.metadata.resolve()),
+                    "metadata_sha256": sha256(args.metadata),
+                },
                 "history": hist,
             },
             indent=2,

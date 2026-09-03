@@ -1,5 +1,7 @@
 # CUHK-X Small Model Track — Technical Report
 
+[English](TECHNICAL_REPORT.md) | [简体中文](TECHNICAL_REPORT.zh-CN.md) | [Documentation index](README.md) | [Repository home](../README.md)
+
 **Best public Kaggle score so far: `0.97512` (rank 3, ref `55712568`)**<br>
 **Gap to rank 2: `0.00497` (one public sample's net swing).**<br>
 **Frozen: 2026-09-03**
@@ -122,6 +124,26 @@ were **refused by the public leaderboard**; they are no longer candidates.
 The verifier requires the raw replay to be byte-identical to the canonical
 CSV. The recipe is recorded in `release_manifest.json`; any change to the
 inference contract requires a new package and manifest.
+
+### 3.3 Retraining audit on the cleaned repository
+
+On 2026-09-03 the cleaned training entry points were exercised with new model
+updates rather than checkpoint-only replay. The strict temporal branch matched
+all five historical fold accuracies (aggregate 0.940053). The fusion refinement
+matched all five historical best fold accuracies when its actual batch-8
+contract was restored. The visual head matched folds A, B and E exactly by
+accuracy; folds C and D differed by −3 and +2 correct rows respectively.
+Non-deterministic cuDNN kernels and loader-worker random streams explain why
+the newly trained logits are not byte-identical even where accuracy matches.
+
+The three-seed `sched30` suite was also retrained. Its temporal mean reached
+0.937747 OOF; recalibration with the frozen visual/fusion branches reached
+0.959486 (+0.003294 over strictV3, 5/5 folds non-degrading). This is distinct
+from the frozen 0.960474 consensus package: a CPU/GPU numerical tie selected
+an adjacent calibration weight. Neither result changes the canonical release.
+The retrain remains partial until a new full fusion package, two byte-equal raw
+replays and an authorized Kaggle confirmation all pass. Detailed results and
+acceptance criteria are in [`RETRAINING.md`](RETRAINING.md).
 
 ---
 
@@ -410,10 +432,15 @@ summarised inline in §4.6.
 
 ## 10. Evidence anchors (file paths under this repo)
 
-* `checkpoints/strict_v3/model.pt` and `yolo11n.pt` — deployable model.
-* `results/strict_v3/release_manifest.json` and `metrics.json` — release
-  contract and OOF evidence.
-* `results/strict_v3/submission.csv` — scored 0.97512 canonical CSV.
-* `results/strict_v3/raw_replay/` — byte-identical raw-data replay.
-* `yolo_r2plus1d/strict_v3/release/verify.py` and `replay.py` — public
+* [`checkpoints/strict_v3/model.pt`](../checkpoints/strict_v3/model.pt) and
+  [`yolo11n.pt`](../checkpoints/strict_v3/yolo11n.pt) — deployable model.
+* [`results/strict_v3/release_manifest.json`](../results/strict_v3/release_manifest.json)
+  and [`metrics.json`](../results/strict_v3/metrics.json) — release contract and
+  OOF evidence.
+* [`results/strict_v3/submission.csv`](../results/strict_v3/submission.csv) —
+  scored 0.97512 canonical CSV.
+* [`results/strict_v3/raw_replay/`](../results/strict_v3/raw_replay/) —
+  byte-identical raw-data replay.
+* [`verify.py`](../yolo_r2plus1d/strict_v3/release/verify.py) and
+  [`replay.py`](../yolo_r2plus1d/strict_v3/release/replay.py) — public
   verification and end-to-end replay entry points.

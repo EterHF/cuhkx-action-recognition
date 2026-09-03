@@ -1,0 +1,114 @@
+# 重训练 strictV3
+
+[English](RETRAINING.md) | [简体中文](RETRAINING.zh-CN.md) | [文档索引](README.zh-CN.md) | [仓库首页](../README.zh-CN.md)
+
+## 什么才算重训练
+
+`release.verify` 和 `release.replay` 只验证冻结权重，并不执行训练。一次完整重训练必须从声明的 bootstrap assets 生成新 checkpoint，重新生成 held-user logits，只使用 outer-train 行重新拟合发布校准，最后使用新打包模型执行原始数据推理。
+
+strictV3 是一个 **release-strict** 基线。其公开 R(2+1)D-34 和 DSTFormer bootstrap assets 此前使用 CUHK-X 标签拟合过。因此，0.956192 OOF 是工程重放指标，不是“仅以外部数据初始化的模型”的无偏估计。它与 fully-external 协议的区别保留在技术报告中。
+
+## 固定 folds
+
+| Fold | Held users | 行数 |
+| --- | --- | ---: |
+| A | 1, 6, 17, 22 | 716 |
+| B | 2, 7, 18, 23 | 673 |
+| C | 3, 8, 19, 24 | 679 |
+| D | 4, 9, 20 | 489 |
+| E | 5, 16, 21 | 479 |
+
+Held users 只能用于最终 OOF 测量。某个 held fold 的温度和分支权重拟合只能使用其余四个 fold。
+
+## 输入契约
+
+竞赛数据不会随仓库重新分发。使用 `yolo_r2plus1d.strict_v3.data` 下的模块，从 `data/processed/{train,test}` 构建视觉和 Skeleton cache。训练前必须记录以下输入的 SHA-256 hash：
+
+- `train_depth_ir.npy` 和 `test_depth_ir.npy`；
+- `train_skeleton.npy`、`test_skeleton.npy` 及两个 validity mask；
+- 来自声明 DSTFormer bootstrap 的 `train_frame_logits.npy` 和 `test_frame_logits.npy`；
+- `metadata.npz`、公开 visual bootstrap package，以及任何 fusion resume checkpoint。
+
+标准时序输入的 hash 为：
+
+```text
+train_frame_logits.npy  76e6c11c86a681f03f21f7114eae17b1bc8328e6cd6a161f365b8b0cfc37102e
+test_frame_logits.npy   b96677c5bc7adc2ef70f53c5819d1042dc8585df2ee4e67965031f10c8db4fbb
+metadata.npz            bf2e93e558b4ae148b14835c1f65c943828bff97dfaaf224a39c249c7599f099
+```
+
+Suite runner 会将绝对输入路径和 hash 写入 `receipt.json`。因此无需把 checkpoint 文件名误当作来源证明，也能独立审计一次运行。
+
+## 时序基线
+
+运行全部五个 fold 和 full epoch-5 模型：
+
+```bash
+CUDA_VISIBLE_DEVICES=0 .conda/envs/cuhkx/bin/python \
+  -m yolo_r2plus1d.strict_v3.training.temporal_suite \
+  --recipe strict \
+  --frame-logits .cache/strict_v3/train_frame_logits.npy \
+  --test-frame-logits .cache/strict_v3/test_frame_logits.npy \
+  --metadata results/strict_v3/metadata.npz \
+  --output runs/strict_v3/temporal
+```
+
+历史 fold 准确率 A–E 分别为 0.937151、0.933135、0.945508、0.959100 和 0.926931；aggregate temporal OOF 为 0.940053。即使每个 fold 的准确率一致，不同设备也可能产生并非逐字节相同的 logits。因此，除了 checkpoint hash，还必须比较每 fold 指标和预测差异。
+
+## sched30 实验
+
+该实验固定使用 epoch 5 checkpoint，同时保留 30-epoch cosine schedule。它使用随机种子 2026、2027 和 2028；只有在固定 checkpoint 写入后，验证标签才会被读取一次。
+
+```bash
+CUDA_VISIBLE_DEVICES=0 .conda/envs/cuhkx/bin/python \
+  -m yolo_r2plus1d.strict_v3.training.temporal_suite \
+  --recipe sched30 \
+  --frame-logits .cache/strict_v3/train_frame_logits.npy \
+  --test-frame-logits .cache/strict_v3/test_frame_logits.npy \
+  --metadata results/strict_v3/metadata.npz \
+  --output runs/experiments/sched30
+```
+
+支持使用 `--device cpu --workers 0` 进行独立数值检查。当 outer-train 分数并列时，CPU 和 A100 运行可能选择相邻的 blend-grid 点，因此部署校准必须同时记录所选权重和设备。候选只有在 aggregate、macro、subject-macro、worst-user 和 worst-fold 指标均不回退，至少四个 fold 不回退，并且原始数据重放与新生成提交一致时才算通过。
+
+## 已执行的重训练审计（2026-09-03）
+
+下列结果来自真实训练，而不是冻结 checkpoint 重放。任务在一张 A100 上串行执行；
+当时另一个无关服务占用了该卡的大部分显存。`public_finetune` 和 `fusion` 现已支持
+`--cuda-memory-fraction 0.14`，该上限足以运行 visual head-only batch 8 和
+fusion batch 8；两个入口也支持 `--deterministic`。历史配方没有启用确定性 cuDNN，
+因此复现判据是 fold 准确率和预测差异，而不是 checkpoint hash 完全一致。
+
+| Fold | Temporal 新值 / 历史值 | Visual 新值 / 历史值 | Fusion 新值 / 历史值 |
+| --- | ---: | ---: | ---: |
+| A | 0.937151 / 0.937151 | 0.960894 / 0.960894 | 0.959497 / 0.959497 |
+| B | 0.933135 / 0.933135 | 0.888559 / 0.888559 | 0.974740 / 0.974740 |
+| C | 0.945508 / 0.945508 | 0.979381 / 0.983800 | 0.718704 / 0.718704 |
+| D | 0.959100 / 0.959100 | 0.860941 / 0.856851 | 0.862986 / 0.862986 |
+| E | 0.926931 / 0.926931 | 0.776618 / 0.776618 | 0.874739 / 0.874739 |
+
+Temporal aggregate OOF 为 0.940053。与历史验证预测相比，visual 的 argmax 差异
+A–E 分别为 6、0、5、9、4，fusion 分别为 0、1、4、14、0。历史 visual 配方必须
+保留 `--workers 8`，因为水平翻转随机数是在 loader worker 内采样的。
+
+独立 CPU `sched30` suite 已完成 3 个 seed × 5 个 fold 及 3 个 full 模型。
+其 temporal probability mean OOF 为 0.937747。与冻结的 visual/fusion 分支重新校准后，
+候选 OOF 为 0.959486（相对 strictV3 提升 0.003294，5/5 fold 非退化）。该结果低于
+另行冻结的 0.960474 候选：CPU/GPU 数值差异使一个 outer-train grid 并列项选择了
+相邻权重。因此，本次重训练只证明该方向有潜力，不构成发布晋升。
+
+本次审计仍为 **partial**：尚未生成新的 full fusion 部署包，也未完成两次逐字节一致的
+原始数据重放和经授权的 Kaggle 确认。标准 0.97512 package 保持不变。
+
+## 最终验收
+
+一次完成的 strictV3 重训练必须满足以下全部条件：
+
+1. 为 A–E folds 和完整部署路径生成新的 visual、fusion 与 temporal checkpoint。
+2. 生成与 fold 对齐、恰好包含 3,036 行且没有缺失行的 OOF arrays。
+3. 校准时排除每个 fold 的标签，并自然产生覆盖 40 类的测试预测集合。
+4. 模型连同 YOLO 不超过 100,000,000 bytes。
+5. 两次原始数据重放产生相同的 CSV hash。
+6. 只有本地门禁通过后才能提交 Kaggle；返回的公开榜分数只记录为外部证据，绝不能用于重新调参。
+
+在全部条件通过前，仓库必须将该运行描述为 partial，并且不得替换标准的 0.97512 发布版本。

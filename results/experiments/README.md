@@ -1,5 +1,7 @@
 # StrictV3 consensus experiments
 
+[English](README.md) | [简体中文](README.zh-CN.md) | [Repository home](../../README.md) | [Technical report](../../docs/TECHNICAL_REPORT.md)
+
 These candidates were recovered from the audited work in Codex thread
 `01a04b41-e2ed-79c3-9fce-20eec40a3c73` and replayed with the current public
 pipeline. They are deliberately separate from `checkpoints/strict_v3/model.pt`:
@@ -7,13 +9,18 @@ the `main` baseline remains the byte-reproducible 0.97512 release.
 
 | Candidate | OOF | Delta | Fold gate | Package + YOLO | Test changes | Kaggle |
 | --- | ---: | ---: | --- | ---: | ---: | --- |
-| `sched30_consensus` | 0.960474 | +0.004282 | 5/5 non-degrading | 98,911,347 B | 3 | not submitted |
-| `temporal_pool_consensus` | 0.959816 | +0.003623 | 5/5 non-degrading | 96,964,489 B | 12 | not submitted |
+| [`sched30_consensus`](sched30_consensus/) | 0.960474 | +0.004282 | 5/5 non-degrading | 98,911,347 B | 3 | not submitted |
+| [`temporal_pool_consensus`](temporal_pool_consensus/) | 0.959816 | +0.003623 | 5/5 non-degrading | 96,964,489 B | 12 | not submitted |
 
 The first candidate averages probabilities from strictV3 and a fixed
 three-seed sched30 temporal release. The second uses a majority vote over
 motion-energy, top-2-frame and top-4-frame temporal pooling while sharing the
 large model states.
+
+The 0.960474 row is the frozen audited artifact. A fresh CPU retrain on
+2026-09-03 produced 0.959486 after recalibration because a numerical grid tie
+selected an adjacent weight. That rerun is documented as supporting evidence,
+not as a replacement for this frozen candidate.
 
 Audit both frozen candidates:
 
