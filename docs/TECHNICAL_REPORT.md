@@ -107,6 +107,7 @@ The best public history, in one table:
 | 55846236 | strict seed-pair 2027/2028 P0 | 0.94527 | rejected — public split generalisation failed |
 | 55857342 | strict top-2-frame-mean temporal pooling | 0.94029 | rejected |
 | 55858076 | strict top-2 v2 | 0.94029 | rejected |
+| 56006027 | strictV3 0.90 + PKU bridge INT4 0.10 | **0.97512** | tied canonical; confirmatory external-data diagnostic, not promoted |
 
 Multiple offline "higher OOF" candidates (Fusion4 raw at 0.970*, etc.)
 were **refused by the public leaderboard**; they are no longer candidates.
@@ -201,6 +202,7 @@ exhausted. The measured transfer summary is:
 | Earlier Kinetics → PKU → CUHK-X | 61.92% (control 63.27%) | Direct continued-training caused **negative transfer**; this rejects the recipe, not PKU-MMD |
 | Kinetics+NTU60 → constrained PKU layer4 bridge, source-subject CV | 63.828% versus 57.892% control (+5.936 pp); 9/9 seed-fold cells positive | Passed every frozen source gate and justified one separate target-domain confirmation |
 | Same bridge, target-domain 3 seeds × 5 folds | mean micro 67.7866% versus 66.9521% (+0.8344 pp); every seed positive; diagnostic logit mean 68.5441% | Real target transfer, but rejected for 3/5 fold stability in seed 2027 and a 2.5339 pp worst-user cell drop |
+| Fixed seed-2028 bridge, uniform INT4, strictV3 90/10 deployment diagnostic | external OOF 63.5705%; blended OOF 95.5204%; Kaggle 0.97512 (ref 56006027) | Passed the diagnostic gate and tied canonical; no accuracy gain, no promotion or leaderboard retuning |
 | PKU visual replacing strict-v3 visual | 95.191% (control 95.619%); nested mean weight = 0 | Cannot serve as a 4th logit branch |
 
 The progressive-unfreeze result tested a target-training scope change on top
@@ -535,6 +537,57 @@ was read. The failed conjunctive gate therefore stopped full-data training,
 fusion, packaging and submission, while preserving the positive external-data
 finding for the next genuinely different preregistered method.
 
+### 5.8 One-shot INT4 PKU deployment diagnostic, 2026-09-04 (completed; tied)
+
+After §5.7, the user explicitly authorized one separate leaderboard diagnostic
+for a sufficiently trained NTU/PKU model even if target OOF fluctuated slightly.
+This did not reopen v4's failed thresholds. A new preregistration fixed one
+seed-2028 checkpoint, 15 all-train epochs, layer4 + fresh-head scope,
+temporal-difference weight 0.10, horizontal-flip TTA, and a 0.90 strictV3 /
+0.10 bridge probability blend. Selection was train-only; the earlier v1
+anonymous outputs were explicitly forbidden as v2/v3 design inputs.
+
+Deployment precision, not GPU memory, was the limiting factor. The full FP16
+bridge scored 2,059/3,036 OOF (0.678195) but could not fit beside strictV3 and
+YOLO. Uniform INT3 collapsed to 364 rows; two preregistered mixed INT3/INT4
+repairs collapsed to 355 and 365 rows. Neither mixed repair opened anonymous
+test data. A train-only INT4 probe retained useful signal, so v3 froze exactly
+one uniform per-output-channel signed INT4 candidate.
+
+| v3 frozen endpoint | Result | Gate |
+| --- | ---: | --- |
+| INT4 external OOF | 1,930/3,036 = 0.635705; subject-macro 0.633421 | passed ≥1,800 rows |
+| 90/10 probability blend OOF | 2,900/3,036 = 0.955204; worst-user 0.8125 | passed ≥2,898 rows and worst-user ≥0.8125 |
+| Changed OOF top-1 vs canonical | 11 | passed ≥1 |
+| Package + YOLO | 99,701,322 bytes | passed ≤100,000,000 |
+| Anonymous replay | two package-backed GPU logits arrays and two CSVs byte-identical; one changed prediction (index 36) | passed |
+| Kaggle confirmation | **0.97512**, ref `56006027` | exact tie with canonical strictV3 |
+
+The size repair did not quantize or otherwise alter strictV3. It removed only
+the stored MobileNet thermal branch whose release weight is exactly zero, plus
+the redundant top-level legacy `blend` and `yolo_bytes` records. Fusion,
+visual, DSTFormer, temporal residual, and the executable release contract were
+compared recursively and remained byte-equal after a safe `weights_only=True`
+reload. The final package used legacy pickle protocol 2 because a pre-OOF
+compatibility self-test showed that PyTorch 2.6's weights-only loader rejects
+protocol 4 opcode 149; this correction was recorded before formal OOF.
+
+The independent audit recomputed the 90/10 probabilities and submission,
+verified all 63,464,372 quantized weights were INT4, and matched the frozen
+package hash. Submission quota was checked at 5 remaining before upload and 4
+afterward. The public score was first observed only after submission and was
+not used to alter the candidate. Frozen identifiers are: preregistration
+`44661e56…c701`, runner `c93c311b…b10c`, OOF summary `4a85db19…a60e`,
+decision `da23595b…fd76`, package `054c9e46…c750`, auditor
+`08780802…b3d`, audit record `8a671464…12b3`, and submission CSV
+`b52ebd13…1869`.
+
+The result supports the user's hypothesis in a bounded sense: the larger-data
+initialization survived INT4 deployment and did not reduce public accuracy.
+It did not improve accuracy, however. Because only one anonymous prediction
+changed and the score tied, strictV3 remains the simpler canonical release;
+the v3 bridge is preserved as report evidence rather than shipped on main.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)
@@ -574,10 +627,10 @@ finding for the next genuinely different preregistered method.
    (reads only labelled-train cache + metadata; never opens
    held/test/anonymous/submission). Run 80 inner + 30 outer synthetic
    regression.
-3. **Keep PKU bridge v4 closed after its §5.7 gate failure.** Do not run
-   full-data training, fusion, test inference or a bridge-weight / epoch / LR
-   scan. The next external-scale question, if pursued, is the separately
-   preregistered complete NTU Depth+IR comparison in §5.4—not a v4 retune.
+3. **Keep the PKU deployment line closed after the §5.8 public tie.** Do not
+   retune bridge weight, precision, epoch, seed, or the single changed sample
+   from leaderboard feedback. The next external-scale question, if pursued,
+   is the separately preregistered complete NTU Depth+IR comparison in §5.4.
 4. Any new mechanism candidate is mirrored into
    `BEST_REPORT_EVIDENCE_MANIFEST_*.json` (with SHA + decision) and
    into `EXTERNAL_ONLY_RESEARCH_ROADMAP_20260830.md` (the prior
@@ -608,8 +661,10 @@ Any replay other than the exact canonical hash fails closed.
 The project never uses test/anonymous labels, IDs, samples, submission scores,
 or post-hoc leaderboard feedback as design signals. The September replay was
 submitted only as a confirmatory reproduction audit; its score was not used to
-tune either differing prediction. The historical compliance chain is
-summarised inline in §4.6.
+tune either differing prediction. The §5.8 external-data diagnostic was also
+fully frozen before anonymous inference; its tied score was recorded and the
+route closed without retuning. The historical compliance chain is summarised
+inline in §4.6.
 
 ## 10. Evidence anchors (file paths under this repo)
 

@@ -78,6 +78,7 @@ CUHK-X 小模型赛道（[挑战页面](https://openaiotlab.github.io/CUHK-X-Cha
 | 55846236 | strict seed-pair 2027/2028 P0 | 0.94527 | 已否决——公开测试划分泛化失败 |
 | 55857342 | strict top-2-frame-mean temporal pooling | 0.94029 | 已否决 |
 | 55858076 | strict top-2 v2 | 0.94029 | 已否决 |
+| 56006027 | strictV3 0.90 + PKU bridge INT4 0.10 | **0.97512** | 与标准结果持平；确认性外部数据诊断，不晋升 |
 
 多个离线“更高 OOF”候选（如 OOF 为 0.970* 的 Fusion4 raw）均被公开排行榜否定，不再属于候选方案。
 
@@ -147,6 +148,7 @@ Depth/Skeleton 研究，但不能宣称完整覆盖 NTU Depth+IR 配对数据。
 | 早期 Kinetics → PKU → CUHK-X | 61.92%（control 63.27%） | 直接 continued-training 产生**负迁移**；否决的是配方而非 PKU-MMD 数据 |
 | Kinetics+NTU60 → 受约束的 PKU layer4 bridge，源域 subject CV | 63.828%，control 57.892%（+5.936 pp）；9/9 seed-fold 单元为正 | 通过全部冻结的源域门禁，足以支持一次独立目标域确认 |
 | 同一 bridge 的目标域 3 seeds × 5 folds | mean micro 67.7866%，control 66.9521%（+0.8344 pp）；每个 seed 均为正；诊断 logit mean 68.5441% | 目标迁移真实存在，但 seed 2027 仅 3/5 fold 稳定，且一个 worst-user 单元下降 2.5339 pp，故否决晋升 |
+| 固定 seed-2028 bridge、uniform INT4、strictV3 90/10 部署诊断 | external OOF 63.5705%；融合 OOF 95.5204%；Kaggle 0.97512（ref 56006027） | 通过诊断门禁并与标准结果持平；无精度增益，不晋升、不根据榜单调参 |
 | 用 PKU visual 替换 strict-v3 visual | 95.191%（control 95.619%）；nested mean weight = 0 | 不能作为第 4 个 logit 分支 |
 
 渐进解冻实验是在已经有用的 NTU 初始化上改变目标训练范围，并没有检验“NTU 数据是否
@@ -366,6 +368,47 @@ temporal-difference 权重 0.10、layer4+head 范围、optimizer、LR schedule�
 full-data 训练、融合、打包和提交；外部数据的正向证据则保留给下一项机制上真正不同、
 重新预注册的实验。
 
+### 5.8 2026-09-04 one-shot INT4 PKU 部署诊断（已完成；持平）
+
+§5.7 之后，用户明确授权对训练充分的 NTU/PKU 模型执行一次独立排行榜诊断，即使目标
+OOF 仅有轻微波动。这并未重新打开 v4 已失败的阈值。新的 preregistration 固定一个
+seed-2028 checkpoint、15 个 all-train epochs、layer4 + 全新 head 训练范围、
+temporal-difference 权重 0.10、水平翻转 TTA，以及 strictV3 0.90 / bridge 0.10
+概率融合。候选选择仅使用训练侧；早先 v1 的匿名输出被明确禁止作为 v2/v3 设计输入。
+
+部署精度而非 GPU 显存成为主要限制。完整 FP16 bridge 的 OOF 为 2,059/3,036
+（0.678195），但无法与 strictV3、YOLO 同时满足大小限制。Uniform INT3 塌缩至
+364 行；两个预注册的混合 INT3/INT4 修复分别塌缩至 355 和 365 行，且均未打开匿名
+测试数据。Train-only INT4 probe 保留了有效信号，因此 v3 只冻结一个 uniform
+per-output-channel signed INT4 候选。
+
+| v3 冻结 endpoint | 结果 | 门禁 |
+| --- | ---: | --- |
+| INT4 external OOF | 1,930/3,036 = 0.635705；subject-macro 0.633421 | 通过 ≥1,800 行 |
+| 90/10 概率融合 OOF | 2,900/3,036 = 0.955204；worst-user 0.8125 | 通过 ≥2,898 行且 worst-user ≥0.8125 |
+| 相对标准结果改变的 OOF top-1 | 11 | 通过 ≥1 |
+| Package + YOLO | 99,701,322 bytes | 通过 ≤100,000,000 |
+| 匿名重放 | 两次 package-backed GPU logits 与两份 CSV 逐字节一致；改变 1 个预测（索引 36） | 通过 |
+| Kaggle 确认 | **0.97512**，ref `56006027` | 与标准 strictV3 完全持平 |
+
+大小修复没有量化或以其他方式改变 strictV3。它只移除了 release weight 精确为 0 的
+MobileNet thermal 分支，以及冗余的顶层 legacy `blend`、`yolo_bytes` 记录。
+Fusion、visual、DSTFormer、temporal residual 和可执行 release contract 均经过递归
+比较，并在安全的 `weights_only=True` 重载后保持逐字节相等。最终 package 使用
+legacy pickle protocol 2，因为正式 OOF 前的兼容性自检发现 PyTorch 2.6 的
+weights-only loader 会拒绝 protocol 4 的 opcode 149；该修正在 formal OOF 前已记录。
+
+独立审计重新计算 90/10 概率与提交文件，确认全部 63,464,372 个量化权重均为 INT4，
+并匹配冻结 package hash。上传前配额为剩余 5 次，上传后为 4 次。公开分数只在提交完成
+后才被看到，并未用于改变候选。冻结标识为：preregistration `44661e56…c701`、runner
+`c93c311b…b10c`、OOF summary `4a85db19…a60e`、decision `da23595b…fd76`、
+package `054c9e46…c750`、auditor `08780802…b3d`、audit record
+`8a671464…12b3`、submission CSV `b52ebd13…1869`。
+
+该结果在有限意义上支持用户假设：更大数据初始化在 INT4 部署后仍保留有效信号，并且
+没有降低公开榜准确率；但它也没有提高准确率。由于只改变一个匿名预测且分数持平，
+strictV3 仍是更简单的标准发布版本；v3 bridge 仅作为报告证据保留，不进入 main。
+
 ---
 
 ## 6. 通用方法纪律（硬约束）
@@ -388,9 +431,9 @@ full-data 训练、融合、打包和提交；外部数据的正向证据则保�
 
 1. **完成 nested / shared-state multi-pooling 的两轮原始数据重放**，覆盖 `sched30` 和 `fp32_consensus`。门禁通过后将其提升至提交队列首位。
 2. 为从零训练的 TSM/S3D 路线完成 outer-train-only normalization builder 与 matched CV runner 的 **CPU materialisation**；只读取有标签训练 cache 与 metadata，绝不打开 held/test/anonymous/submission。运行 80 个 inner 与 30 个 outer synthetic regression。
-3. **§5.7 门禁失败后保持 PKU bridge v4 关闭。** 不执行 full-data 训练、融合、测试
-   推理，也不扫描 bridge 权重、epoch 或学习率。若继续外部规模研究，下一个问题是
-   §5.4 中单独预注册的完整 NTU Depth+IR 比较，而不是重新调整 v4。
+3. **§5.8 公开榜持平后关闭 PKU 部署路线。** 不根据排行榜重新调整 bridge 权重、
+   precision、epoch、seed 或唯一变化的样本。若继续外部规模研究，下一个问题是
+   §5.4 中单独预注册的完整 NTU Depth+IR 比较。
 4. 任何新机制候选均须同步记录到 `BEST_REPORT_EVIDENCE_MANIFEST_*.json`（包含 SHA 和决策）以及 `EXTERNAL_ONLY_RESEARCH_ROADMAP_20260830.md`（将原方向标记为 authorized 或 rejected）。
 5. 报告与证据收尾：上述每个已执行步骤都必须将结果写入对应报告的 fact-freeze-date 段落，并附上新的 manifest SHA。
 
@@ -412,7 +455,7 @@ artifact 级检查会复现报告中的 OOF 分数和标准 CSV。原始数据�
 
 ## 9. 合规与规则摘要
 
-本项目从不使用测试/匿名标签、ID、样本、提交分数或事后排行榜反馈作为设计信号。9 月的重放提交仅用于确认性复现审计，其分数未被用于调整两条差异预测。历史合规链已汇总在第 4.6 节。
+本项目从不使用测试/匿名标签、ID、样本、提交分数或事后排行榜反馈作为设计信号。9 月的重放提交仅用于确认性复现审计，其分数未被用于调整两条差异预测。§5.8 的外部数据诊断同样在匿名推理前完全冻结；持平分数只被记录，随后关闭路线而不继续调参。历史合规链已汇总在第 4.6 节。
 
 ## 10. 证据锚点（仓库内路径）
 

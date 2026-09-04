@@ -209,9 +209,39 @@ the audit exactly. The stop rule therefore prohibited full-data training,
 anonymous-test inference, fusion, packaging and submission; no leaderboard
 feedback was read.
 
-The audit is still **partial**: a new full fusion deployment package, two
-byte-identical raw replays and an authorized Kaggle confirmation have not been
-completed. The canonical 0.97512 package remains unchanged.
+### Authorized PKU bridge deployment diagnostic
+
+The failed gate above remains the decision for the v4 promotion route. A
+separate one-shot diagnostic was later authorized to answer the narrower
+question: can the theoretically stronger external initialization change the
+public result when its target accuracy fluctuates slightly? Before reading the
+anonymous test cache, this new route fixed seed 2028, the already trained
+15-epoch all-train checkpoint, uniform quantization, a 0.90 strictV3 / 0.10
+bridge probability blend, OOF thresholds, package size, and a one-submission
+limit. No leaderboard value was available during candidate selection.
+
+| Frozen stage | External OOF | 90/10 blend OOF | Decision |
+| --- | ---: | ---: | --- |
+| FP16 reference | 2,059/3,036 = 0.678195 | 2,901/3,036 = 0.955534 | Reference only; too large for the release package |
+| Uniform INT3 v1 | 364/3,036 = 0.119895 | 2,903/3,036 = 0.956192; 0 changes vs strictV3 | Signal collapse; test replay changed no submitted class, so no CSV or submission |
+| Two mixed INT3/INT4 v2 variants | 355 and 365 correct | both 2,903/3,036; 0 changes vs strictV3 | Both failed train-only OOF; anonymous test remained unopened |
+| Uniform INT4 v3 | 1,930/3,036 = 0.635705 | 2,900/3,036 = 0.955204; 11 changes; worst-user 0.8125 | Passed every frozen OOF and deployment gate |
+
+The v3 package removes only the zero-release-weight thermal branch and two
+redundant top-level legacy records from the nested strictV3 package. Every
+executable strictV3 object remained byte-equal before and after serialization.
+Together with YOLO, the INT4 bridge package is 99,701,322 bytes. Two A100 test
+replays produced identical logits and CSVs; the frozen blend changed one of 405
+anonymous predictions (index 36). After an independent audit, the only Kaggle
+submission (`56006027`) scored **0.97512**, exactly tying canonical strictV3.
+The score was recorded and the route was closed without any post-leaderboard
+weight, quantizer, epoch, or seed change.
+
+This is a completed external-data *diagnostic*, not a complete strictV3
+retrain: the canonical visual, fusion, and temporal branches were not replaced,
+and the external replay consumed the frozen competition cache rather than
+rebuilding all raw branches. Because it tied rather than exceeded the public
+baseline, the canonical 0.97512 package remains unchanged.
 
 ## Final acceptance
 

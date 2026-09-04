@@ -192,8 +192,18 @@ The diagnostic three-seed logit mean reached 0.685441 versus 0.676877. This is
 real external-data gain, but the frozen promotion gate remained stricter: seed
 2027 had only 3/5 jointly non-degraded folds (required 4/5 for every seed), and
 one cell's worst-user score dropped 0.025339 (limit 0.02). The route therefore
-stopped before full-data training, test inference, fusion, packaging or
-submission. The canonical strictV3 package is unchanged.
+stopped under its original promotion rule.
+
+A separately preregistered, explicitly authorized one-shot deployment
+diagnostic then reused the fixed seed-2028, 15-epoch full-data checkpoint. INT3
+and mixed INT3/INT4 packages collapsed during train-only OOF audits; the final
+uniform-INT4 member retained 1,930/3,036 external OOF rows. Its frozen 90/10
+blend with strictV3 scored 2,900/3,036 OOF, changed 11 OOF decisions, preserved
+the 0.8125 worst-user floor, and occupied 99,701,322 bytes with YOLO. Two local
+GPU replays were identical and changed one anonymous prediction. The single
+Kaggle confirmation, ref `56006027`, scored **0.97512**: an exact tie, not an
+improvement. No leaderboard retuning followed, so canonical strictV3 remains
+the public main baseline and the external-data diagnostic is report-only.
 
 ## License
 

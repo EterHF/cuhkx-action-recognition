@@ -159,7 +159,16 @@ visual-head 与历史各 fold 的差异不超过 3 个验证样本。独立重�
 全部改善；诊断用三 seed logit mean 为 0.685441，control 为 0.676877。这证明外部
 数据带来了真实增益，但冻结的晋升门禁更严格：seed 2027 仅有 3/5 folds 同时非退化
 （要求每个 seed 均为 4/5），且一个单元的 worst-user 下降 0.025339（上限 0.02）。
-因此未执行 full-data 训练、测试推理、融合、打包或提交。标准 strictV3 package 保持不变。
+因此该路线按原晋升规则停止。
+
+随后另行预注册并经明确授权执行了一次 one-shot 部署诊断，复用固定的 seed-2028、
+15-epoch full-data checkpoint。INT3 与混合 INT3/INT4 package 在 train-only OOF
+审计中发生信号塌缩；最终 uniform-INT4 成员保留了 1,930/3,036 行 external OOF。
+其冻结的 strictV3 90/10 融合取得 2,900/3,036 OOF，改变 11 个 OOF 决策，保持
+0.8125 的 worst-user 下限，并与 YOLO 合计 99,701,322 bytes。两次本机 GPU
+重放完全一致，只改变 1 个匿名样本预测。唯一一次 Kaggle 确认（ref `56006027`）
+得到 **0.97512**：与标准结果完全持平，并未提升。此后没有使用排行榜继续调参，
+因此公开主基线仍为标准 strictV3，外部数据诊断只保留在报告中。
 
 ## 许可证
 
