@@ -6,7 +6,7 @@
 
 | 候选 | OOF | 增益 | Fold 门禁 | 单 checkpoint | 测试变化数 | Kaggle |
 | --- | ---: | ---: | --- | ---: | ---: | --- |
-| [`sched30_consensus`](sched30_consensus/) | 0.960474 | +0.004282 | 5/5 非退化 | 98,873,941 B | 3 | 未提交 |
+| [`sched30_consensus`](sched30_consensus/) | 0.960474 | +0.004282 | 5/5 非退化 | 98,873,941 B | 3 | 0.97014（ref 56016293） |
 | [`temporal_pool_consensus`](temporal_pool_consensus/) | 0.959816 | +0.003623 | 5/5 非退化 | 96,936,797 B | 12 | 未提交 |
 
 第一个候选对 strictV3 与固定的三随机种子 sched30 时序发布模型的概率取平均。第二个候选在共享大模型状态的同时，对 motion-energy、top-2-frame 和 top-4-frame 时序池化进行多数投票。

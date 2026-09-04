@@ -88,12 +88,13 @@ CUHK-X 小模型赛道（[挑战页面](https://openaiotlab.github.io/CUHK-X-Cha
 | 55858076 | strict top-2 v2 | 0.94029 | 已否决 |
 | 56006027 | strictV3 0.90 + PKU bridge INT4 0.10 | **0.97512** | 与标准结果持平；确认性外部数据诊断，不晋升 |
 | 56014518 | strictV3 0.90 + NTU120 INT4 0.10 | **0.97512** | 与标准结果持平；更大 NTU 确认，不晋升 |
+| 56016293 | strictV3 0.50 + sched30 三随机种子 consensus 0.50 | 0.97014 | 离线 OOF 提升，但公开榜泛化失败；否决 |
 
 多个离线“更高 OOF”候选（如 OOF 为 0.970* 的 Fusion4 raw）均被公开排行榜否定，不再属于候选方案。
 
 ### 3.2 当前最佳方法的数据与训练流程
 
-公开计分的当前最佳仍是 `legal_strict_v3`；train-only OOF 最强但尚未提交的候选是它与
+公开计分的当前最佳仍是 `legal_strict_v3`；train-only OOF 最强候选是它与
 `sched30` 的固定 50/50 概率共识。二者共享以下数据流程：
 
 1. 以确定顺序发现 clip，只保留 subject-wise CV 所需的类别与用户 metadata。
@@ -114,7 +115,7 @@ AdamW（3e-4、weight decay 0.01）、0.01 label smoothing、0.25 reversal proba
 训练 seeds 2026–2028 后平均概率，再与 strictV3 做固定 50/50 概率均值。它把 release
 OOF 从 2,903 提升到 2,916/3,036，5/5 folds 非退化；单 checkpoint 为 98,873,941
 bytes，并在 2026-09-04 再次从原始数据复现 CSV SHA-256 `f33e0569…`。它的离线证据更强，
-但尚未提交，不能宣称超过 0.97512 公开基线。
+但其冻结 Kaggle 提交仅得 0.97014（ref 56016293），低于 0.97512 公开基线。
 
 ### 3.3 复现 `legal_strict_v3`
 
@@ -251,7 +252,8 @@ bridge 确认因此只替换外部初始化，目标域配方与不可变 matche
 * **已实现（CPU / synthetic）**：Fusion7 nested selection（OOF 净增 14 行、5/5 非退化、自然覆盖 40 类）；50/50 probability-mean 对 strict-v3（5/5 非退化、净增 9 行、距离接收标准差 1 行）；nested coefficient grid（端点及 0.25 / 0.5 / 0.75）；shared-state multi-pooling 候选（energy + top-2，共用 Fusion4 / Visual4 / DSTFormer，OOF 净增 12 行、5/5 非退化、自然覆盖 40 类；历史上按组件估算为 86.43 MB、连同 YOLO 为 92.05 MB，但这不是官方单 checkpoint 实测值）。
 * **2026-09-04 收口**：最终 `sched30` package 已生成一个 98,873,941-byte checkpoint，
   并通过其中嵌入的 YOLO 字节从原始数据重放；CSV 与冻结候选逐字节相同（`f33e0569…`）。
-  更广泛的历史 Fusion7 精度差异只保留为归档方向，不作为发布结论。
+  随后的冻结 Kaggle 提交得 0.97014（ref 56016293），因此不予晋升。更广泛的历史
+  Fusion7 精度差异只保留为归档方向，不作为发布结论。
 * **后续设计要求**：
   1. selector 只能读取其余四个 fold 的 OOF logits、marginal 和 agreement 信号。禁止使用用户或样本级属性。
   2. 选择规则必须预先声明，不允许“查看 fold C 后再调整 threshold”。
@@ -261,7 +263,7 @@ bridge 确认因此只替换外部初始化，目标域配方与不可变 matche
 
 * **动机**：量化、校准和 TTA 路径均已穷尽后，“相同权重、不同 pooling”仍可修正少量错误且不增加新权重，能够维持 100 MB 预算。
 * **已实现**：
-  * `sched30` 三随机种子时序 consensus（FP32）：OOF +0.004282、5/5 非退化、每个 seed 均为 5/5；单 checkpoint 为 98.87 MB；CSV hash 为 `f33e0569…`。
+  * `sched30` 三随机种子时序 consensus（FP32）：OOF +0.004282、5/5 非退化、每个 seed 均为 5/5；单 checkpoint 为 98.87 MB；CSV hash 为 `f33e0569…`；Kaggle public 0.97014（ref 56016293），不予晋升。
   * 时序 pooling 多数投票（top-2 + energy）：OOF +0.003623、5/5 非退化；单 checkpoint 为 96.94 MB；CSV hash 为 `6a320486…`。
   * strictV3、`sched30`、temporal pooling 的固定三方多数投票仅为 2,909/3,036，
     低于 `sched30` 的 2,916/3,036。基于 confidence/margin/entropy 的 nested routing
@@ -508,8 +510,8 @@ entropy 及类别先验 nested routing 同样没有提升固定共识。
 契约和其他全部参数，唯一变化是 `WeightedRandomSampler`。A–E delta 分别为 −0.279、
 −0.892、−0.295、+1.636、−1.461 pp；均值从 89.1222% 降到 88.8641%（−0.2582 pp），
 仅 1/5 folds 非退化，worst fold 下降 1.4614 pp。该方向未访问测试集，也没有扫描第二个
-采样权重，按门禁否决。因此当前唯一被全部证据支持的新小 trick 仍是固定等概率
-`sched30` consensus。
+采样权重，按门禁否决。固定等概率 `sched30` consensus 是唯一通过离线门禁的新小 trick，
+但其 0.97014 公开分数不支持晋升。
 
 ---
 
@@ -531,8 +533,8 @@ entropy 及类别先验 nested routing 同样没有提升固定共识。
 
 ## 7. 下一步具体工作清单（按顺序）
 
-1. 将已完成逐字节重放的 `sched30_consensus` 保持在实验队列首位；不得根据
-   2026-09-04 结果修改其系数。
+1. 将已完成逐字节重放的 `sched30_consensus` 作为冻结的负面部署证据保留；其公开分数
+   为 0.97014，不得调参后重提。
 2. 为从零训练的 TSM/S3D 路线完成 outer-train-only normalization builder 与 matched CV runner 的 **CPU materialisation**；只读取有标签训练 cache 与 metadata，绝不打开 held/test/anonymous/submission。运行 80 个 inner 与 30 个 outer synthetic regression。
 3. **关闭 PKU/NTU 外部 IR。** 保留已完成的 depth-only PKU/NTU 证据，不训练或汇报
    不完整配对 IR；§5.8 公开榜持平后也继续关闭 PKU 部署路线，不根据排行榜重新调整

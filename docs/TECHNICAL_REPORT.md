@@ -117,14 +117,15 @@ The best public history, in one table:
 | 55858076 | strict top-2 v2 | 0.94029 | rejected |
 | 56006027 | strictV3 0.90 + PKU bridge INT4 0.10 | **0.97512** | tied canonical; confirmatory external-data diagnostic, not promoted |
 | 56014518 | strictV3 0.90 + NTU120 INT4 0.10 | **0.97512** | tied canonical; larger-NTU confirmation, not promoted |
+| 56016293 | strictV3 0.50 + sched30 three-seed consensus 0.50 | 0.97014 | offline OOF improved, but public generalisation failed; rejected |
 
 Multiple offline "higher OOF" candidates (Fusion4 raw at 0.970*, etc.)
 were **refused by the public leaderboard**; they are no longer candidates.
 
 ### 3.2 Current-best data and training flow
 
-The scored current best remains `legal_strict_v3`; the strongest unsubmitted
-train-only candidate is its fixed 50/50 probability consensus with `sched30`.
+The scored current best remains `legal_strict_v3`; the strongest train-only OOF
+candidate is its fixed 50/50 probability consensus with `sched30`.
 The shared data path is:
 
 1. Discover clips in a deterministic order and retain only class and subject
@@ -151,8 +152,8 @@ schedule for seeds 2026–2028, averages their probabilities, then takes a fixed
 50/50 probability mean with strictV3. It improves release OOF from 2,903 to
 2,916/3,036 with 5/5 non-degrading folds, occupies 98,873,941 bytes as one
 checkpoint, and reproduced CSV SHA-256 `f33e0569…` from raw data again on
-2026-09-04. It is stronger offline, but remains unsubmitted and is not claimed
-to beat the 0.97512 public baseline.
+2026-09-04. It is stronger offline, but its frozen Kaggle submission scored
+0.97014 (ref 56016293), below the 0.97512 public baseline.
 
 ### 3.3 How to reproduce `legal_strict_v3`
 
@@ -359,8 +360,9 @@ code is deliberately not shipped on the strictV3-only main branch.
 * **2026-09-04 close-out**: the final `sched30` package was materialized as one
   98,873,941-byte checkpoint and replayed from raw data through its embedded
   YOLO bytes. The resulting CSV was byte-identical (`f33e0569…`) to the frozen
-  candidate. The broader historical Fusion7 precision mismatch remains an
-  archived direction, not a release claim.
+  candidate. Its subsequent frozen Kaggle submission scored 0.97014 (ref
+  56016293), so it was not promoted. The broader historical Fusion7 precision
+  mismatch remains an archived direction, not a release claim.
 * **Next-step design points**:
   1. The selector reads only OOF logits of the other four folds and
      marginal / agreement signals. Forbidden: user / sample-level
@@ -379,7 +381,7 @@ code is deliberately not shipped on the strictV3-only main branch.
 * **Already implemented**:
   * `sched30` three-seed temporal consensus (FP32): OOF +0.004282, 5/5
     non-degrading, every seed 5/5, 98.87 MB as one checkpoint, CSV
-    `f33e0569…`.
+    `f33e0569…`; Kaggle public 0.97014 (ref 56016293), rejected for promotion.
   * Temporal-pooling majority vote (top-2 + energy): OOF +0.003623, 5/5
     non-degrading, 96.94 MB as one checkpoint, CSV `6a320486…`.
   * A fixed three-way majority over strictV3, `sched30` and temporal
@@ -715,8 +717,9 @@ other arguments; only `WeightedRandomSampler` changed. Fold A–E deltas were
 −0.279, −0.892, −0.295, +1.636 and −1.461 pp. Mean accuracy moved from
 89.1222% to 88.8641% (−0.2582 pp), only 1/5 folds was non-degrading, and the
 worst fold fell by 1.4614 pp. It was rejected without test access or a second
-sampler setting. These failures leave fixed equal-probability `sched30`
-consensus as the only new small trick supported by all current gates.
+sampler setting. The fixed equal-probability `sched30` consensus was the only
+new small trick supported by the offline gates, but its 0.97014 public score
+failed to support promotion.
 
 ---
 
@@ -749,8 +752,8 @@ consensus as the only new small trick supported by all current gates.
 
 ## 7. The next concrete work list (ordered)
 
-1. Keep the byte-replayed `sched30_consensus` at the head of the experimental
-   queue; do not alter its coefficient from the 2026-09-04 results.
+1. Keep the byte-replayed `sched30_consensus` as frozen negative deployment
+   evidence after its 0.97014 public result; do not retune or resubmit it.
 2. **CPU materialisation of the outer-train-only normalisation
    builder + matched CV runner** for the from-scratch TSM/S3D path
    (reads only labelled-train cache + metadata; never opens

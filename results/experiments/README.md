@@ -9,7 +9,7 @@ the `main` baseline remains the byte-reproducible 0.97512 release.
 
 | Candidate | OOF | Delta | Fold gate | Single checkpoint | Test changes | Kaggle |
 | --- | ---: | ---: | --- | ---: | ---: | --- |
-| [`sched30_consensus`](sched30_consensus/) | 0.960474 | +0.004282 | 5/5 non-degrading | 98,873,941 B | 3 | not submitted |
+| [`sched30_consensus`](sched30_consensus/) | 0.960474 | +0.004282 | 5/5 non-degrading | 98,873,941 B | 3 | 0.97014 (ref 56016293) |
 | [`temporal_pool_consensus`](temporal_pool_consensus/) | 0.959816 | +0.003623 | 5/5 non-degrading | 96,936,797 B | 12 | not submitted |
 
 The first candidate averages probabilities from strictV3 and a fixed

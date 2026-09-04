@@ -142,7 +142,7 @@ def audit_candidate(name: str, replayed_csv: Path | None = None) -> dict[str, An
             ).sum()
         ),
         "test_labels_used": False,
-        "kaggle_submitted": False,
+        "kaggle": spec.get("kaggle", {"submitted": False}),
     }
 
 
