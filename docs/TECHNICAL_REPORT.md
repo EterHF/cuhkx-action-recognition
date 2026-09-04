@@ -108,6 +108,7 @@ The best public history, in one table:
 | 55857342 | strict top-2-frame-mean temporal pooling | 0.94029 | rejected |
 | 55858076 | strict top-2 v2 | 0.94029 | rejected |
 | 56006027 | strictV3 0.90 + PKU bridge INT4 0.10 | **0.97512** | tied canonical; confirmatory external-data diagnostic, not promoted |
+| 56014518 | strictV3 0.90 + NTU120 INT4 0.10 | **0.97512** | tied canonical; larger-NTU confirmation, not promoted |
 
 Multiple offline "higher OOF" candidates (Fusion4 raw at 0.970*, etc.)
 were **refused by the public leaderboard**; they are no longer candidates.
@@ -587,6 +588,33 @@ initialization survived INT4 deployment and did not reduce public accuracy.
 It did not improve accuracy, however. Because only one anonymous prediction
 changed and the score tied, strictV3 remains the simpler canonical release;
 the v3 bridge is preserved as report evidence rather than shipped on main.
+
+### 5.9 NTU scale and coverage study (completed; no promotion)
+
+The scale study compared fixed Kinetics-anchored NTU initializations under the
+same seed-2026, 5-fold, 15-epoch layer4+head target protocol. Kinetics+25%
+NTU120 reached 1,998 FP16 and 1,859 INT4 external OOF rows; its frozen 90/10
+strictV3 blend retained 2,903/3,036, the 0.8125 worst-user floor, and changed
+10 OOF decisions. The full fit ended at 0.962121 training accuracy. Its
+99,701,322-byte package produced two identical A100 replays and changed test
+index 133 from class 24 to 19. Kaggle ref `56014518` scored **0.97512**.
+
+An equal NTU60/NTU120 source update improved INT4 external OOF to 1,910 and
+changed 14 blended OOF predictions while retaining 2,903 correct. Its final
+CSV was nevertheless byte-identical to the prior PKU diagnostic (`b52ebd13…`),
+so the novelty gate prevented a duplicate upload. Averaging the two target
+models in weight space collapsed INT4 external OOF to 1,553 and failed before
+test access. Finally, the deterministically retrained NTU60 control reproduced
+2,044 FP16 correct rows but fell to 1,875 under INT4, below its frozen 1,900
+gate; it also stopped before full-data training and test inference.
+
+The evidence rejects the simplistic claim that more source samples must
+monotonically improve this constrained deployment. NTU120 adds action coverage,
+NTU60 remains more target-relevant in FP16, and the mixed source is more robust
+to INT4 than NTU120 alone. None exceeded canonical strictV3, so the main
+release remains unchanged. Three daily submissions were deliberately left
+unused because no further candidate passed both the evidence and novelty
+gates.
 
 ---
 

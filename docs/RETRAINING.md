@@ -243,6 +243,29 @@ and the external replay consumed the frozen competition cache rather than
 rebuilding all raw branches. Because it tied rather than exceeded the public
 baseline, the canonical 0.97512 package remains unchanged.
 
+### NTU60 versus NTU120 scale confirmation
+
+The next preregistered series isolated NTU scale and source coverage. All
+formal models used seed 2026, five subject-wise folds, 15 fixed epochs,
+layer4 plus a fresh head, frozen encoder BN, temporal-difference weight 0.10,
+and uniform INT4 deployment. No fold used anonymous data.
+
+| Frozen source / candidate | FP16 external OOF | INT4 external OOF | strictV3 90/10 INT4 blend | Decision |
+| --- | ---: | ---: | ---: | --- |
+| Kinetics 75% + NTU120 25% | 1,998/3,036 | 1,859/3,036 | 2,903/3,036; 10 changes | Full fit and one submission allowed |
+| Kinetics 75% + NTU60 12.5% + NTU120 12.5% | 2,029/3,036 | 1,910/3,036 | 2,903/3,036; 14 changes | Package passed, but CSV duplicated ref 56006027; no submission |
+| Equal target-weight soup of the two rows above | — | 1,553/3,036 | 2,902/3,036; 3 changes | Failed the preregistered 1,900-row external gate; stopped before test |
+| Kinetics 75% + NTU60 25% control | 2,044/3,036 | 1,875/3,036 | 2,902/3,036; 13 changes | Failed the preregistered 1,900-row external gate; stopped before full fit/test |
+
+The NTU120 full fit ended at 0.962121 train accuracy. Its 99,701,322-byte
+package plus YOLO replayed exactly twice and changed only anonymous index 133.
+Submission `56014518` scored **0.97512**. This shows that the larger NTU120
+source survived deployment without hurting the public score, not that scale
+alone improved it. The NTU60 control retained higher FP16 target OOF, while
+the broader source mixture was more INT4-stable than NTU120 alone. The series
+therefore supports treating source relevance, quantization robustness, and
+data volume as separate variables.
+
 ## Final acceptance
 
 A completed strictV3 retrain requires all of the following:

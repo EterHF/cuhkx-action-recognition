@@ -205,6 +205,21 @@ Kaggle confirmation, ref `56006027`, scored **0.97512**: an exact tie, not an
 improvement. No leaderboard retuning followed, so canonical strictV3 remains
 the public main baseline and the external-data diagnostic is report-only.
 
+The follow-up NTU scale study retrained fixed seed-2026 target models from
+Kinetics+NTU120, an equal NTU60/NTU120 source mixture, and the NTU60 control.
+The deployable NTU120 member passed its INT4 train-only gate: the strictV3
+90/10 blend retained 2,903/3,036 OOF rows, preserved the 0.8125 worst-user
+floor, and changed 10 OOF predictions. Its two package replays were identical
+and changed anonymous index 133; Kaggle submission `56014518` scored
+**0.97512**, again tying rather than improving strictV3.
+
+The source mixture improved external INT4 OOF from 1,859 to 1,910 correct but
+produced a CSV byte-identical to the already submitted PKU diagnostic, so it
+was not resubmitted. A target-weight soup failed its external OOF gate, and the
+retrained NTU60 control failed its frozen INT4 external threshold (1,875 <
+1,900); neither accessed anonymous data. Three daily submissions remained,
+but no additional candidate satisfied both the evidence and novelty gates.
+
 ## License
 
 Code is released under the [MIT License](LICENSE). Competition data and
