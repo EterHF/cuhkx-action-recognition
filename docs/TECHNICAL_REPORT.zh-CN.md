@@ -14,7 +14,8 @@
 
 CUHK-X 小模型赛道（[挑战页面](https://openaiotlab.github.io/CUHK-X-Challenge/)，UbiComp / ISWC 2026）是一个包含 40 个类别的跨用户动作识别任务，每个 clip 包含六种模态：
 
-- 8 帧有序的 **Depth（Color / IR）** 与 **Thermal** 图像，采用保持宽高比的 padding。
+- 16 帧有序的 **Depth Color + IR**（128×128）；YOLO 在 8 帧 IR 上探测并确定统一
+  clip 级人体窗口。Thermal 的发布权重为 0。
 - 按时间戳排序的 **IMU** 序列，已移除温度、电池和固件元数据。
 - **Skeleton**：位置、root motion、相对姿态、速度和加速度。
 - **Radar** 帧统计；仅含空 header 的文件按缺失处理。
@@ -90,7 +91,32 @@ CUHK-X 小模型赛道（[挑战页面](https://openaiotlab.github.io/CUHK-X-Cha
 
 多个离线“更高 OOF”候选（如 OOF 为 0.970* 的 Fusion4 raw）均被公开排行榜否定，不再属于候选方案。
 
-### 3.2 复现 `legal_strict_v3`
+### 3.2 当前最佳方法的数据与训练流程
+
+公开计分的当前最佳仍是 `legal_strict_v3`；train-only OOF 最强但尚未提交的候选是它与
+`sched30` 的固定 50/50 概率共识。二者共享以下数据流程：
+
+1. 以确定顺序发现 clip，只保留 subject-wise CV 所需的类别与用户 metadata。
+2. YOLO11n 在均匀抽取的 8 帧 IR 上探测人体；人体框 union 扩张 1.4 倍，最小边长
+   0.35，并按 IR → Depth Color → full frame 回退。
+3. 均匀抽取 16 帧对齐的 Depth Color 与 IR，以共享窗口缩放为 128×128，保存 uint8
+   `[T,4,H,W]` cache。Affine mean/std 只由相应训练用户拟合，不使用逐 clip 或测试统计量。
+4. 构建对齐、以 pelvis 为中心的 H36M-17 skeleton cache，以及 16 帧 crop-scaled
+   DSTFormer 输入。Skeleton 缺失只影响 encoder 输入，不作为事后融合 mask。
+5. 分别推理视觉 R(2+1)D、视觉+skeleton Fusion、DSTFormer→TCN；temperature calibration
+   和 quality gate 只由 outer-train 拟合，full-data 发布权重为 0.11/0.22/0.67。
+
+训练使用五个互斥 held-subject folds。Visual head 使用带 0.02 label smoothing 的
+cross-entropy 和 train-only horizontal flip；Fusion 使用同一视觉 cache、0.005 skeleton
+noise、分离的 visual/new-layer 学习率及 OneCycle schedule。时序 residual TCN 使用
+AdamW（3e-4、weight decay 0.01）、0.01 label smoothing、0.25 reversal probability
+和 0.01 Gaussian logit noise。`sched30` 在 30-epoch cosine schedule 下固定取 epoch 5，
+训练 seeds 2026–2028 后平均概率，再与 strictV3 做固定 50/50 概率均值。它把 release
+OOF 从 2,903 提升到 2,916/3,036，5/5 folds 非退化；单 checkpoint 为 98,873,941
+bytes，并在 2026-09-04 再次从原始数据复现 CSV SHA-256 `f33e0569…`。它的离线证据更强，
+但尚未提交，不能宣称超过 0.97512 公开基线。
+
+### 3.3 复现 `legal_strict_v3`
 
 ```zsh
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.verify
@@ -102,7 +128,7 @@ CUHK-X 小模型赛道（[挑战页面](https://openaiotlab.github.io/CUHK-X-Cha
 
 验证器要求原始数据重放结果与标准 CSV 逐字节一致。配方记录在 `release_manifest.json`；推理契约的任何变化都必须生成新的 package 和 manifest。
 
-### 3.3 清理后仓库的重训练审计
+### 3.4 清理后仓库的重训练审计
 
 2026-09-03 使用清理后的训练入口执行了新的参数更新，而非只重放 checkpoint。
 strict temporal 分支匹配全部五个历史 fold 准确率，aggregate 为 0.940053；恢复真实的
@@ -222,8 +248,10 @@ bridge 确认因此只替换外部初始化，目标域配方与不可变 matche
 ### 5.1 候选融合的严格 nested selection（优先级 1）
 
 * **动机**：所有手工选择的系数和由排行榜驱动的单行修改都已被否定。唯一可接受的选择规则是：“每个 held-fold 的系数只能由其余四个 fold 的 OOF 决定，不得使用用户/样本 ID 或测试集属性”。
-* **已实现（CPU / synthetic）**：Fusion7 nested selection（OOF 净增 14 行、5/5 非退化、自然覆盖 40 类）；50/50 probability-mean 对 strict-v3（5/5 非退化、净增 9 行、距离接收标准差 1 行）；nested coefficient grid（端点及 0.25 / 0.5 / 0.75）；shared-state multi-pooling 候选（energy + top-2，共用 Fusion4 / Visual4 / DSTFormer，OOF 净增 12 行、5/5 非退化、自然覆盖 40 类，大小为 86.43 MB，连同 YOLO 为 92.05 MB，远低于 100 MB）。
-* **待完成步骤**：deployment / training-OOF 的精度与 bit-width 匹配；已知存在 FP16 ↔ FP32 DSTFormer 差异。
+* **已实现（CPU / synthetic）**：Fusion7 nested selection（OOF 净增 14 行、5/5 非退化、自然覆盖 40 类）；50/50 probability-mean 对 strict-v3（5/5 非退化、净增 9 行、距离接收标准差 1 行）；nested coefficient grid（端点及 0.25 / 0.5 / 0.75）；shared-state multi-pooling 候选（energy + top-2，共用 Fusion4 / Visual4 / DSTFormer，OOF 净增 12 行、5/5 非退化、自然覆盖 40 类；历史上按组件估算为 86.43 MB、连同 YOLO 为 92.05 MB，但这不是官方单 checkpoint 实测值）。
+* **2026-09-04 收口**：最终 `sched30` package 已生成一个 98,873,941-byte checkpoint，
+  并通过其中嵌入的 YOLO 字节从原始数据重放；CSV 与冻结候选逐字节相同（`f33e0569…`）。
+  更广泛的历史 Fusion7 精度差异只保留为归档方向，不作为发布结论。
 * **后续设计要求**：
   1. selector 只能读取其余四个 fold 的 OOF logits、marginal 和 agreement 信号。禁止使用用户或样本级属性。
   2. 选择规则必须预先声明，不允许“查看 fold C 后再调整 threshold”。
@@ -233,8 +261,11 @@ bridge 确认因此只替换外部初始化，目标域配方与不可变 matche
 
 * **动机**：量化、校准和 TTA 路径均已穷尽后，“相同权重、不同 pooling”仍可修正少量错误且不增加新权重，能够维持 100 MB 预算。
 * **已实现**：
-  * `sched30` 三随机种子时序 consensus（FP32）：OOF +0.004282、5/5 非退化、每个 seed 均为 5/5；大小 92.05 MB，连同 YOLO 仍为 92.05 MB；CSV hash 为 `f33e0569…`。
-  * 时序 pooling 多数投票（top-2 + energy）：OOF +0.003623、5/5 非退化；大小 88.43 MB，连同 YOLO 为 96.96 MB；CSV hash 为 `6a320486…`。
+  * `sched30` 三随机种子时序 consensus（FP32）：OOF +0.004282、5/5 非退化、每个 seed 均为 5/5；单 checkpoint 为 98.87 MB；CSV hash 为 `f33e0569…`。
+  * 时序 pooling 多数投票（top-2 + energy）：OOF +0.003623、5/5 非退化；单 checkpoint 为 96.94 MB；CSV hash 为 `6a320486…`。
+  * strictV3、`sched30`、temporal pooling 的固定三方多数投票仅为 2,909/3,036，
+    低于 `sched30` 的 2,916/3,036。基于 confidence/margin/entropy 的 nested routing
+    和类别先验校正也未超过固定共识，因此没有继续测试推理。
 * **后续设计要求**：
   1. 将两个 pooling variant 视为结构上的最小集合，并执行严格 OOF nested selection，不能使用固定 50/50 融合，也不能手工挑选系数。
   2. 只有与 anchor / `sched30` 共享 DSTFormer frame logits 且不增加大型权重的新 pooling variant 才可接收。
@@ -267,9 +298,9 @@ bridge 确认因此只替换外部初始化，目标域配方与不可变 matche
    seed-matched 初始化与不可变 control；平均迁移为正，但合取稳定性门禁失败。禁止扫描
    源权重、LR 或 epoch。
 2. **VideoMAE-S ≈ MViTv2-S**：“≈”表示相同调查优先级，而非二者在本数据集等价。在打开任何 CUHK-X fold 前冻结外部 checkpoint、架构、预处理和 seed map。
-3. **完整 NTU Depth+IR 覆盖**：当前 9-setup 子集无法回答完整数据问题。打开新的目标域
-   fold 前，先冻结完整 setup 清单与可配对性审计，再将完整配对 Depth+IR 与行数匹配的
-   Depth-only 源域 control 比较。
+3. **本报告关闭外部 IR**：NTU 本地只有 9/32 个完整 IR setup；PKU-MMD 本地虽有
+   902,397 张 depth PNG，却没有 IR 归档或展开后的 IR 树。补齐 NTU 还需 320.8 GB，
+   已停止下载。本报告不使用不完整配对 IR，外部迁移结论均明确为 depth-only。
 4. **确定性 depth / lag-1 temporal-difference channel**：配方固定、可审计，并预先声明辅助权重；不得根据 held 结果搜索 channel recipe。
 5. **预声明的尾部权重平均（已执行并否决）**：在打开 A–E 前声明固定 epoch 3–5 区间、LR schedule、参数范围和 BN 处理方式；平均后的 checkpoint 是唯一候选，结果冻结于 §5.5，禁止事后扫描其他 SWA schedule。
 6. **SlowFast / X3D**：沿用相同 subject folds、seed budget 和 source-only 数据边界；先在本地测量计算量和准确率。
@@ -459,10 +490,26 @@ materialisation 结果为：
 120 共 114,480 个样本，提供 masked depth、skeleton 与 IR；masked depth 共 147 GB，
 IR 共 389 GB。经登录后的官方 endpoint 尺寸与本地 32 个 masked-depth 压缩包全部
 一致，两个 skeleton 包也已存在；IR 只有 9/32 setups（完整包共 97,333,511,077 bytes），
-缺少的 23 个官方包共 320,783,737,075 bytes。已在 tmux 窗口
-`clash:ntu_ir_download` 启动八路可续传、逐压缩包尺寸校验的下载。冻结的 §5.4 比较
-只需要 masked depth、IR 与 skeleton，因此有意不下载 RGB 和 full depth。全部 32 个
-IR 包通过相同的尺寸与可配对性审计前，不得打开新的 CUHK-X fold。
+缺少的 23 个官方包共 320,783,737,075 bytes。曾测试可续传直连下载，但经资源/收益
+复核后已经停止，目前没有下载进程。另行检查的 PKU-MMD Phase 2 本地树具有完整三视角
+depth 帧，但没有可用 IR。因此本报告关闭外部 IR，不在不完整子集上训练；该问题也没有
+下载 RGB 或 full depth。
+
+### 5.11 2026-09-04 非 IR 快速 trick（已完成）
+
+执行了两项有界筛选。首先，strictV3、`sched30_consensus` 与
+`temporal_pool_consensus` 的多数投票在不引入回退的情况下修复 6 个 strictV3 错误，
+但只有 2,909/3,036，低于已冻结 `sched30` 的 2,916/3,036；confidence、margin、
+entropy 及类别先验 nested routing 同样没有提升固定共识。
+
+其次，train-only subject-balanced sampling 在不增加推理权重的前提下直接针对跨用户
+鲁棒性。第一轮比较因历史 control 的 loader-worker 随机流不同，在汇报前作废。替代的
+严格配对运行固定 seed 2026、workers=4、确定性 kernel、一个 head-only epoch、预处理
+契约和其他全部参数，唯一变化是 `WeightedRandomSampler`。A–E delta 分别为 −0.279、
+−0.892、−0.295、+1.636、−1.461 pp；均值从 89.1222% 降到 88.8641%（−0.2582 pp），
+仅 1/5 folds 非退化，worst fold 下降 1.4614 pp。该方向未访问测试集，也没有扫描第二个
+采样权重，按门禁否决。因此当前唯一被全部证据支持的新小 trick 仍是固定等概率
+`sched30` consensus。
 
 ---
 
@@ -484,11 +531,12 @@ IR 包通过相同的尺寸与可配对性审计前，不得打开新的 CUHK-X 
 
 ## 7. 下一步具体工作清单（按顺序）
 
-1. **完成 nested / shared-state multi-pooling 的两轮原始数据重放**，覆盖 `sched30` 和 `fp32_consensus`。门禁通过后将其提升至提交队列首位。
+1. 将已完成逐字节重放的 `sched30_consensus` 保持在实验队列首位；不得根据
+   2026-09-04 结果修改其系数。
 2. 为从零训练的 TSM/S3D 路线完成 outer-train-only normalization builder 与 matched CV runner 的 **CPU materialisation**；只读取有标签训练 cache 与 metadata，绝不打开 held/test/anonymous/submission。运行 80 个 inner 与 30 个 outer synthetic regression。
-3. **§5.8 公开榜持平后关闭 PKU 部署路线。** 不根据排行榜重新调整 bridge 权重、
-   precision、epoch、seed 或唯一变化的样本。若继续外部规模研究，下一个问题是
-   §5.4 中单独预注册的完整 NTU Depth+IR 比较。
+3. **关闭 PKU/NTU 外部 IR。** 保留已完成的 depth-only PKU/NTU 证据，不训练或汇报
+   不完整配对 IR；§5.8 公开榜持平后也继续关闭 PKU 部署路线，不根据排行榜重新调整
+   bridge 权重、precision、epoch、seed 或唯一变化的样本。
 4. 任何新机制候选均须同步记录到 `BEST_REPORT_EVIDENCE_MANIFEST_*.json`（包含 SHA 和决策）以及 `EXTERNAL_ONLY_RESEARCH_ROADMAP_20260830.md`（将原方向标记为 authorized 或 rejected）。
 5. 报告与证据收尾：上述每个已执行步骤都必须将结果写入对应报告的 fact-freeze-date 段落，并附上新的 manifest SHA。
 

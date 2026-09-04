@@ -4,10 +4,10 @@
 
 这些候选来自 Codex 任务 `01a04b41-e2ed-79c3-9fce-20eec40a3c73` 中已审计的工作，并已通过当前公开流水线重放。它们与 `checkpoints/strict_v3/model.pt` 有意分离：`main` 基线仍是可以逐字节复现的 0.97512 发布版本。
 
-| 候选 | OOF | 增益 | Fold 门禁 | Package + YOLO | 测试变化数 | Kaggle |
+| 候选 | OOF | 增益 | Fold 门禁 | 单 checkpoint | 测试变化数 | Kaggle |
 | --- | ---: | ---: | --- | ---: | ---: | --- |
-| [`sched30_consensus`](sched30_consensus/) | 0.960474 | +0.004282 | 5/5 非退化 | 98,911,347 B | 3 | 未提交 |
-| [`temporal_pool_consensus`](temporal_pool_consensus/) | 0.959816 | +0.003623 | 5/5 非退化 | 96,964,489 B | 12 | 未提交 |
+| [`sched30_consensus`](sched30_consensus/) | 0.960474 | +0.004282 | 5/5 非退化 | 98,873,941 B | 3 | 未提交 |
+| [`temporal_pool_consensus`](temporal_pool_consensus/) | 0.959816 | +0.003623 | 5/5 非退化 | 96,936,797 B | 12 | 未提交 |
 
 第一个候选对 strictV3 与固定的三随机种子 sched30 时序发布模型的概率取平均。第二个候选在共享大模型状态的同时，对 motion-energy、top-2-frame 和 top-4-frame 时序池化进行多数投票。
 
@@ -24,11 +24,14 @@
 从原始测试数据复现一个候选并验证其冻结 hash：
 
 ```zsh
+.conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.bundle \
+  --model checkpoints/experiments/sched30_consensus.pt \
+  --output /tmp/inference_bundle.pt
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.replay \
-  --package checkpoints/experiments/sched30_consensus.pt \
+  --bundle /tmp/inference_bundle.pt \
   --output .cache/sched30_consensus.csv
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.experiments.audit \
   sched30_consensus --replayed-csv .cache/sched30_consensus.csv
 ```
 
-不得根据匿名测试集检查结果晋升或提交任何候选。晋升必须同时满足冻结 OOF 门禁、原始数据精确重放、100 MB 包大小门禁，以及明确授权的 Kaggle 提交。
+不得根据匿名测试集检查结果晋升或提交任何候选。晋升必须同时满足冻结 OOF 门禁、原始数据精确重放、单 checkpoint 100 MB 包大小门禁，以及明确授权的 Kaggle 提交。

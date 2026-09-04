@@ -7,10 +7,10 @@ These candidates were recovered from the audited work in Codex thread
 pipeline. They are deliberately separate from `checkpoints/strict_v3/model.pt`:
 the `main` baseline remains the byte-reproducible 0.97512 release.
 
-| Candidate | OOF | Delta | Fold gate | Package + YOLO | Test changes | Kaggle |
+| Candidate | OOF | Delta | Fold gate | Single checkpoint | Test changes | Kaggle |
 | --- | ---: | ---: | --- | ---: | ---: | --- |
-| [`sched30_consensus`](sched30_consensus/) | 0.960474 | +0.004282 | 5/5 non-degrading | 98,911,347 B | 3 | not submitted |
-| [`temporal_pool_consensus`](temporal_pool_consensus/) | 0.959816 | +0.003623 | 5/5 non-degrading | 96,964,489 B | 12 | not submitted |
+| [`sched30_consensus`](sched30_consensus/) | 0.960474 | +0.004282 | 5/5 non-degrading | 98,873,941 B | 3 | not submitted |
+| [`temporal_pool_consensus`](temporal_pool_consensus/) | 0.959816 | +0.003623 | 5/5 non-degrading | 96,936,797 B | 12 | not submitted |
 
 The first candidate averages probabilities from strictV3 and a fixed
 three-seed sched30 temporal release. The second uses a majority vote over
@@ -31,13 +31,16 @@ Audit both frozen candidates:
 Reproduce one candidate from raw test data and validate its frozen hash:
 
 ```zsh
+.conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.bundle \
+  --model checkpoints/experiments/sched30_consensus.pt \
+  --output /tmp/inference_bundle.pt
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.replay \
-  --package checkpoints/experiments/sched30_consensus.pt \
+  --bundle /tmp/inference_bundle.pt \
   --output .cache/sched30_consensus.csv
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.experiments.audit \
   sched30_consensus --replayed-csv .cache/sched30_consensus.csv
 ```
 
 No candidate is promoted or submitted based on anonymous-test inspection.
-Promotion requires the frozen OOF gates, exact raw replay, the 100 MB package
+Promotion requires the frozen OOF gates, exact raw replay, the single-checkpoint 100 MB package
 gate and an explicitly authorized Kaggle submission.

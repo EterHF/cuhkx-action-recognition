@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,7 @@ import pandas as pd
 import torch
 
 from yolo_r2plus1d.strict_v3.paths import CHECKPOINT_DIR, REPO_ROOT, RESULT_DIR
+from yolo_r2plus1d.strict_v3.release.bundle import MODEL_LIMIT_BYTES, build_bundle
 
 MANIFEST = REPO_ROOT / "results/experiments/manifest.json"
 FORBIDDEN_TRUE_KEYS = {
@@ -102,13 +104,16 @@ def audit_candidate(name: str, replayed_csv: Path | None = None) -> dict[str, An
     unsafe = forbidden_flags(package)
     if unsafe:
         raise RuntimeError(f"{name} has unsafe contract flags: {unsafe}")
-    combined_bytes = paths["package"].stat().st_size + (
-        CHECKPOINT_DIR / "yolo11n.pt"
-    ).stat().st_size
+    detector = CHECKPOINT_DIR / "yolo11n.pt"
+    component_sum_bytes = paths["package"].stat().st_size + detector.stat().st_size
     if paths["package"].stat().st_size != spec["package_bytes"]:
         raise RuntimeError(f"{name} package size mismatch")
-    if combined_bytes > 100_000_000:
-        raise RuntimeError(f"{name} exceeds the 100 MB track limit")
+    with tempfile.TemporaryDirectory(prefix=f"cuhkx_{name}_bundle_") as directory:
+        bundle_path = Path(directory) / "inference_bundle.pt"
+        build_bundle(paths["package"], detector, bundle_path)
+        single_checkpoint_bytes = bundle_path.stat().st_size
+    if single_checkpoint_bytes >= MODEL_LIMIT_BYTES:
+        raise RuntimeError(f"{name} single checkpoint exceeds the 100 MB track limit")
 
     submission = pd.read_csv(paths["submission"])
     if submission.columns.tolist() != ["path", "prediction"] or len(submission) != 405:
@@ -126,7 +131,9 @@ def audit_candidate(name: str, replayed_csv: Path | None = None) -> dict[str, An
         "oof_delta": candidate_accuracy - baseline_accuracy,
         "fold_deltas": fold_deltas,
         "package_bytes": paths["package"].stat().st_size,
-        "combined_bytes": combined_bytes,
+        "component_sum_bytes": component_sum_bytes,
+        "single_checkpoint_bytes": single_checkpoint_bytes,
+        "single_checkpoint_margin_bytes": MODEL_LIMIT_BYTES - single_checkpoint_bytes,
         "submission_sha256": digest(paths["submission"]),
         "changed_test_predictions": int(
             (

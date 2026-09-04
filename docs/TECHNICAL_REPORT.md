@@ -21,8 +21,8 @@ CUHK-X Small Model Track ([challenge page](https://openaiotlab.github.io/CUHK-X-
 UbiComp / ISWC 2026) is a 40-class, cross-user action-recognition task with
 six modalities per clip:
 
-- 8 ordered frames of **Depth (Color / IR)** and **Thermal** (aspect-ratio
-  preserving padding).
+- 16 ordered **Depth Color + IR** frames at 128×128. YOLO probes 8 IR frames
+  to define one clip-level person window; Thermal has zero release weight.
 - Timestamp-sorted **IMU** sequences (temperature / battery / firmware
   metadata stripped).
 - **Skeleton** (position, root motion, relative pose, velocity, acceleration).
@@ -121,7 +121,40 @@ The best public history, in one table:
 Multiple offline "higher OOF" candidates (Fusion4 raw at 0.970*, etc.)
 were **refused by the public leaderboard**; they are no longer candidates.
 
-### 3.2 How to reproduce `legal_strict_v3`
+### 3.2 Current-best data and training flow
+
+The scored current best remains `legal_strict_v3`; the strongest unsubmitted
+train-only candidate is its fixed 50/50 probability consensus with `sched30`.
+The shared data path is:
+
+1. Discover clips in a deterministic order and retain only class and subject
+   metadata required for subject-wise CV.
+2. Probe 8 uniformly spaced IR frames with YOLO11n. Expand the union person box
+   by 1.4 with a 0.35 minimum side; fall back IR → Depth Color → full frame.
+3. Uniformly sample 16 aligned Depth Color and IR frames, resize the shared crop
+   to 128×128, and store a uint8 `[T,4,H,W]` cache. Fit the affine mean/std only
+   on the relevant training users; never fit per-clip or test statistics.
+4. Build the aligned pelvis-centred H36M-17 skeleton cache and the 16-frame
+   crop-scaled DSTFormer inputs. Missing skeletons affect encoder input only,
+   never a post-hoc blend mask.
+5. Infer visual R(2+1)D, visual+skeleton Fusion, and DSTFormer→TCN branches.
+   Apply outer-train-only temperature calibration and the fixed quality gate;
+   full-data release weights are 0.11/0.22/0.67.
+
+Training uses five disjoint held-subject folds. Visual head adaptation uses
+cross-entropy with 0.02 label smoothing and train-only horizontal flips. Fusion
+uses the same visual cache plus skeleton noise 0.005, separate visual/new-layer
+learning rates and a OneCycle schedule. The temporal residual TCN uses AdamW
+(3e-4, weight decay 0.01), 0.01 label smoothing, reversal probability 0.25 and
+Gaussian logit noise 0.01. `sched30` trains fixed epoch 5 under a 30-epoch cosine
+schedule for seeds 2026–2028, averages their probabilities, then takes a fixed
+50/50 probability mean with strictV3. It improves release OOF from 2,903 to
+2,916/3,036 with 5/5 non-degrading folds, occupies 98,873,941 bytes as one
+checkpoint, and reproduced CSV SHA-256 `f33e0569…` from raw data again on
+2026-09-04. It is stronger offline, but remains unsubmitted and is not claimed
+to beat the 0.97512 public baseline.
+
+### 3.3 How to reproduce `legal_strict_v3`
 
 ```zsh
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.verify
@@ -135,7 +168,7 @@ The verifier requires the raw replay to be byte-identical to the canonical
 CSV. The recipe is recorded in `release_manifest.json`; any change to the
 inference contract requires a new package and manifest.
 
-### 3.3 Retraining audit on the cleaned repository
+### 3.4 Retraining audit on the cleaned repository
 
 On 2026-09-03 the cleaned training entry points were exercised with new model
 updates rather than checkpoint-only replay. The strict temporal branch matched
@@ -321,9 +354,13 @@ code is deliberately not shipped on the strictV3-only main branch.
   (end-points + 0.25 / 0.5 / 0.75); shared-state multi-pooling candidate
   (energy + top-2, reusing the same Fusion4 / Visual4 / DSTFormer,
   OOF +12 net rows, 5/5 non-degrading, natural 40-class coverage,
-  86.43 MB / 92.05 MB with YOLO, well under 100 MB).
-* **Outstanding step**: deployment / training-OOF precision and
-  bit-width match (FP16 ↔ FP32 DSTFormer mismatch is known).
+  historically estimated at 86.43 MB / 92.05 MB with YOLO by component
+  accounting; this was not an official single-checkpoint measurement).
+* **2026-09-04 close-out**: the final `sched30` package was materialized as one
+  98,873,941-byte checkpoint and replayed from raw data through its embedded
+  YOLO bytes. The resulting CSV was byte-identical (`f33e0569…`) to the frozen
+  candidate. The broader historical Fusion7 precision mismatch remains an
+  archived direction, not a release claim.
 * **Next-step design points**:
   1. The selector reads only OOF logits of the other four folds and
      marginal / agreement signals. Forbidden: user / sample-level
@@ -341,10 +378,14 @@ code is deliberately not shipped on the strictV3-only main branch.
   number of errors and adds no new weights (keeps the 100 MB budget).
 * **Already implemented**:
   * `sched30` three-seed temporal consensus (FP32): OOF +0.004282, 5/5
-    non-degrading, every seed 5/5, 92.05 MB / 92.05 MB with YOLO, CSV
+    non-degrading, every seed 5/5, 98.87 MB as one checkpoint, CSV
     `f33e0569…`.
   * Temporal-pooling majority vote (top-2 + energy): OOF +0.003623, 5/5
-    non-degrading, 88.43 MB / 96.96 MB with YOLO, CSV `6a320486…`.
+    non-degrading, 96.94 MB as one checkpoint, CSV `6a320486…`.
+  * A fixed three-way majority over strictV3, `sched30` and temporal
+    pooling reached only 2,909/3,036, below `sched30` at 2,916/3,036. Nested
+    confidence/margin/entropy routing and class-prior correction also failed
+    to exceed the fixed `sched30` consensus, so no test inference followed.
 * **Next-step design points**:
   1. Treat the two pooling variants as a structural minimum, and
      perform strict OOF nested selection — *not* a fixed 50/50 blend.
@@ -407,10 +448,11 @@ post-hoc hyperparameter searches. The queue is:
    "same investigation tier", not "equivalent on this dataset".
    Freeze the external checkpoint / architecture / preprocessing / seed
    map before opening any CUHK-X fold.
-3. **Complete NTU Depth+IR coverage** — the current 9-setup subset cannot
-   answer the full-data question. Before any new target fold, freeze the full
-   setup inventory and pairability audit, then compare complete paired
-   Depth+IR against a row-matched Depth-only source control.
+3. **External IR closed for this report** — NTU has only 9/32 complete local IR
+   setups, while the local PKU-MMD tree contains 902,397 depth PNGs but no IR
+   archive or extracted IR tree. The attempted NTU completion would require a
+   further 320.8 GB and was stopped. No incomplete paired-IR result is used;
+   external transfer claims are explicitly depth-only.
 4. **Deterministic depth / lag-1 temporal-difference channels** —
    fixed, auditable; pre-declared auxiliary weight. No held-driven
    channel-recipe search.
@@ -649,11 +691,32 @@ skeleton and IR modalities; masked depth totals 147 GB and IR totals 389 GB.
 Authenticated endpoint sizes matched all 32 local masked-depth archives, and
 both skeleton archives are present. IR was incomplete at 9/32 setups
 (97,333,511,077 complete-archive bytes); the missing 23 official archives total
-320,783,737,075 bytes. A resumable eight-stream, per-archive size-checked
-download was started in tmux window `clash:ntu_ir_download`. RGB and full depth
-are intentionally excluded because the frozen §5.4 comparison needs only
-masked depth, IR and skeleton. No new CUHK-X fold may open until all 32 IR
-archives pass the same size and pairability audit.
+320,783,737,075 bytes. A resumable direct download was tested, then stopped
+after the resource/benefit review; no downloader remains active. The local
+PKU-MMD Phase 2 tree was separately checked and contains complete three-view
+depth frames but no usable IR. Consequently this report closes external IR
+rather than training on an incomplete subset. RGB and full depth were never
+downloaded for this question.
+
+### 5.11 Quick non-IR tricks, 2026-09-04 (completed)
+
+Two bounded screens were run. First, majority voting over strictV3,
+`sched30_consensus` and `temporal_pool_consensus` recovered six strictV3 errors
+without regression, but reached only 2,909/3,036 and therefore underperformed
+the already frozen `sched30` result of 2,916/3,036. Confidence, margin, entropy
+and class-prior nested routing likewise did not improve the fixed consensus.
+
+Second, a train-only subject-balanced sampling screen targeted cross-user
+robustness without changing inference weights. An initial comparison was
+voided before reporting because its historical control used a different loader
+worker stream. The replacement paired run fixed seed 2026, workers=4,
+deterministic kernels, one head-only epoch, preprocessing contracts and all
+other arguments; only `WeightedRandomSampler` changed. Fold A–E deltas were
+−0.279, −0.892, −0.295, +1.636 and −1.461 pp. Mean accuracy moved from
+89.1222% to 88.8641% (−0.2582 pp), only 1/5 folds was non-degrading, and the
+worst fold fell by 1.4614 pp. It was rejected without test access or a second
+sampler setting. These failures leave fixed equal-probability `sched30`
+consensus as the only new small trick supported by all current gates.
 
 ---
 
@@ -686,18 +749,18 @@ archives pass the same size and pairability audit.
 
 ## 7. The next concrete work list (ordered)
 
-1. **Complete the nested / shared-state multi-pooling two-round raw
-   replay** for `sched30` and `fp32_consensus`. Promote to the head
-   of the submission queue once the gates pass.
+1. Keep the byte-replayed `sched30_consensus` at the head of the experimental
+   queue; do not alter its coefficient from the 2026-09-04 results.
 2. **CPU materialisation of the outer-train-only normalisation
    builder + matched CV runner** for the from-scratch TSM/S3D path
    (reads only labelled-train cache + metadata; never opens
    held/test/anonymous/submission). Run 80 inner + 30 outer synthetic
    regression.
-3. **Keep the PKU deployment line closed after the §5.8 public tie.** Do not
+3. **Keep PKU/NTU external IR closed.** Preserve the completed depth-only PKU
+   and NTU evidence, but do not train or report an incomplete paired-IR model.
+   Also keep the PKU deployment line closed after the §5.8 public tie; do not
    retune bridge weight, precision, epoch, seed, or the single changed sample
-   from leaderboard feedback. The next external-scale question, if pursued,
-   is the separately preregistered complete NTU Depth+IR comparison in §5.4.
+   from leaderboard feedback.
 4. Any new mechanism candidate is mirrored into
    `BEST_REPORT_EVIDENCE_MANIFEST_*.json` (with SHA + decision) and
    into `EXTERNAL_ONLY_RESEARCH_ROADMAP_20260830.md` (the prior
