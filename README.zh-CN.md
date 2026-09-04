@@ -40,8 +40,11 @@ docs/TECHNICAL_REPORT.md     实验历史与设计依据
 
 NTU RGB+D 与 PKU-MMD 是外部研究输入，而非 strictV3 发布依赖。本仓库不包含其
 压缩包或源数据派生的实验 checkpoint；标准 0.97512 验证与重放不会读取
-`data/external/`。进行外部数据研究前，请先阅读[数据边界](data/README.zh-CN.md#外部研究数据集)
-及技术报告。
+`data/external/`。竞赛主持人已明确允许使用公开外部数据集和预训练模型，并点名确认
+NTU RGB+D 可用；最终报告必须披露获取方式和具体用途。训练许可与再分发权是两个问题，
+所以上游压缩包仍不纳入版本控制，并继续受数据提供方条款约束。进行外部数据研究前，
+请阅读[官方澄清](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/724404)、
+[数据边界](data/README.zh-CN.md#外部研究数据集)及技术报告。
 
 分支 `experiment/strictv3-consensus` 维护两个通过 OOF 资格检查的 consensus 候选。其冻结包、原始重放 hash 和审计命令记录在 [`results/experiments/README.zh-CN.md`](results/experiments/README.zh-CN.md)；两者均未提交 Kaggle。
 
@@ -128,7 +131,7 @@ data/processed/test/small_model_track_test/SM_test_*/
 
 按用户划分的 folds 和冻结的发布超参数记录在 `results/strict_v3/release_manifest.json`。不得使用排行榜反馈或匿名测试集属性进行模型选择。
 
-## 重训练状态（2026-09-03）
+## 重训练状态（2026-09-04）
 
 已从声明的 bootstrap 边界重新运行 temporal、visual-head 和 fusion
 折内任务。Temporal 复现了五个历史 fold 准确率；fusion 复现了五个历史最佳准确率；
@@ -148,7 +151,15 @@ visual-head 与历史各 fold 的差异不超过 3 个验证样本。独立重�
 真正的 epoch-1 head-only 阶段之后再进行 layer4 + head 适配，单 seed 配对均值仅提升
 0.000329（门槛为 0.002），seed 2026 回退 0.010870，worst-user 鲁棒性也下降。
 六项冻结判据中有五项失败，因此未生成 full model，也未进行测试推理、融合、打包或
-提交。PKU-MMD 的发布条款仍未解决，故未重新训练。标准 strictV3 package 保持不变。
+提交。
+
+纠正外部数据规则记录后，又完成了 Kinetics → NTU60 → PKU-MMD seed-matched bridge
+的 3 seeds × 5 个 subject folds 确认。目标域配方完全不变时，mean micro 从
+0.669521 提升到 0.677866（+0.008344），subject-macro 提升 0.008530，三个 seed
+全部改善；诊断用三 seed logit mean 为 0.685441，control 为 0.676877。这证明外部
+数据带来了真实增益，但冻结的晋升门禁更严格：seed 2027 仅有 3/5 folds 同时非退化
+（要求每个 seed 均为 4/5），且一个单元的 worst-user 下降 0.025339（上限 0.02）。
+因此未执行 full-data 训练、测试推理、融合、打包或提交。标准 strictV3 package 保持不变。
 
 ## 许可证
 

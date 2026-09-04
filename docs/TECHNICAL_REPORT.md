@@ -4,7 +4,7 @@
 
 **Best public Kaggle score so far: `0.97512` (rank 3, ref `55712568`)**<br>
 **Gap to rank 2: `0.00497` (one public sample's net swing).**<br>
-**Frozen: 2026-09-03**
+**Frozen: 2026-09-04**
 
 > This report folds the historical improvement line and the next-step
 > strategy into a single document. It is the only project-level technical
@@ -151,8 +151,10 @@ acceptance criteria are in [`RETRAINING.md`](RETRAINING.md).
 
 This section is the audit chain. Every direction is listed with its
 result, the reason it stopped, and the canonical evidence file. Most of
-these directions ended up *exhausted* (further work would only inflate
-the validation-set search space).
+these individual recipes ended up *exhausted* (further tuning of the same
+recipe would only inflate the validation-set search space). That label does
+not close a data source when a genuinely different, preregistered transfer
+mechanism remains untested.
 
 ### 4.1 Original EfficientNet-B0 baseline (historical)
 
@@ -172,7 +174,7 @@ heads produced the legal "5-bit multibranch" package. The strict-v3
 release is the result of multiplying these branches by a per-fold nested
 selection rule (no leaderboard feedback, no sample/user ID leakage).
 
-### 4.3 External-data scaling (exhausted)
+### 4.3 External-data scaling (measured; target confirmation reopened)
 
 NTU Depth / Skeleton pretraining and PKU-MMD bridge were explored
 heavily. The final local inventory audit found 248 GB of NTU material (all 32
@@ -180,19 +182,33 @@ masked-depth setup archives, both skeleton archives, but only 9 IR setup
 archives) and 156 GB of PKU-MMD Phase 2 material (6,952 trimmed depth records,
 13 inferred subjects and 41 classes). Thus the available data support honest
 depth / skeleton studies, but not a claim of complete paired NTU Depth+IR
-coverage. The measured transfer summary is more important than raw volume:
+coverage. More source data can improve representation coverage, but volume
+alone is not a mathematical guarantee: domain, modality and label mismatch,
+plus catastrophic forgetting, determine whether that information survives
+target adaptation. In this repository the evidence already contains strong
+positive transfer, so the data source itself must not be described as
+exhausted. The measured transfer summary is:
 
 | Experiment | Result | Verdict |
 | --- | ---: | --- |
-| NTU masked-depth pretraining + R(2+1)D-18 | 62.98% (control 58.27%), 5/5 fold gain, worst-user +12.50 pp | Real positive-transfer signal at small backbone |
+| NTU masked-depth pretraining + R(2+1)D-18, 3 seeds × 5 folds | mean micro 63.669% versus Kinetics 60.299%; non-degraded folds per seed 5/4/5 | Passed the frozen transfer gate; real positive signal at small backbone |
 | NTU60 / NTU120 direct R(2+1)D-34 supervision | 58.56% / 58.89% | Large source-domain supervised training **forgets** the Kinetics representation |
-| Kinetics-anchor + 25% NTU60 encoder interpolation | 65.18% | Keep Kinetics anchor, but did not improve final strict-v3 |
+| Kinetics-anchor + 25% NTU60 R(2+1)D-34 interpolation, 3 seeds × 5 folds | cell-mean 65.760%; matched mean +5.033 pp; 15/15 cells non-degraded | Strong, reproducible target transfer, though absolute standalone accuracy was not release-competitive |
 | Same NTU60 interpolation + true epoch-1 head-only progressive unfreeze | paired single-seed mean 66.0848% versus 66.0518% (+0.033 pp); worst-user mean −0.152 pp | Failed the preregistered stability / worst-user gate; stopped before fusion or deployment |
-| NTU Depth+IR on the 9 complete local setups | fold C/E 63.62% / 61.59% versus depth-only 68.04% / 61.38% | Mixed transfer (C −4.42 pp, E +0.21 pp); no basis for downloading the missing IR solely to scale this branch |
+| NTU Depth+IR on the 9 complete local setups | fold C/E 63.62% / 61.59% versus depth-only 68.04% / 61.38% | Mixed partial-data result (C −4.42 pp, E +0.21 pp); it neither proves nor disproves benefit from complete paired IR, which needs a separate frozen experiment |
 | NTU Skeleton student | source val 64.68%; target A–E micro 46.81%, macro 39.51%, worst-user 25.00% | Source fit did not survive target cross-user validation |
-| PKU-MMD source-only pretraining | source val 75.30%, source train ~99% at epoch 15 | 6,952 records clearly over-fit; source validation does not proxy target transfer |
-| Kinetics → PKU → CUHK-X | 61.92% (control 63.27%) | Direct PKU continued-training is **negative transfer** |
+| Earlier unconstrained PKU-MMD source-only pretraining | source val 75.30%, source train ~99% at epoch 15 | This 15-epoch recipe over-fit; source validation does not proxy target transfer |
+| Earlier Kinetics → PKU → CUHK-X | 61.92% (control 63.27%) | Direct continued-training caused **negative transfer**; this rejects the recipe, not PKU-MMD |
+| Kinetics+NTU60 → constrained PKU layer4 bridge, source-subject CV | 63.828% versus 57.892% control (+5.936 pp); 9/9 seed-fold cells positive | Passed every frozen source gate and justified one separate target-domain confirmation |
+| Same bridge, target-domain 3 seeds × 5 folds | mean micro 67.7866% versus 66.9521% (+0.8344 pp); every seed positive; diagnostic logit mean 68.5441% | Real target transfer, but rejected for 3/5 fold stability in seed 2027 and a 2.5339 pp worst-user cell drop |
 | PKU visual replacing strict-v3 visual | 95.191% (control 95.619%); nested mean weight = 0 | Cannot serve as a 4th logit branch |
+
+The progressive-unfreeze result tested a target-training scope change on top
+of an already useful NTU initialization; it did not test whether NTU data were
+useful. Likewise, the earlier PKU failures used different, less constrained
+recipes. The seed-matched PKU bridge confirmation in §5.7 therefore changes
+only the external initialization and retains the exact target recipe of its
+immutable matched control.
 
 ### 4.4 Head-only / L2-SP / SAM / EMA / temporal-diff (exhausted)
 
@@ -237,19 +253,40 @@ These were the *穷尽* (exhausted) directions.
 * **LLM use rule**: only prediction-time LLM use is forbidden; AI coding
   assistants are allowed. This was confirmed via a Kaggle discussion reply
   and retained in the historical audit before cleanup.
+* **External-data competition rule**: the organiser's
+  [official clarification](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/724404)
+  permits public external datasets and pretrained models when they are freely
+  or reasonably obtainable and disclosed in the final writeup. A request form
+  open to anyone is acceptable, and NTU RGB+D is explicitly permitted. This
+  is recorded in host comments `3495517` (2026-07-12), `3496001`
+  (2026-07-13), and `3504934` (2026-07-29), and supersedes the later local note
+  that incorrectly treated permission as unresolved.
 * **NTU RGB+D terms**: the [official provider page](https://rose1.ntu.edu.sg/dataset/actionRecognition/)
   limits the dataset to academic research and restricts redistribution and
   commercial use. Local archives and NTU-derived research checkpoints remain
   outside the open-source package.
 * **PKU-MMD licence**: the [official project page](https://struct002.github.io/PKUMMD/)
-  provides the data resources but does not state an explicit licence or grant
-  redistribution / prize-competition rights. PKU execution and publication
-  therefore remain *paused* until written permission or clarification is
-  obtained.
-* **MViTv2-S**: official checkpoint ≈ 131.9 MB, exceeds the 100 MB
-  budget. **Held in limbo** — pending written organiser classification.
+  directly publishes the research data but does not state a separate explicit
+  dataset licence. That residual issue is disclosed and raw data are not
+  redistributed; it is not treated as a competition-training ban. Any derived
+  weight proposed for public release still requires a separate clean-release
+  review.
+* **Pretraining and distillation**: the organiser's
+  [official reply](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/711665)
+  allows a small standard pretrained model such as ResNet-18 and allows
+  knowledge distillation. MViTv2-S's ≈131.9 MB checkpoint cannot be the final
+  Small-Track artifact under the ≤100 MB rule, but it may be investigated as a
+  training-only teacher when the submitted student and complete package obey
+  the final-model rules.
 * **TorchVision licence reminder**: pretrained weights may inherit
   training-data terms; documented in the External-Compliance review.
+* **Finalist source licence**: the
+  [official challenge page](https://openaiotlab.github.io/CUHK-X-Challenge/)
+  says Top-6 finalist solutions must be released under Apache-2.0 within 30
+  days of the finals. This repository is currently MIT-licensed. A maintainer
+  who owns the relevant copyrights must confirm and perform any relicensing
+  before a finalist release; an automated cleanup must not silently change
+  third-party or contributor rights.
 
 ---
 
@@ -307,12 +344,13 @@ code is deliberately not shipped on the strictV3-only main branch.
   3. Every candidate must produce two byte-equal CSVs and a deployment
      logits that matches the training OOF exactly in FP16/FP32.
 
-### 5.3 From-scratch small backbone — "competition-only" (priority 3, compliance fallback)
+### 5.3 From-scratch small backbone — "competition-only" (priority 3, diversity fallback)
 
-* **Motivation**: the Small Track ≤ 100 MB and "no large pretrained
-  backbone" rules plus the PKU-MMD licence ambiguity and the
-  MViTv2-S 131.9 MB checkpoint force a *different* method that
-  trains from scratch.
+* **Motivation**: a from-scratch small model provides a genuinely different
+  inductive bias and a clean provenance fallback. It is not required because
+  external training data are forbidden; they are allowed. The deployed model
+  must still satisfy the Small Track ≤100 MB rule, and MViTv2-S itself is too
+  large to be the final artifact.
 * **Candidates** (preregistered and audited at the CPU / contract
   level, 87/87 contract + 20/20 signal tests passing):
   * **Primary**: `TSM-MobileNetV3-Small`, 975,576 parameters,
@@ -345,24 +383,33 @@ code is deliberately not shipped on the strictV3-only main branch.
      `authorization` ≥ 21 rows; logical paths only for contract
      comparison, I/O only through private snapshot.
 
-### 5.4 External representation transfer (priority 4 — only when 5.1–5.3 fail)
+### 5.4 External representation transfer (active under frozen gates)
 
-The external-only research queue (verbatim from the prior roadmap):
+The compliance correction reopens bounded external-data work without reopening
+post-hoc hyperparameter searches. The queue is:
 
-1. **VideoMAE-S ≈ MViTv2-S** — same investigation tier; the "≈" means
+1. **PKU-MMD bridge target confirmation (completed and rejected in §5.7)** —
+   one seed-matched initialization comparison against an immutable control;
+   the average transfer was positive, but the conjunctive stability gate
+   failed. No source-weight, LR or epoch scan is allowed.
+2. **VideoMAE-S ≈ MViTv2-S** — same investigation tier; the "≈" means
    "same investigation tier", not "equivalent on this dataset".
    Freeze the external checkpoint / architecture / preprocessing / seed
    map before opening any CUHK-X fold.
-2. **Deterministic depth / lag-1 temporal-difference channels** —
+3. **Complete NTU Depth+IR coverage** — the current 9-setup subset cannot
+   answer the full-data question. Before any new target fold, freeze the full
+   setup inventory and pairability audit, then compare complete paired
+   Depth+IR against a row-matched Depth-only source control.
+4. **Deterministic depth / lag-1 temporal-difference channels** —
    fixed, auditable; pre-declared auxiliary weight. No held-driven
    channel-recipe search.
-3. **Predeclared tail weight averaging (executed; rejected)** — the fixed
+5. **Predeclared tail weight averaging (executed; rejected)** — the fixed
    epoch 3–5 interval, LR schedule, parameter scope and BN treatment were
    declared before A–E. The averaged checkpoint was the only candidate;
    results are frozen in §5.5 and no post-hoc SWA schedule scan is allowed.
-4. **SlowFast / X3D** — same subject folds, seed budget, source-only
+6. **SlowFast / X3D** — same subject folds, seed budget, source-only
    data boundary; measure compute / accuracy locally first.
-5. **MixStyle / ASAM** — last in queue, because small-fold spurious
+7. **MixStyle / ASAM** — last in queue, because small-fold spurious
    gains tend to damage cross-seed stability.
 
 External-only is *strict*: external representation / public
@@ -432,8 +479,61 @@ scan, strictV3 fusion, full-data training, anonymous-test access, checkpoint
 packaging or Kaggle submission. The frozen evidence identifiers are:
 preregistration `1b21f4ef…ddadc`, runner `c923a4d9…f556`, summary
 `ee2fc114…49380`, decision `57776a38…f949bd`, and seed-mean OOF logits
-`a339f104…3cb10`. PKU-MMD was not rerun because its earlier target transfer
-was negative and its publication terms remain unresolved.
+`a339f104…3cb10`. This rejects only progressive unfreezing. PKU-MMD was not
+part of that treatment; the prior statement that its competition permission
+was unresolved was incorrect and is superseded by the official organiser
+clarification in §4.6.
+
+### 5.7 PKU-MMD bridge target confirmation, 2026-09-04 (positive transfer; promotion rejected)
+
+The organiser clarification and the already approved 2026-08-30 access review
+allowed the previously materialised PKU-MMD bridge to receive one fresh target
+confirmation. No incomplete or quarantined prior target outcome was opened.
+Before training, the experiment froze the 15-job matrix, all input hashes and a
+conjunctive gate. The sole treatment variable was encoder initialization:
+
+* control: Kinetics anchor + 25% NTU60 masked-depth interpolation;
+* treatment: the same anchor, followed by six fixed epochs of PKU-MMD
+  depth-only layer4 adaptation in three source-subject folds and an equal
+  encoder-only source-fold soup for each seed.
+
+Both arms used a bitwise-identical fresh 40-way head for each matching seed,
+the same A–E target folds, temporal-difference weight 0.10, layer4+head scope,
+optimizer, LR schedule, frozen BN, 15 fixed epochs and one held evaluation
+after checkpoint reload. The runner verified that only encoder entries differed
+before target training. All 15 jobs completed on GPUs 0 and 1 without opening
+aggregate metrics early.
+
+| Frozen endpoint | Control | PKU bridge | Delta / gate |
+| --- | ---: | ---: | --- |
+| Mean per-seed micro | 0.669521 | 0.677866 | +0.008344; passed ≥ +0.003 |
+| Mean per-seed subject-macro | 0.666864 | 0.675394 | +0.008530; passed ≥ +0.003 |
+| Per-seed micro delta (2026 / 2027 / 2028) | — | — | +0.008893 / +0.006917 / +0.009223; all passed |
+| Per-seed subject-macro delta | — | — | +0.010067 / +0.005704 / +0.009819; all passed |
+| Joint micro+subject non-degraded folds | — | — | 4 / 3 / 4; failed required ≥4 for every seed |
+| Mean fold-cell worst-user delta | — | — | +0.015586; passed |
+| Largest single-cell worst-user drop | — | — | −0.025339; failed −0.02 limit |
+| Candidate micro / subject seed std | — | 0.004456 / 0.005086 | both passed ≤0.01 |
+| Mean train-minus-held gap increase | — | — | −0.004006; passed ≤0.01 |
+| Three-seed logit mean (diagnostic, not the gate) | 0.676877 | 0.685441 | +0.008564; worst-user 0.43125 → 0.45 |
+
+This is a useful distinction: adding constrained PKU-MMD information produced
+a real and consistent *average* target gain, including positive micro and
+subject-macro deltas for every seed. The data hypothesis succeeded. Promotion
+still failed because the preregistered gate required local fold robustness as
+well as a higher mean: seed 2027 regressed on D/E, and its C worst-user drop
+was 2.5339 pp. In total 8/10 criteria passed. The threshold was not relaxed
+after observing the result.
+
+An independent recomputation from all 15 candidate/control raw-logit pairs
+matched every aggregate exactly. Frozen identifiers are: source materialization
+`4110434a…153f`, preregistration `a4dc86f0…aa00`, runner
+`49fcf679…dc14`, auditor `9cd7f284…60ba`, summary
+`682223ca…3313`, decision `71625074…8243`, and seed-mean OOF logits
+`741cfd38…1a02`. No anonymous/test asset, submission or leaderboard feedback
+was read. The failed conjunctive gate therefore stopped full-data training,
+fusion, packaging and submission, while preserving the positive external-data
+finding for the next genuinely different preregistered method.
 
 ---
 
@@ -474,10 +574,10 @@ was negative and its publication terms remain unresolved.
    (reads only labelled-train cache + metadata; never opens
    held/test/anonymous/submission). Run 80 inner + 30 outer synthetic
    regression.
-3. **Do not reopen** the NTU progressive-unfreeze or PKU bridge routes. Only
-   when 1 + 2 still fail to crack the public top-2, upstream rights are clear,
-   and the mechanism is genuinely new may the priority-4 external queue get a
-   new preregistration.
+3. **Keep PKU bridge v4 closed after its §5.7 gate failure.** Do not run
+   full-data training, fusion, test inference or a bridge-weight / epoch / LR
+   scan. The next external-scale question, if pursued, is the separately
+   preregistered complete NTU Depth+IR comparison in §5.4—not a v4 retune.
 4. Any new mechanism candidate is mirrored into
    `BEST_REPORT_EVIDENCE_MANIFEST_*.json` (with SHA + decision) and
    into `EXTERNAL_ONLY_RESEARCH_ROADMAP_20260830.md` (the prior

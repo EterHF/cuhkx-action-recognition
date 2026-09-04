@@ -60,7 +60,13 @@ NTU RGB+D and PKU-MMD are not needed to reproduce the canonical 0.97512
 package. A fully-external research run must use a separate manifest, initialise
 a fresh 40-way head inside every outer fold, and keep its outputs outside
 `checkpoints/strict_v3/`. External archives and source-derived experimental
-weights are not redistributed by this repository.
+weights are not redistributed by this repository. This separation is a
+provenance and release rule, not a prohibition on training: the competition
+host [allows publicly obtainable external data and pretrained models and
+explicitly permits NTU RGB+D](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/724404).
+Request-form access is also allowed when open to anyone. Record the provider,
+access steps, manifest/hash, preprocessing, and role of every external source
+in the final writeup.
 
 ## Temporal baseline
 
@@ -110,7 +116,7 @@ For a confirmatory OOF screen that must not touch anonymous test assets, omit
 argument, skips all full-data jobs, writes `null` for test paths and hashes,
 and records `test_data_loaded: false` in `receipt.json`.
 
-## Observed retraining audit (2026-09-03)
+## Observed retraining audit (through 2026-09-04)
 
 The following jobs were actual training runs, not frozen-checkpoint replays.
 They ran serially on one A100 while an unrelated service occupied most of the
@@ -176,8 +182,32 @@ trainable from the first step. The paired single-seed mean was 0.660848 versus
 subject-macro regression. Mean worst-user delta was −0.001517 and the largest
 cell drop was −0.035461. The treatment failed five of six frozen criteria, so
 the stop rule prohibited full-data training, test inference, fusion,
-packaging, and submission. PKU-MMD was not rerun while its publication terms
-remain unresolved.
+packaging, and submission. That result rejects progressive unfreezing only;
+PKU-MMD was not part of the treatment, and the earlier permission concern was
+superseded by the organiser clarification linked in the input contract.
+
+A separate PKU-MMD bridge target confirmation then completed 15/15 GPU jobs.
+The only treatment variable was the seed-matched external encoder: the control
+used Kinetics + 25% NTU60, while the candidate additionally used constrained
+PKU-MMD depth-only layer4 adaptation and a three-source-fold encoder soup. Both
+arms used identical fresh heads, target folds, RNG seeds, 15 epochs, optimizer,
+temporal-difference weight 0.10, BN policy and fixed-final evaluation.
+
+| Frozen endpoint | Control | PKU bridge | Delta / gate |
+| --- | ---: | ---: | --- |
+| Mean per-seed micro | 0.669521 | 0.677866 | +0.008344; passed ≥ +0.003 |
+| Mean per-seed subject-macro | 0.666864 | 0.675394 | +0.008530; passed ≥ +0.003 |
+| Per-seed micro delta (2026 / 2027 / 2028) | — | — | +0.008893 / +0.006917 / +0.009223 |
+| Joint micro+subject non-degraded folds | — | — | 4 / 3 / 4; failed required ≥4 for every seed |
+| Mean fold-cell worst-user delta / largest cell drop | — | — | +0.015586 / −0.025339; second limit was −0.02 |
+| Mean train-minus-held gap increase | — | — | −0.004006; passed |
+| Three-seed logit mean (diagnostic) | 0.676877 | 0.685441 | +0.008564; worst-user 0.43125 → 0.45 |
+
+The frozen gate passed 8/10 criteria but failed fold stability and the maximum
+single-cell worst-user drop. An independent raw-logit recomputation matched
+the audit exactly. The stop rule therefore prohibited full-data training,
+anonymous-test inference, fusion, packaging and submission; no leaderboard
+feedback was read.
 
 The audit is still **partial**: a new full fusion deployment package, two
 byte-identical raw replays and an authorized Kaggle confirmation have not been

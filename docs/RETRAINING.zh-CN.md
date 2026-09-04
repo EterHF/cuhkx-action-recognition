@@ -42,7 +42,11 @@ Suite runner 会将绝对输入路径和 hash 写入 `receipt.json`。因此无�
 `data/external/` 明确位于本 strictV3 重训练契约之外。复现标准 0.97512 package
 不需要 NTU RGB+D 或 PKU-MMD。完全外部数据研究必须使用独立 manifest，在每个
 outer fold 内重新初始化 40 类 head，并将输出保存在 `checkpoints/strict_v3/` 之外。
-本仓库不会再分发外部数据压缩包或由源数据产生的实验权重。
+本仓库不会分发外部数据压缩包或源数据派生的实验权重。这一隔离是来源与发布规则，
+并非禁止训练：竞赛主持人[允许公众可获取的外部数据与预训练模型，并明确确认 NTU
+RGB+D 可用](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/724404)。
+若申请入口对任何人开放，申请制数据也可使用。最终报告必须记录每个外部来源的提供方、
+获取步骤、manifest/hash、预处理方式和具体作用。
 
 ## 时序基线
 
@@ -80,7 +84,7 @@ CUDA_VISIBLE_DEVICES=0 .conda/envs/cuhkx/bin/python \
 `--oof-only`。该模式会拒绝 test-logit 参数、跳过全部 full-data 任务，将测试路径和
 hash 写为 `null`，并在 `receipt.json` 中记录 `test_data_loaded: false`。
 
-## 已执行的重训练审计（2026-09-03）
+## 已执行的重训练审计（截至 2026-09-04）
 
 下列结果来自真实训练，而不是冻结 checkpoint 重放。任务在一张 A100 上串行执行；
 当时另一个无关服务占用了该卡的大部分显存。`public_finetune` 和 `fusion` 现已支持
@@ -133,8 +137,29 @@ layer4 从第一步起就保持可训练。单 seed 配对均值为 0.660848，c
 （+0.000329；门槛 +0.002）；各 seed delta 为 −0.010870、+0.009223、+0.002635，
 各 seed 同时避免 micro 与 subject-macro 回退的 fold 数仅为 2/4/3。worst-user 平均
 delta 为 −0.001517，单格最大下降为 −0.035461。六项冻结判据中五项失败，停止规则
-因此禁止 full-data 训练、测试推理、融合、打包和提交。PKU-MMD 的发布条款仍未解决，
-故未重新训练。
+因此禁止 full-data 训练、测试推理、融合、打包和提交。该结果只否决渐进解冻；
+PKU-MMD 并不是 treatment 的组成部分，此前的许可疑问已由输入契约中链接的组织方
+官方澄清取代。
+
+随后单独完成了 PKU-MMD bridge 的 15/15 个目标域 GPU 作业。唯一 treatment 变量是
+seed-matched 外部 encoder：control 使用 Kinetics + 25% NTU60，候选额外经过受约束的
+PKU-MMD depth-only layer4 适配，并对三个源域 fold 的 encoder 做 soup。两个 arm 的
+全新 head、目标 fold、随机种子、15 epochs、optimizer、temporal-difference 权重 0.10、
+BN policy 和固定最终评估均完全一致。
+
+| 冻结 endpoint | Control | PKU bridge | Delta / 门禁 |
+| --- | ---: | ---: | --- |
+| 各 seed micro 均值 | 0.669521 | 0.677866 | +0.008344；通过 ≥ +0.003 |
+| 各 seed subject-macro 均值 | 0.666864 | 0.675394 | +0.008530；通过 ≥ +0.003 |
+| 各 seed micro delta（2026 / 2027 / 2028） | — | — | +0.008893 / +0.006917 / +0.009223 |
+| 同时满足 micro+subject 非退化的 fold 数 | — | — | 4 / 3 / 4；未达到每个 seed 均 ≥4 |
+| fold 单元 worst-user 平均 delta / 单格最大下降 | — | — | +0.015586 / −0.025339；后者上限为 −0.02 |
+| train-minus-held gap 平均增量 | — | — | −0.004006；通过 |
+| 三 seed logit mean（仅诊断） | 0.676877 | 0.685441 | +0.008564；worst-user 0.43125 → 0.45 |
+
+冻结门禁 10 项通过 8 项，但 fold 稳定性和单格 worst-user 最大下降失败。独立的原始
+logit 重算与审计完全一致。因此停止规则禁止 full-data 训练、匿名测试推理、融合、打包
+和提交；未读取任何排行榜反馈。
 
 本次审计仍为 **partial**：尚未生成新的 full fusion 部署包，也未完成两次逐字节一致的
 原始数据重放和经授权的 Kaggle 确认。标准 0.97512 package 保持不变。

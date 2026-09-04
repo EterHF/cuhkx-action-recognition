@@ -92,11 +92,23 @@ strictV3 release or retraining contract. NTU RGB+D and PKU-MMD were evaluated
 only in isolated, manifest-hashed research runs. Reproducing the published
 0.97512 submission does not require either dataset.
 
-Obtain external datasets from their official providers and review their terms
-before use. This repository does not redistribute their archives, extracted
-frames, labels, or source-derived experimental checkpoints. Keep external
-manifests and caches separate from the CUHK-X train/test cache so provenance
-checks cannot silently cross the data boundary.
+The competition host's
+[external-data clarification](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/724404)
+allows publicly obtainable external datasets and pretrained models, explicitly
+including NTU RGB+D. A request form is acceptable when it is open to anyone;
+the final writeup must explain access and use. This authorizes competition
+training under the stated conditions, but it does not transfer a provider's
+redistribution rights.
+
+Obtain [NTU RGB+D](https://rose1.ntu.edu.sg/dataset/actionRecognition/) and
+[PKU-MMD](https://struct002.github.io/PKUMMD/) from their official providers and
+review their terms before use. This repository does not redistribute their
+archives, extracted frames, labels, or source-derived experimental checkpoints.
+Keep external manifests and caches separate from the CUHK-X train/test cache so
+provenance checks cannot silently cross the data boundary. PKU-MMD's project
+page publishes the research data but does not state a separate explicit dataset
+licence; record that residual limitation rather than treating it as a ban on a
+bounded, non-commercial research run.
 
 ## Quick start
 

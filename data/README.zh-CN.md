@@ -71,9 +71,17 @@ cd Testing/data && unzip small_model_track_test.zip   # -> small_model_track_tes
 NTU RGB+D 与 PKU-MMD 仅用于隔离的、带 manifest/hash 的研究实验；复现已发布的
 0.97512 提交不需要这两个数据集。
 
-请从官方提供方获取外部数据，并在使用前自行审查其条款。本仓库不会再分发其压缩包、
-解压帧、标签或由源数据产生的实验 checkpoint。外部 manifest/cache 必须与 CUHK-X
-训练/测试 cache 分离，避免来源检查静默跨越数据边界。
+竞赛主持人的[外部数据澄清](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/724404)
+允许使用公众可获取的外部数据集和预训练模型，并明确点名 NTU RGB+D。若申请表对任何人
+开放，也视为可获取；最终报告必须说明申请过程与使用方式。这一澄清允许在相应条件下训练，
+但不会自动转移数据提供方的再分发权。
+
+请从 [NTU RGB+D](https://rose1.ntu.edu.sg/dataset/actionRecognition/) 和
+[PKU-MMD](https://struct002.github.io/PKUMMD/) 官方页面获取数据，并在使用前审查其条款。
+本仓库不会分发其压缩包、解压帧、标签或源数据派生的实验 checkpoint。外部
+manifest/cache 必须与 CUHK-X 训练/测试 cache 分离，避免来源检查静默跨越数据边界。
+PKU-MMD 项目页公开了研究数据，但没有单列明确的数据许可证；应如实披露这一剩余限制，
+而不是把它误解为禁止受控的非商业研究实验。
 
 ## 快速开始
 

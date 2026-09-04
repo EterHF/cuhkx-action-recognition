@@ -46,8 +46,14 @@ Generated caches, datasets and training runs are not versioned.
 NTU RGB+D and PKU-MMD are external research inputs, not strictV3 release
 dependencies. Their archives and source-derived experimental checkpoints are
 excluded from this repository; the canonical 0.97512 verification and replay
-do not read `data/external/`. See the [data boundary](data/README.md#external-research-datasets)
-and technical report before attempting external-data research.
+do not read `data/external/`. The competition host explicitly permits public
+external datasets and pretrained models, including NTU RGB+D, provided that
+access and use are disclosed in the final writeup. This permission to train is
+separate from redistribution: upstream archives remain unversioned and subject
+to their providers' terms. See the
+[official clarification](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/724404),
+the [data boundary](data/README.md#external-research-datasets), and the technical
+report before attempting external-data research.
 
 Two OOF-qualified consensus candidates are maintained on the
 `experiment/strictv3-consensus` branch. Their frozen packages, raw replay
@@ -150,7 +156,7 @@ Subject-wise folds and frozen release hyperparameters are recorded in
 `results/strict_v3/release_manifest.json`. Do not use leaderboard feedback or
 anonymous-test attributes for model selection.
 
-## Retraining status (2026-09-03)
+## Retraining status (2026-09-04)
 
 The temporal, visual-head and fusion fold jobs were rerun from the declared
 bootstrap boundary. Temporal reproduced all five historical fold accuracies;
@@ -176,8 +182,18 @@ true epoch-1 head-only stage followed by layer4 + head adaptation improved the
 paired single-seed mean by only 0.000329 (required 0.002), regressed seed 2026
 by 0.010870, and reduced worst-user robustness. It failed five of six frozen
 criteria, so no full model, test inference, fusion, package or submission was
-created. PKU-MMD was not rerun while its publication terms remain unresolved.
-The canonical strictV3 package is unchanged.
+created.
+
+After correcting the external-data policy record, a fresh seed-matched
+Kinetics → NTU60 → PKU-MMD bridge confirmation completed another 3 seeds × 5
+subject folds. With the target recipe held fixed, mean micro rose from 0.669521
+to 0.677866 (+0.008344) and subject-macro rose by 0.008530; every seed improved.
+The diagnostic three-seed logit mean reached 0.685441 versus 0.676877. This is
+real external-data gain, but the frozen promotion gate remained stricter: seed
+2027 had only 3/5 jointly non-degraded folds (required 4/5 for every seed), and
+one cell's worst-user score dropped 0.025339 (limit 0.02). The route therefore
+stopped before full-data training, test inference, fusion, packaging or
+submission. The canonical strictV3 package is unchanged.
 
 ## License
 
