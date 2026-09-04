@@ -2,14 +2,14 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [文档索引](docs/README.zh-CN.md)
 
-这是 CUHK-X 小模型赛道（UbiComp / ISWC 2026）清理后的 strictV3 基线。发布包可以从原始测试数据逐字节复现正式提交 `55712568`，其公开榜分数为 **0.97512**、排名第 3。可部署包连同 YOLO11n 检测器共占 69.82 MB。
+这是 CUHK-X 小模型赛道（UbiComp / ISWC 2026）清理后的 strictV3 基线。发布包可以从原始测试数据逐字节复现正式提交 `55712568`，其公开榜分数为 **0.97512**、排名第 3。包含 YOLO11n 检测器的单 checkpoint 推理包占 69.81 MB。
 
 主代码树有意排除了历史实验和已否决方向；它们的方法与结果保存在[技术报告](docs/TECHNICAL_REPORT.zh-CN.md)（[英文版](docs/TECHNICAL_REPORT.md)）中。
 
 ## 仓库结构
 
 ```text
-checkpoints/strict_v3/       发布模型与检测器（Git LFS）
+checkpoints/strict_v3/       单文件发布包及其源权重（Git LFS）
 results/strict_v3/           OOF/test logits、指标及标准 CSV
 yolo_r2plus1d/strict_v3/
 ├── data/                    确定性索引与 cache 构建器
@@ -60,7 +60,7 @@ conda env create -p .conda/envs/cuhkx -f environment.yml
 
 ## 验证已发布结果
 
-快速 CPU 检查会验证全部已发布 hash、包安全契约、100 MB 限制、保存的 OOF 分数，以及由保存的测试 logits 生成的提交文件：
+快速 CPU 检查会验证全部已发布 hash、包安全契约、官方单 checkpoint 100 MB 限制、保存的 OOF 分数，以及由保存的测试 logits 生成的提交文件：
 
 ```bash
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.verify
@@ -71,7 +71,7 @@ conda env create -p .conda/envs/cuhkx -f environment.yml
 ```text
 OOF accuracy: 0.9561923583662714
 submission rows/classes: 405 / 40
-model + detector: 69,819,764 bytes
+single checkpoint（全部推理权重）: 69,805,793 bytes
 ```
 
 ## 从原始测试数据重放推理
@@ -87,6 +87,7 @@ data/processed/test/small_model_track_test/SM_test_*/
 
 ```bash
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.replay \
+  --bundle checkpoints/strict_v3/submission_bundle.pt \
   --output results/strict_v3/reproduced_submission.csv
 
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.verify \
@@ -94,6 +95,13 @@ data/processed/test/small_model_track_test/SM_test_*/
 ```
 
 重放过程从不读取测试标签、测试集派生统计量、时间戳或用户身份。它会确定性地逐字节复现标准 CSV 的 hash `e2509491…`。建议使用 GPU 推理；`--device cpu` 仅适合较慢的功能性重放。
+
+主持人的[ensemble 大小澄清](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/729056)
+要求把 ensemble 全部成员等所有推理权重放入一个严格小于 100 MB 的文件。
+`submission_bundle.pt` 同时嵌入 strictV3 与原始 YOLO checkpoint 字节；验证器会拒绝
+缺失、被修改或超限的 bundle。可用
+`python -m yolo_r2plus1d.strict_v3.release.bundle --output /tmp/strictv3.pt`
+从两个可审计源 checkpoint 重建。
 
 ## 训练
 
@@ -165,7 +173,7 @@ visual-head 与历史各 fold 的差异不超过 3 个验证样本。独立重�
 15-epoch full-data checkpoint。INT3 与混合 INT3/INT4 package 在 train-only OOF
 审计中发生信号塌缩；最终 uniform-INT4 成员保留了 1,930/3,036 行 external OOF。
 其冻结的 strictV3 90/10 融合取得 2,900/3,036 OOF，改变 11 个 OOF 决策，保持
-0.8125 的 worst-user 下限，并与 YOLO 合计 99,701,322 bytes。两次本机 GPU
+0.8125 的 worst-user 下限；最终单 checkpoint（含 YOLO）为 99,978,253 bytes。两次本机 GPU
 重放完全一致，只改变 1 个匿名样本预测。唯一一次 Kaggle 确认（ref `56006027`）
 得到 **0.97512**：与标准结果完全持平，并未提升。此后没有使用排行榜继续调参，
 因此公开主基线仍为标准 strictV3，外部数据诊断只保留在报告中。

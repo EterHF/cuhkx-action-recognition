@@ -67,15 +67,23 @@ storing a second near-duplicate network.
 
 | Property | Value |
 | --- | --- |
-| Package | `checkpoints/strict_v3/model.pt` (64,206,000 bytes) |
+| Official-format inference bundle | `checkpoints/strict_v3/submission_bundle.pt` (69,805,793 bytes) |
+| Auditable model source | `checkpoints/strict_v3/model.pt` (64,206,000 bytes) |
 | Canonical submission | `results/strict_v3/submission.csv` (405 rows, 40 classes) |
 | Raw-replay submission | `results/strict_v3/raw_replay/submission.csv` (405 rows, 40 classes) |
-| Total with YOLO11n | 69,819,764 bytes (under 100 MB) |
+| All inference weights in one checkpoint | 69,805,793 bytes (30,194,207-byte margin) |
 | Public score | **0.97512**, ref `55712568` |
 | Reproduced raw-data score | **0.97512**, byte-identical to ref `55712568` |
 | OOF (release-strict) | aggregate `0.956192`, mean fold `0.954823`, worst fold `0.926931`, macro recall `0.953143` |
 | Protocol | `five_fold_subject_wise_nested_temperature_quality_gate` (full contract in `release_manifest.json`) |
 | Raw-replay evidence | deterministic SHA-256 `e2509491…`; byte-identical to the canonical CSV |
+
+The organizer's [official ensemble clarification](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/729056)
+defines size on one checkpoint containing every weight required at inference,
+including every ensemble member. It must be **under** 100 MB on disk; FP16 and
+INT8-or-lower quantisation are allowed. The release therefore embeds the exact
+YOLO file bytes in the same weights-only-loadable checkpoint as strictV3 rather
+than relying on the earlier sum-of-two-files interpretation.
 
 ### 3.1 What the strict-v3 release actually contains
 
@@ -293,7 +301,7 @@ These were the *穷尽* (exhausted) directions.
 
 ---
 
-## 5. Methods and experiments still under consideration
+## 5. Exploration ledger and frozen follow-ups
 
 These directions are an archival research queue. They are recorded here so
 the rationale survives cleanup; their preregistration, experiment and protocol
@@ -560,7 +568,7 @@ one uniform per-output-channel signed INT4 candidate.
 | INT4 external OOF | 1,930/3,036 = 0.635705; subject-macro 0.633421 | passed ≥1,800 rows |
 | 90/10 probability blend OOF | 2,900/3,036 = 0.955204; worst-user 0.8125 | passed ≥2,898 rows and worst-user ≥0.8125 |
 | Changed OOF top-1 vs canonical | 11 | passed ≥1 |
-| Package + YOLO | 99,701,322 bytes | passed ≤100,000,000 |
+| Single checkpoint including YOLO | 99,978,253 bytes | passed <100,000,000 |
 | Anonymous replay | two package-backed GPU logits arrays and two CSVs byte-identical; one changed prediction (index 36) | passed |
 | Kaggle confirmation | **0.97512**, ref `56006027` | exact tie with canonical strictV3 |
 
@@ -596,7 +604,7 @@ same seed-2026, 5-fold, 15-epoch layer4+head target protocol. Kinetics+25%
 NTU120 reached 1,998 FP16 and 1,859 INT4 external OOF rows; its frozen 90/10
 strictV3 blend retained 2,903/3,036, the 0.8125 worst-user floor, and changed
 10 OOF decisions. The full fit ended at 0.962121 training accuracy. Its
-99,701,322-byte package produced two identical A100 replays and changed test
+99,971,501-byte single checkpoint produced two identical A100 replays and changed test
 index 133 from class 24 to 19. Kaggle ref `56014518` scored **0.97512**.
 
 An equal NTU60/NTU120 source update improved INT4 external OOF to 1,910 and
@@ -615,6 +623,37 @@ to INT4 than NTU120 alone. None exceeded canonical strictV3, so the main
 release remains unchanged. Three daily submissions were deliberately left
 unused because no further candidate passed both the evidence and novelty
 gates.
+
+### 5.10 Fast close-out: packaging rule and NTU modality inventory
+
+The 2026-09-04 close-out checked the two remaining assumptions without opening
+another target fold. The organizer's ensemble ruling requires one checkpoint,
+not merely a sum of separately supplied files. Actual single-file
+materialisations gave:
+
+| Inference artifact | Single-checkpoint bytes | Margin below 100,000,000 |
+| --- | ---: | ---: |
+| canonical strictV3 | 69,805,793 | 30,194,207 |
+| PKU INT4 diagnostic | 99,978,253 | 21,747 |
+| NTU120 INT4 diagnostic | 99,971,501 | 28,499 |
+| NTU60/120 INT4 diagnostic | 99,975,005 | 24,995 |
+
+All four pass, but the experimental artifacts have only 21–28 kB of genuine
+headroom. Future packages are therefore gated on their final serialized file,
+never on component-size arithmetic. The public strictV3 verifier now requires
+the 69,805,793-byte bundle and validates its embedded detector hash.
+
+The [provider inventory](https://rose1.ntu.edu.sg/dataset/actionRecognition/)
+states that NTU RGB+D 120 contains 114,480 samples and supplies masked depth,
+skeleton and IR modalities; masked depth totals 147 GB and IR totals 389 GB.
+Authenticated endpoint sizes matched all 32 local masked-depth archives, and
+both skeleton archives are present. IR was incomplete at 9/32 setups
+(97,333,511,077 complete-archive bytes); the missing 23 official archives total
+320,783,737,075 bytes. A resumable eight-stream, per-archive size-checked
+download was started in tmux window `clash:ntu_ir_download`. RGB and full depth
+are intentionally excluded because the frozen §5.4 comparison needs only
+masked depth, IR and skeleton. No new CUHK-X fold may open until all 32 IR
+archives pass the same size and pairability audit.
 
 ---
 
@@ -635,7 +674,7 @@ gates.
    * two-round raw replay (CSV byte-equal, logits `max_abs` ≈ 0,
      bit-width / precision match between deployment and training OOF);
    * natural 40-class coverage;
-   * package + YOLO ≤ 100 MB;
+   * one checkpoint containing every inference weight < 100,000,000 bytes;
    * independent audit SHA consistent;
    * only then write `submit_candidate.zsh` (and only when the Kaggle
      quota allows).

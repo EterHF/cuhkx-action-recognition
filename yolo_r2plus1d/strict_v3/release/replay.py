@@ -35,6 +35,7 @@ from yolo_r2plus1d.strict_v3.paths import (
     RESULT_DIR,
 )
 from yolo_r2plus1d.strict_v3.release.blend import apply_gate
+from yolo_r2plus1d.strict_v3.release.bundle import load_bundle, write_detector
 from yolo_r2plus1d.strict_v3.release.packing import reconstruct_state
 from yolo_r2plus1d.strict_v3.training.base import MEAN, STD
 from yolo_r2plus1d.strict_v3.training.public_finetune import (
@@ -480,6 +481,11 @@ def validate_contract(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--bundle",
+        type=Path,
+        help="single checkpoint containing every inference weight (official format)",
+    )
     parser.add_argument("--package", type=Path, default=DEFAULT_PACKAGE)
     parser.add_argument("--detector", type=Path, default=DEFAULT_DETECTOR)
     parser.add_argument(
@@ -514,9 +520,22 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--workers", type=int, default=8)
     args = parser.parse_args()
-    if not args.package.is_file():
-        raise FileNotFoundError(args.package)
-    package = torch.load(args.package, map_location="cpu", weights_only=True)
+    bundle_temporary: tempfile.TemporaryDirectory[str] | None = None
+    if args.bundle is not None:
+        if not args.bundle.is_file():
+            raise FileNotFoundError(args.bundle)
+        bundle = load_bundle(args.bundle)
+        package = bundle["model"]
+        bundle_temporary = tempfile.TemporaryDirectory(prefix="cuhkx_bundle_")
+        detector = Path(bundle_temporary.name) / "yolo11n.pt"
+        write_detector(bundle, detector)
+        package_source = args.bundle
+    else:
+        if not args.package.is_file():
+            raise FileNotFoundError(args.package)
+        package = torch.load(args.package, map_location="cpu", weights_only=True)
+        detector = args.detector.resolve()
+        package_source = args.package
     release = package.get("release_contract", {})
     contract = release.get("preprocessing_contract")
     embedded_contract = isinstance(contract, dict)
@@ -534,7 +553,6 @@ def main() -> None:
         raise RuntimeError(
             "raw replay requires train-only, timestamp-free preprocessing"
         )
-    detector = args.detector.resolve()
     validate_contract(package, contract, detector)
     if not args.test_root.is_dir():
         raise FileNotFoundError(args.test_root)
@@ -988,7 +1006,8 @@ def main() -> None:
             },
             "mean_gate_weights": weights.mean(0).tolist(),
             "probability_ensemble": ensemble_summary,
-            "package_sha256": sha256(args.package),
+            "package_sha256": sha256(package_source),
+            "single_checkpoint_bundle": args.bundle is not None,
             "preprocessing_contract_embedded": embedded_contract,
             "preprocessing_contract_fallback": (
                 None if embedded_contract else str(args.preprocessing_contract)
@@ -1004,6 +1023,8 @@ def main() -> None:
     finally:
         if temporary is not None:
             temporary.cleanup()
+        if bundle_temporary is not None:
+            bundle_temporary.cleanup()
 
 
 if __name__ == "__main__":

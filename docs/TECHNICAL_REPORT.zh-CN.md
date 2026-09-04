@@ -44,15 +44,22 @@ CUHK-X 小模型赛道（[挑战页面](https://openaiotlab.github.io/CUHK-X-Cha
 
 | 属性 | 值 |
 | --- | --- |
-| Package | `checkpoints/strict_v3/model.pt`（64,206,000 bytes） |
+| 官方格式推理 bundle | `checkpoints/strict_v3/submission_bundle.pt`（69,805,793 bytes） |
+| 可审计模型源文件 | `checkpoints/strict_v3/model.pt`（64,206,000 bytes） |
 | 标准提交 | `results/strict_v3/submission.csv`（405 行、40 类） |
 | 原始数据重放提交 | `results/strict_v3/raw_replay/submission.csv`（405 行、40 类） |
-| 连同 YOLO11n 总大小 | 69,819,764 bytes（低于 100 MB） |
+| 单 checkpoint 内全部推理权重 | 69,805,793 bytes（余量 30,194,207 bytes） |
 | 公开榜分数 | **0.97512**，ref `55712568` |
 | 原始数据重放分数 | **0.97512**，与 ref `55712568` 逐字节一致 |
 | OOF（release-strict） | aggregate `0.956192`，mean fold `0.954823`，worst fold `0.926931`，macro recall `0.953143` |
 | 协议 | `five_fold_subject_wise_nested_temperature_quality_gate`，完整契约见 `release_manifest.json` |
 | 原始重放证据 | 确定性 SHA-256 `e2509491…`，与标准 CSV 逐字节一致 |
+
+主持人的[官方 ensemble 澄清](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/729056)
+按一个包含全部推理权重（包括每个 ensemble 成员）的 checkpoint 计算大小；磁盘文件必须
+**严格小于** 100 MB，允许 FP16、INT8 或更低位量化。因此发布包把原始 YOLO 文件字节
+与 strictV3 一起嵌入同一个可用 weights-only 模式加载的 checkpoint，不再依赖此前
+“两个文件求和”的解释。
 
 ### 3.1 strict-v3 发布包的实际内容
 
@@ -208,7 +215,7 @@ bridge 确认因此只替换外部初始化，目标域配方与不可变 matche
 
 ---
 
-## 5. 仍在考虑的方法与实验
+## 5. 探索记录与冻结的后续项
 
 这些方向构成归档研究队列。它们记录在此，以确保清理后仍能保留设计依据；其 preregistration、实验和协议代码有意不随 strictV3-only main 分支发布。
 
@@ -388,7 +395,7 @@ per-output-channel signed INT4 候选。
 | INT4 external OOF | 1,930/3,036 = 0.635705；subject-macro 0.633421 | 通过 ≥1,800 行 |
 | 90/10 概率融合 OOF | 2,900/3,036 = 0.955204；worst-user 0.8125 | 通过 ≥2,898 行且 worst-user ≥0.8125 |
 | 相对标准结果改变的 OOF top-1 | 11 | 通过 ≥1 |
-| Package + YOLO | 99,701,322 bytes | 通过 ≤100,000,000 |
+| 含 YOLO 的单 checkpoint | 99,978,253 bytes | 通过 <100,000,000 |
 | 匿名重放 | 两次 package-backed GPU logits 与两份 CSV 逐字节一致；改变 1 个预测（索引 36） | 通过 |
 | Kaggle 确认 | **0.97512**，ref `56006027` | 与标准 strictV3 完全持平 |
 
@@ -416,7 +423,7 @@ strictV3 仍是更简单的标准发布版本；v3 bridge 仅作为报告证据�
 Kinetics-anchor NTU 初始化。Kinetics+25% NTU120 的 external OOF 在 FP16 和 INT4
 下分别正确 1,998 和 1,859 行；冻结的 strictV3 90/10 融合保持 2,903/3,036、
 worst-user 0.8125，并改变 10 个 OOF 决策。Full fit 最终训练准确率为 0.962121。
-99,701,322-byte package 在 A100 上两次重放完全一致，将测试索引 133 从类别 24 改为
+99,971,501-byte 单 checkpoint 在 A100 上两次重放完全一致，将测试索引 133 从类别 24 改为
 19；Kaggle ref `56014518` 得到 **0.97512**。
 
 NTU60/NTU120 等权源更新把 INT4 external OOF 提高到 1,910 行，融合改变 14 个 OOF
@@ -431,6 +438,32 @@ NTU60/NTU120 等权源更新把 INT4 external OOF 提高到 1,910 行，融合�
 候选超过标准 strictV3，因此 main 发布保持不变。当天主动保留了 3 次提交配额，因为
 没有其他候选同时通过证据和新颖性门禁。
 
+### 5.10 快速收口：打包规则与 NTU 模态清点
+
+2026-09-04 的收口检查在不打开新目标 fold 的前提下核对了最后两个假设。主持人的
+ensemble 裁定要求一个 checkpoint，不能只把多个独立文件的大小相加。实际单文件
+materialisation 结果为：
+
+| 推理 artifact | 单 checkpoint bytes | 距 100,000,000 的余量 |
+| --- | ---: | ---: |
+| 标准 strictV3 | 69,805,793 | 30,194,207 |
+| PKU INT4 诊断 | 99,978,253 | 21,747 |
+| NTU120 INT4 诊断 | 99,971,501 | 28,499 |
+| NTU60/120 INT4 诊断 | 99,975,005 | 24,995 |
+
+四者均通过，但三个实验 artifact 的真实余量只有 21–28 kB。因此后续必须以最终序列化
+文件执行门禁，不再用组件大小做算术推断。公开 strictV3 验证器现在强制检查
+69,805,793-byte bundle 及其中嵌入 detector 的 hash。
+
+[数据提供方清单](https://rose1.ntu.edu.sg/dataset/actionRecognition/)说明 NTU RGB+D
+120 共 114,480 个样本，提供 masked depth、skeleton 与 IR；masked depth 共 147 GB，
+IR 共 389 GB。经登录后的官方 endpoint 尺寸与本地 32 个 masked-depth 压缩包全部
+一致，两个 skeleton 包也已存在；IR 只有 9/32 setups（完整包共 97,333,511,077 bytes），
+缺少的 23 个官方包共 320,783,737,075 bytes。已在 tmux 窗口
+`clash:ntu_ir_download` 启动八路可续传、逐压缩包尺寸校验的下载。冻结的 §5.4 比较
+只需要 masked depth、IR 与 skeleton，因此有意不下载 RGB 和 full depth。全部 32 个
+IR 包通过相同的尺寸与可配对性审计前，不得打开新的 CUHK-X fold。
+
 ---
 
 ## 6. 通用方法纪律（硬约束）
@@ -442,7 +475,7 @@ NTU60/NTU120 等权源更新把 INT4 external OOF 提高到 1,910 行，融合�
    * full-data OOF nested-CV：5/5 fold 非退化、subject-macro 同方向、worst-user 改善且跨 seed 稳定；
    * 两轮原始数据重放：CSV 逐字节一致、logits `max_abs` ≈ 0，并保证 deployment 与 training OOF 的 bit-width / precision 匹配；
    * 自然覆盖 40 类；
-   * package + YOLO ≤ 100 MB；
+   * 一个 checkpoint 包含全部推理权重，且 < 100,000,000 bytes；
    * 独立审计 SHA 一致；
    * 只有全部通过后才能生成 `submit_candidate.zsh`，且仅在 Kaggle quota 允许时提交。
 5. **禁止放宽标准**：独立审计发现真实 P0/P1 后，候选立即作废。不得为了接纳候选而放宽 package 预算、门禁或审计要求。

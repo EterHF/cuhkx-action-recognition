@@ -230,7 +230,8 @@ limit. No leaderboard value was available during candidate selection.
 The v3 package removes only the zero-release-weight thermal branch and two
 redundant top-level legacy records from the nested strictV3 package. Every
 executable strictV3 object remained byte-equal before and after serialization.
-Together with YOLO, the INT4 bridge package is 99,701,322 bytes. Two A100 test
+The earlier component sum was 99,701,322 bytes; the required single checkpoint
+containing the package and YOLO is 99,978,253 bytes. Two A100 test
 replays produced identical logits and CSVs; the frozen blend changed one of 405
 anonymous predictions (index 36). After an independent audit, the only Kaggle
 submission (`56006027`) scored **0.97512**, exactly tying canonical strictV3.
@@ -257,8 +258,9 @@ and uniform INT4 deployment. No fold used anonymous data.
 | Equal target-weight soup of the two rows above | — | 1,553/3,036 | 2,902/3,036; 3 changes | Failed the preregistered 1,900-row external gate; stopped before test |
 | Kinetics 75% + NTU60 25% control | 2,044/3,036 | 1,875/3,036 | 2,902/3,036; 13 changes | Failed the preregistered 1,900-row external gate; stopped before full fit/test |
 
-The NTU120 full fit ended at 0.962121 train accuracy. Its 99,701,322-byte
-package plus YOLO replayed exactly twice and changed only anonymous index 133.
+The NTU120 full fit ended at 0.962121 train accuracy. Its package and YOLO
+materialize as one 99,971,501-byte checkpoint; it replayed exactly twice and
+changed only anonymous index 133.
 Submission `56014518` scored **0.97512**. This shows that the larger NTU120
 source survived deployment without hurting the public score, not that scale
 alone improved it. The NTU60 control retained higher FP16 target OOF, while

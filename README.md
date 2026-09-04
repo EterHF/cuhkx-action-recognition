@@ -5,7 +5,8 @@
 The cleaned strictV3 baseline for the CUHK-X Small Model Track (UbiComp / ISWC
 2026). The released package reproduces the canonical **0.97512** submission
 (rank 3, submission `55712568`) byte-for-byte from raw test data. The deployable
-package occupies 69.82 MB including the YOLO11n detector.
+single-checkpoint inference bundle occupies 69.81 MB including the YOLO11n
+detector.
 
 Historical experiments and rejected directions are intentionally excluded
 from the main code tree. Their methods and outcomes are preserved in the
@@ -14,7 +15,7 @@ from the main code tree. Their methods and outcomes are preserved in the
 ## Repository layout
 
 ```text
-checkpoints/strict_v3/       released model and detector (Git LFS)
+checkpoints/strict_v3/       released single-file bundle and source weights (Git LFS)
 results/strict_v3/           OOF/test logits, metrics and canonical CSV
 yolo_r2plus1d/strict_v3/
 ├── data/                    deterministic indexing and cache builders
@@ -74,8 +75,8 @@ All commands below run from the repository root.
 ## Verify the published result
 
 The fast CPU check validates every published hash, the package safety
-contract, the 100 MB limit, the saved OOF score and the submission generated
-from the saved test logits:
+contract, the official single-checkpoint 100 MB limit, the saved OOF score and
+the submission generated from the saved test logits:
 
 ```bash
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.verify
@@ -86,7 +87,7 @@ Expected headline values:
 ```text
 OOF accuracy: 0.9561923583662714
 submission rows/classes: 405 / 40
-model + detector: 69,819,764 bytes
+single checkpoint (all inference weights): 69,805,793 bytes
 ```
 
 ## Replay inference from raw test data
@@ -103,6 +104,7 @@ inference pipeline:
 
 ```bash
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.replay \
+  --bundle checkpoints/strict_v3/submission_bundle.pt \
   --output results/strict_v3/reproduced_submission.csv
 
 .conda/envs/cuhkx/bin/python -m yolo_r2plus1d.strict_v3.release.verify \
@@ -113,6 +115,13 @@ The replay never reads test labels, test-derived statistics, timestamps or
 user identities. It deterministically reproduces the canonical CSV hash
 `e2509491…` byte-for-byte. GPU inference is recommended; use `--device cpu`
 only for a slow functional replay.
+
+The organizer's [ensemble-size clarification](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/729056)
+requires every inference weight, including all ensemble members, in one file
+strictly below 100 MB. `submission_bundle.pt` embeds both strictV3 and the exact
+YOLO checkpoint bytes; the verifier rejects a missing, modified, or oversized
+bundle. Rebuild it from the two auditable source checkpoints with
+`python -m yolo_r2plus1d.strict_v3.release.bundle --output /tmp/strictv3.pt`.
 
 ## Training
 
@@ -199,7 +208,8 @@ diagnostic then reused the fixed seed-2028, 15-epoch full-data checkpoint. INT3
 and mixed INT3/INT4 packages collapsed during train-only OOF audits; the final
 uniform-INT4 member retained 1,930/3,036 external OOF rows. Its frozen 90/10
 blend with strictV3 scored 2,900/3,036 OOF, changed 11 OOF decisions, preserved
-the 0.8125 worst-user floor, and occupied 99,701,322 bytes with YOLO. Two local
+the 0.8125 worst-user floor; its final single checkpoint including YOLO is
+99,978,253 bytes. Two local
 GPU replays were identical and changed one anonymous prediction. The single
 Kaggle confirmation, ref `56006027`, scored **0.97512**: an exact tie, not an
 improvement. No leaderboard retuning followed, so canonical strictV3 remains

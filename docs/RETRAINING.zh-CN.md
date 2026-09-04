@@ -177,8 +177,9 @@ package 大小和最多一次提交。候选选择期间没有任何排行榜数
 | Uniform INT4 v3 | 1,930/3,036 = 0.635705 | 2,900/3,036 = 0.955204；改变 11 行；worst-user 0.8125 | 通过全部冻结 OOF 与部署门禁 |
 
 v3 package 只从嵌套 strictV3 package 中移除了发布权重为 0 的 thermal 分支和两个
-冗余顶层 legacy 记录；序列化前后每个可执行 strictV3 对象均逐字节相等。INT4 bridge
-package 连同 YOLO 为 99,701,322 bytes。两次 A100 测试重放生成完全相同的 logits
+冗余顶层 legacy 记录；序列化前后每个可执行 strictV3 对象均逐字节相等。此前 package
+与 YOLO 的组件求和为 99,701,322 bytes；按规则生成的单 checkpoint 为 99,978,253
+bytes。两次 A100 测试重放生成完全相同的 logits
 和 CSV；冻结融合改变了 405 个匿名预测中的 1 个（索引 36）。独立审计通过后，唯一一次
 Kaggle 提交 `56006027` 得到 **0.97512**，与标准 strictV3 完全持平。记录分数后即
 关闭该路线，没有根据排行榜修改权重、量化、epoch 或 seed。
@@ -200,8 +201,9 @@ temporal-difference 权重和 uniform INT4 部署；任何 fold 都未使用匿�
 | 上述两行的等权 target-weight soup | — | 1,553/3,036 | 2,902/3,036；改变 3 行 | 未达到预注册 1,900 行 external 门禁；测试前停止 |
 | Kinetics 75% + NTU60 25% control | 2,044/3,036 | 1,875/3,036 | 2,902/3,036；改变 13 行 | 未达到预注册 1,900 行 external 门禁；full fit/测试前停止 |
 
-NTU120 full fit 最终训练准确率为 0.962121。其 package 连同 YOLO 为 99,701,322
-bytes，两次重放完全一致，只改变匿名索引 133；提交 `56014518` 得到 **0.97512**。
+NTU120 full fit 最终训练准确率为 0.962121。其 package 与 YOLO 生成的单 checkpoint
+为 99,971,501 bytes，两次重放完全一致，只改变匿名索引 133；提交 `56014518` 得到
+**0.97512**。
 这说明更大的 NTU120 源数据能够经受部署且未损害公开分数，但不能证明仅靠规模就能提升。
 NTU60 control 的 FP16 目标 OOF 更高，而更广的源混合比单一 NTU120 更耐 INT4。
 因此源域相关性、量化鲁棒性和数据量应作为三个独立变量处理。

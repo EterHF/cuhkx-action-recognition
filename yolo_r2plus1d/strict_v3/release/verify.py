@@ -10,9 +10,13 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import torch
 
 from yolo_r2plus1d.strict_v3.paths import CHECKPOINT_DIR, RESULT_DIR
+from yolo_r2plus1d.strict_v3.release.bundle import (
+    DEFAULT_BUNDLE,
+    MODEL_LIMIT_BYTES,
+    load_bundle,
+)
 
 EXPECTED = {
     "model.pt": "c1feb649267aaa41ef490a93660735a76af4eae4629a687a90a102ac4e63bd75",
@@ -25,6 +29,7 @@ EXPECTED = {
     "test_logits.npy": "d700e4cf680f9958c23294d8e468855579289e37a468b481a8a1a5abe974fe3e",
 }
 EXPECTED_RAW_REPLAY = "e25094918e57f357e23346f479050bd9bf09dc907c849d4c8938a66812003343"
+EXPECTED_BUNDLE = "4856eacc9f10043e873a6ac8c4c1359e9cf7d2a13685d8d07c6b2a7594800bf3"
 
 
 def digest(path: Path) -> str:
@@ -40,6 +45,7 @@ def main() -> None:
     parser.add_argument("--checkpoint-dir", type=Path, default=CHECKPOINT_DIR)
     parser.add_argument("--result-dir", type=Path, default=RESULT_DIR)
     parser.add_argument("--replayed-csv", type=Path)
+    parser.add_argument("--bundle", type=Path, default=DEFAULT_BUNDLE)
     args = parser.parse_args()
 
     paths = {
@@ -58,6 +64,19 @@ def main() -> None:
             mismatches[name] = {"expected": expected, "actual": actual}
     if mismatches:
         raise SystemExit(f"release hash mismatch: {json.dumps(mismatches, indent=2)}")
+
+    if not args.bundle.is_file():
+        raise SystemExit(f"single-checkpoint inference bundle not found: {args.bundle}")
+    bundle_hash = digest(args.bundle)
+    if bundle_hash != EXPECTED_BUNDLE:
+        raise SystemExit(
+            f"single-checkpoint bundle hash mismatch: expected={EXPECTED_BUNDLE} "
+            f"actual={bundle_hash}"
+        )
+    bundle = load_bundle(args.bundle)
+    bundle_bytes = args.bundle.stat().st_size
+    if bundle_bytes >= MODEL_LIMIT_BYTES:
+        raise SystemExit("single-checkpoint release is not strictly below 100 MB")
 
     metrics = json.loads((args.result_dir / "metrics.json").read_text(encoding="utf-8"))
     manifest = json.loads(paths["release_manifest.json"].read_text(encoding="utf-8"))
@@ -84,7 +103,7 @@ def main() -> None:
     if manifest["test_replay"]["package_sha256"] != digest(paths["model.pt"]):
         raise SystemExit("manifest replay package hash mismatch")
 
-    package = torch.load(paths["model.pt"], map_location="cpu", weights_only=True)
+    package = bundle["model"]
     contract = package.get("release_contract", {})
     preprocessing = contract.get("preprocessing_contract", {})
     raw_pipeline = contract.get("raw_pipeline", {})
@@ -139,6 +158,9 @@ def main() -> None:
                 "model_bytes": int(paths["model.pt"].stat().st_size),
                 "detector_bytes": int(paths["yolo11n.pt"].stat().st_size),
                 "combined_bytes": int(combined_bytes),
+                "single_checkpoint_bytes": int(bundle_bytes),
+                "single_checkpoint_margin_bytes": int(MODEL_LIMIT_BYTES - bundle_bytes),
+                "single_checkpoint_sha256": bundle_hash,
                 "manifest_hash": digest(paths["release_manifest.json"]),
                 "raw_replay_matches": replay_matches,
                 "raw_replay_differences": replay_differences,
