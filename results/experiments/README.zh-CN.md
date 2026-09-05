@@ -62,3 +62,7 @@ sensor gate 保持为零，没有构建测试候选。
 [`omnivore_layer_fusion`](omnivore_layer_fusion/) 使用双向时序 cross-attention 融合
 Depth/IR Omnivore 四个 stage，再进入统一分类器。Fold-A held accuracy 仅 0.512570，
 低于独立 IR 和旧 Fusion 分支，因此在 B–E 与测试推理前停止。
+
+[`omnivore_native_rgbd`](omnivore_native_rgbd/) 用重复 IR 加 inverse-depth 启用单个
+Omnivore 的原生四通道 token 融合。Fold-A held accuracy 仅 0.379888，表明它与
+自然 RGB 加米制 Depth 的预训练契约存在明显域差，因此关闭该路线。

@@ -3,8 +3,10 @@ import torch
 from torch import nn
 
 from yolo_r2plus1d.strict_v3.models.omnivore_layer_fusion import OmnivoreLayerFusion
+from yolo_r2plus1d.strict_v3.models.omnivore_rgbd import OmnivoreRGBDClassifier
 from yolo_r2plus1d.strict_v3.models.public_sensor_fusion import PublicSensorFusion
 from yolo_r2plus1d.strict_v3.models.research_skeleton import HighRateSkeletonClassifier
+from yolo_r2plus1d.strict_v3.training.finetune_omnivore_rgbd import prepare_rgbd
 from yolo_r2plus1d.strict_v3.training.research_oof import FOLDS, split
 
 
@@ -100,3 +102,31 @@ def test_omnivore_layer_fusion_returns_main_and_auxiliary_logits() -> None:
     inputs = torch.randn(2, 3, 16, 32, 32)
     main, depth, infrared = model(inputs, inputs, return_aux=True)
     assert main.shape == depth.shape == infrared.shape == (2, 40)
+
+
+class FakeRGBDOmnivore(nn.Module):
+    def forward(self, inputs: torch.Tensor):
+        assert inputs.shape[1] == 4
+        return inputs.mean(dim=(2, 3, 4)).repeat(1, 192)
+
+
+def test_omnivore_rgbd_uses_single_four_channel_trunk() -> None:
+    model = OmnivoreRGBDClassifier(FakeRGBDOmnivore())
+    assert model(torch.randn(2, 4, 16, 32, 32)).shape == (2, 40)
+    with np.testing.assert_raises_regex(ValueError, "shape"):
+        model(torch.randn(2, 3, 16, 32, 32))
+
+
+def test_rgbd_preparation_repeats_ir_and_retains_depth_channel() -> None:
+    frames = torch.zeros(2, 3, 4, 8, 8, dtype=torch.uint8)
+    frames[:, :, 3] = 255
+    values = prepare_rgbd(
+        frames,
+        mean=torch.tensor([0.0, 0.0]),
+        std=torch.tensor([1.0, 1.0]),
+        augment=False,
+    )
+    assert values.shape == (2, 4, 3, 8, 8)
+    torch.testing.assert_close(values[:, 0], values[:, 1])
+    torch.testing.assert_close(values[:, 1], values[:, 2])
+    assert torch.all(values[:, :3] == 1.0)

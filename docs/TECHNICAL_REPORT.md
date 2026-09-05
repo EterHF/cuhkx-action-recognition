@@ -827,6 +827,22 @@ heads, it remained below independently trained IR (0.544693), clip-token fusion
 a cross-user generalisation failure; the fixed gate stopped B–E training,
 anonymous-test inference and Kaggle submission.
 
+### 5.16 Native single-trunk Omnivore RGB-D token fusion, 2026-09-05
+
+A single Omnivore Swin-T then received `[IR, IR, IR, inverse-depth]`, explicitly
+activating its four-channel `summed_rgb_d_tokens` implementation. Appearance
+and depth use separate patch embeddings and are summed before the shared
+transformer. Mean and standard deviation were fit only on the 2,320 outer-train
+rows; initialization used only the official public checkpoint.
+
+The fixed batch-16, 15-epoch Fold-A run reached 0.662069 augmented training
+accuracy, 0.379888 held accuracy and 0.290640 worst-user accuracy. Although the
+native code path was verified directly, performance fell below independent IR
+(0.544693) and the dual-trunk multi-stage model (0.512570). The likely failure
+is a pretraining-contract mismatch: Omnivore learned natural RGB plus metric
+depth, whereas this dataset supplies repeated IR plus JET-inverted pseudo-depth.
+The gate stopped B–E training, anonymous-test inference and Kaggle submission.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)

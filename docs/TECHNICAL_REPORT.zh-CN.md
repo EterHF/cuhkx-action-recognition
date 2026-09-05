@@ -596,6 +596,19 @@ Fusion 分类器；末层单模态头仅用于辅助监督。
 0.800395）。这是跨用户泛化失败；固定门禁据此停止 B–E 训练、匿名测试推理和 Kaggle
 提交。
 
+### 5.16 单 trunk Omnivore 原生 RGB-D token 融合，2026-09-05
+
+单个 Omnivore Swin-T 随后接收 `[IR, IR, IR, inverse-depth]`，明确启用其四通道
+`summed_rgb_d_tokens` 实现。appearance 与 Depth 分别 patch embedding，并在共享
+transformer 前相加；均值和标准差仅由 2,320 条 outer-train 样本拟合，初始化只使用
+官方公共 checkpoint。
+
+固定 batch size 16、15 epochs 的 Fold-A 训练最终增强 accuracy 为 0.662069，held
+accuracy 为 0.379888，worst-user 为 0.290640。虽然已直接验证原生代码路径确实启用，
+结果仍低于独立 IR（0.544693）和双 trunk 多层模型（0.512570）。最可能的原因是预训练
+契约不匹配：Omnivore 学习的是自然 RGB 加米制 Depth，本数据却是重复 IR 加 JET 反解
+伪深度。门禁据此停止 B–E 训练、匿名测试推理和 Kaggle 提交。
+
 ---
 
 ## 6. 通用方法纪律（硬约束）

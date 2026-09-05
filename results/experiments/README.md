@@ -77,3 +77,8 @@ The [`omnivore_layer_fusion`](omnivore_layer_fusion/) screen fuses all four
 Depth/IR Omnivore stages with bidirectional temporal cross-attention and one
 classifier. Fold-A held accuracy was 0.512570, below independent IR and the old
 Fusion branch, so it was stopped before B–E or test inference.
+
+The [`omnivore_native_rgbd`](omnivore_native_rgbd/) screen activates one
+Omnivore trunk's native four-channel token fusion with repeated IR plus
+inverse-depth. Fold-A held accuracy was 0.379888, exposing a strong mismatch
+with its natural-RGB plus metric-depth pretraining contract; the route is closed.

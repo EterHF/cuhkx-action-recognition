@@ -1,0 +1,36 @@
+{
+  "protocol": "subject-held-single-omnivore-native-rgbd/v1",
+  "architecture": {
+    "model": "omnivore_swinT",
+    "input_channels": ["ir", "ir", "ir", "inverse_depth"],
+    "depth_mode": "summed_rgb_d_tokens",
+    "trunks": 1,
+    "model_parameters": 27886126
+  },
+  "normalization_fit": "outer-train-only",
+  "sensor_mean": [0.16876770555973053, 0.5322893261909485],
+  "sensor_std": [0.1862119436264038, 0.3045104742050171],
+  "held_users": [1, 6, 17, 22],
+  "train_rows": 2320,
+  "held_rows": 716,
+  "fixed_epoch": 15,
+  "batch_size": 16,
+  "seed": 2026,
+  "last_train_accuracy_with_augmentation": 0.6620689655172414,
+  "held": {
+    "accuracy": 0.37988826815642457,
+    "worst_user_accuracy": 0.29064039408866993,
+    "user_accuracy": {
+      "1": 0.33986928104575165,
+      "6": 0.29064039408866993,
+      "17": 0.4819277108433735,
+      "22": 0.4175257731958763
+    }
+  },
+  "public_source_commit": "1d55abdc8dfc7bd5cbf69316841ab804d0acf1ca",
+  "public_weights_sha256": "e1c8100ea9aa2d9b1a816d6edc92d59d9b9ee4c9a5f656bc2bc0dde2846794d4",
+  "project_checkpoint_loaded": false,
+  "anonymous_test_accessed": false,
+  "fold_a_gate_passed": false,
+  "decision": "stop before B-E, full-fit, test inference, or Kaggle submission"
+}
