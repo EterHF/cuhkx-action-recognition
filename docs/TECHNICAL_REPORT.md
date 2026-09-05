@@ -809,6 +809,24 @@ reached 0.939065 and selected zero sensor weight for outer folds B, C and D.
 The interface is retained with a fail-closed sensor gate of zero, exactly
 recovering Temporal; no test inference or Kaggle submission followed.
 
+### 5.15 Unified multi-stage Omnivore Depth/IR Fusion, 2026-09-05
+
+To test whether late-logit fusion was discarding useful cross-modal structure,
+two independently initialized Omnivore Swin-T trunks exposed all four stages
+(`192/384/768/768` channels). Spatial pooling retained eight temporal tokens
+per stage. Depth and IR then exchanged context through bidirectional four-head
+cross-attention at every stage; the four summaries fed one unified Fusion
+classifier, with final-stage modality heads used only for auxiliary supervision.
+
+The fixed Fold-A screen used batch size 16, seed 2026 and 15 epochs. Augmented
+training accuracy reached 0.816810, but held accuracy was 0.512570 and
+worst-user accuracy was 0.431373. The auxiliary Depth and IR heads reached
+0.407821 and 0.502793. Although the unified head improved on both auxiliary
+heads, it remained below independently trained IR (0.544693), clip-token fusion
+(0.539106), and the original strictV3 Fusion branch (0.800395 full OOF). This is
+a cross-user generalisation failure; the fixed gate stopped B–E training,
+anonymous-test inference and Kaggle submission.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)

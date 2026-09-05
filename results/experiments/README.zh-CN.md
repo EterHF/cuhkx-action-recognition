@@ -58,3 +58,7 @@ score 仅 0.58706（ref 56035438），因此关闭该路线，不根据排行榜
 [`temporal_public_sensor`](temporal_public_sensor/) 后续以 strictV3 Temporal 为主干，
 固定加入各 5% 的 Depth/IR 概率残差。完整五折 OOF 从 0.940053 降到 0.939723，因此
 sensor gate 保持为零，没有构建测试候选。
+
+[`omnivore_layer_fusion`](omnivore_layer_fusion/) 使用双向时序 cross-attention 融合
+Depth/IR Omnivore 四个 stage，再进入统一分类器。Fold-A held accuracy 仅 0.512570，
+低于独立 IR 和旧 Fusion 分支，因此在 B–E 与测试推理前停止。

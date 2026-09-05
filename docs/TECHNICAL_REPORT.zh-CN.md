@@ -582,6 +582,20 @@ INT4 对这些组件过于保守。骨干权重采用按输出通道 int8，输�
 B/C/D 选择传感器权重为零。融合接口予以保留，但 fail-closed sensor gate 固定为零，
 即精确回退 Temporal；此后没有测试推理或 Kaggle 提交。
 
+### 5.15 统一的 Omnivore Depth/IR 多层 Fusion，2026-09-05
+
+为验证后期 logits 融合是否丢失跨模态结构，两个独立初始化的 Omnivore Swin-T trunk
+输出全部四层特征（通道数 `192/384/768/768`）。空间池化后每层保留 8 个时间 token，
+Depth 与 IR 在每一层通过双向四头 cross-attention 交换上下文，四层摘要最终进入同一个
+Fusion 分类器；末层单模态头仅用于辅助监督。
+
+固定 Fold-A 初筛采用 batch size 16、seed 2026 和 15 epochs。增强训练 accuracy 达到
+0.816810，但 held accuracy 仅 0.512570，worst-user 为 0.431373；Depth、IR 辅助头
+分别为 0.407821、0.502793。统一 Fusion 虽优于两个辅助头，仍低于独立 IR
+（0.544693）、整段 token fusion（0.539106）和原 strictV3 Fusion 分支（完整 OOF
+0.800395）。这是跨用户泛化失败；固定门禁据此停止 B–E 训练、匿名测试推理和 Kaggle
+提交。
+
 ---
 
 ## 6. 通用方法纪律（硬约束）

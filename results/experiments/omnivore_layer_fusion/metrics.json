@@ -1,0 +1,28 @@
+{
+  "protocol": "subject-held-omnivore-layer-fusion/v1",
+  "architecture": {
+    "modalities": ["depth", "ir"],
+    "stage_channels": [192, 384, 768, 768],
+    "temporal_tokens_per_stage": 8,
+    "fusion": "bidirectional four-head cross-attention at every stage",
+    "classifier": "concatenated four-stage summaries",
+    "auxiliary_heads": ["depth stage3", "ir stage3"]
+  },
+  "held_users": [1, 6, 17, 22],
+  "train_rows": 2320,
+  "held_rows": 716,
+  "fixed_epoch": 15,
+  "batch_size": 16,
+  "seed": 2026,
+  "last_train_accuracy_with_augmentation": 0.8168103448275862,
+  "held": {
+    "fusion": {"accuracy": 0.5125698324022346, "worst_user_accuracy": 0.43137254901960786},
+    "depth_auxiliary": {"accuracy": 0.40782122905027934, "worst_user_accuracy": 0.33497536945812806},
+    "ir_auxiliary": {"accuracy": 0.5027932960893855, "worst_user_accuracy": 0.39869281045751637}
+  },
+  "public_weights_sha256": "e1c8100ea9aa2d9b1a816d6edc92d59d9b9ee4c9a5f656bc2bc0dde2846794d4",
+  "project_checkpoint_loaded": false,
+  "anonymous_test_accessed": false,
+  "fold_a_gate_passed": false,
+  "decision": "stop before B-E, full-fit, test inference, or Kaggle submission"
+}

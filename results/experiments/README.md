@@ -72,3 +72,8 @@ The [`temporal_public_sensor`](temporal_public_sensor/) follow-up anchors on
 strictV3 Temporal and adds fixed 5% Depth and IR probability residuals. Complete
 five-fold OOF fell from 0.940053 to 0.939723, so the sensor gate remains zero and
 no test candidate was built.
+
+The [`omnivore_layer_fusion`](omnivore_layer_fusion/) screen fuses all four
+Depth/IR Omnivore stages with bidirectional temporal cross-attention and one
+classifier. Fold-A held accuracy was 0.512570, below independent IR and the old
+Fusion branch, so it was stopped before B–E or test inference.

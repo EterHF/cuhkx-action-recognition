@@ -1,6 +1,8 @@
 import numpy as np
 import torch
+from torch import nn
 
+from yolo_r2plus1d.strict_v3.models.omnivore_layer_fusion import OmnivoreLayerFusion
 from yolo_r2plus1d.strict_v3.models.public_sensor_fusion import PublicSensorFusion
 from yolo_r2plus1d.strict_v3.models.research_skeleton import HighRateSkeletonClassifier
 from yolo_r2plus1d.strict_v3.training.research_oof import FOLDS, split
@@ -81,3 +83,20 @@ def test_public_sensor_fusion_uses_temporal_sensor_order() -> None:
         ordered = model(depth, infrared, skeleton, mask, positions)
         reversed_depth = model(depth.flip(1), infrared, skeleton, mask, positions)
     assert not torch.equal(ordered, reversed_depth)
+
+
+class FakeOmnivore(nn.Module):
+    def forward(self, inputs: torch.Tensor, out_feat_keys: list[str]):
+        assert len(out_feat_keys) == 4
+        batch = len(inputs)
+        return [
+            torch.randn(batch, channels, 8, size, size, device=inputs.device)
+            for channels, size in ((192, 8), (384, 4), (768, 2), (768, 2))
+        ]
+
+
+def test_omnivore_layer_fusion_returns_main_and_auxiliary_logits() -> None:
+    model = OmnivoreLayerFusion(FakeOmnivore(), FakeOmnivore())
+    inputs = torch.randn(2, 3, 16, 32, 32)
+    main, depth, infrared = model(inputs, inputs, return_aux=True)
+    assert main.shape == depth.shape == infrared.shape == (2, 40)
