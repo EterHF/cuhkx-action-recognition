@@ -1,0 +1,84 @@
+{
+  "protocol": "strictv3-temporal-visual-inherited-gate/v1",
+  "change": "set Fusion base weight to zero; inherit all other release settings",
+  "candidate_oof": {
+    "correct": 2909,
+    "accuracy": 0.9581686429512516,
+    "macro_recall": 0.9560757544061399,
+    "subject_macro_accuracy": 0.9579540477725538,
+    "worst_user_accuracy": 0.8125
+  },
+  "strictv3_reconstructed_oof": {
+    "correct": 2903,
+    "accuracy": 0.9561923583662714,
+    "macro_recall": 0.9531358487755417,
+    "subject_macro_accuracy": 0.9557941784444863,
+    "worst_user_accuracy": 0.8125
+  },
+  "folds": [
+    {
+      "fold": "A",
+      "rows": 716,
+      "candidate_correct": 687,
+      "strictv3_correct": 687,
+      "delta": 0,
+      "candidate_accuracy": 0.9594972067039106
+    },
+    {
+      "fold": "B",
+      "rows": 673,
+      "candidate_correct": 643,
+      "strictv3_correct": 643,
+      "delta": 0,
+      "candidate_accuracy": 0.9554234769687965
+    },
+    {
+      "fold": "C",
+      "rows": 679,
+      "candidate_correct": 663,
+      "strictv3_correct": 658,
+      "delta": 5,
+      "candidate_accuracy": 0.9764359351988218
+    },
+    {
+      "fold": "D",
+      "rows": 489,
+      "candidate_correct": 472,
+      "strictv3_correct": 471,
+      "delta": 1,
+      "candidate_accuracy": 0.9652351738241309
+    },
+    {
+      "fold": "E",
+      "rows": 479,
+      "candidate_correct": 444,
+      "strictv3_correct": 444,
+      "delta": 0,
+      "candidate_accuracy": 0.9269311064718163
+    }
+  ],
+  "all_folds_non_degrading": true,
+  "test": {
+    "rows": 405,
+    "classes": 40,
+    "changed_vs_strictv3": 3,
+    "mean_effective_visual_weight": 0.16528821742946478,
+    "effective_visual_weight_range": [
+      0.08823054675514638,
+      0.2882213916240652
+    ]
+  },
+  "bundle": {
+    "path": "checkpoints/strict_v3/submission_bundle.pt",
+    "bytes": 69805793,
+    "sha256": "4856eacc9f10043e873a6ac8c4c1359e9cf7d2a13685d8d07c6b2a7594800bf3"
+  },
+  "kaggle": {
+    "submission_ref": 56036959,
+    "public_score": 0.97512,
+    "submission_sha256": "c60690cb0f42e8d5ebce40c45dab2bac19652edc44060a546f60e5d244a19055",
+    "remaining_daily_submissions_after_submit": 2
+  },
+  "decision": "retain as a simpler private-LB candidate; do not tune from the public tie",
+  "anonymous_test_labels_used": false
+}

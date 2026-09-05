@@ -3,6 +3,9 @@ import numpy as np
 from yolo_r2plus1d.strict_v3.evaluation.temporal_visual_equal import (
     equal_tempered_logits,
 )
+from yolo_r2plus1d.strict_v3.evaluation.temporal_visual_inherited import (
+    inherited_logits,
+)
 from yolo_r2plus1d.strict_v3.release.blend import apply_gate
 
 
@@ -45,3 +48,17 @@ def test_equal_tempered_logits_uses_fixed_half_weights() -> None:
     temporal = np.array([[3.0, 9.0]], dtype=np.float32)
     observed = equal_tempered_logits(visual, temporal, 2.0, 3.0)
     np.testing.assert_allclose(observed, [[1.0, 2.5]])
+
+
+def test_inherited_temporal_visual_blend_removes_fusion() -> None:
+    visual = np.arange(40, dtype=np.float64)[None]
+    temporal = visual[:, ::-1].copy()
+    logits, weights = inherited_logits(
+        visual,
+        temporal,
+        {"fusion": 1.0, "visual": 1.5, "temporal": 1.2},
+        {"fusion": 0.11, "visual": 0.22, "temporal": 0.67},
+    )
+    assert logits.shape == (1, 40)
+    assert weights[0, 0] == 0.0
+    np.testing.assert_allclose(weights.sum(axis=1), 1.0)

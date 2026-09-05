@@ -91,6 +91,7 @@ CUHK-X 小模型赛道（[挑战页面](https://openaiotlab.github.io/CUHK-X-Cha
 | 56016293 | strictV3 0.50 + sched30 三随机种子 consensus 0.50 | 0.97014 | 离线 OOF 提升，但公开榜泛化失败；否决 |
 | 56035438 | full-fit 等权 Depth Omnivore + IR Omnivore + skeleton，mixed INT8 | 0.58706 | 跨用户泛化严重失败；否决 |
 | 56036875 | strictV3 Temporal + Visual 严格 50/50 | 0.95522 | 低于 strictV3；否决 |
+| 56036959 | strictV3 Temporal + Visual 继承式门控 | **0.97512** | 与标准持平；更简洁的 private-LB 候选 |
 
 多个离线“更高 OOF”候选（如 OOF 为 0.970* 的 Fusion4 raw）均被公开排行榜否定，不再属于候选方案。
 
@@ -621,6 +622,22 @@ Subject-wise OOF 从 strictV3 的 2,903/3,036（0.956192）降至 2,881/3,036
 405 条测试预测自然覆盖全部 40 类，相对 strictV3 改变 15 条。经用户明确授权的 Kaggle
 提交得到 0.95522（ref 56036875），低于 strictV3 的 0.97512。该消融否决，发布契约
 保持不变。
+
+### 5.18 Temporal 主导的 Visual 优化，2026-09-05
+
+成功的后续只做一个结构变化：将 legacy Fusion 的基础权重置零。strictV3 已冻结的逐
+fold/full temperature、Temporal/Visual 权重和置信度 quality gate 全部继承。另一次
+leave-one-fold-out 权重搜索仅得到 2,905 条，并使 A/E folds 退化，因此否决，没有用于
+调整本候选。
+
+继承式门控候选将 subject-wise OOF 从 2,903 提高到 2,909/3,036（0.958169）。Fold
+delta 为 0/0/+5/+1/0，macro recall 从 0.953136 升至 0.956076，subject-macro 从
+0.955794 升至 0.957954，worst-user 保持 0.8125。置信度门控使 Temporal 继续占主导，
+测试集 Visual 平均有效权重为 0.1653；预测覆盖全部 40 类，仅改变 strictV3 的 3/405 条。
+
+经授权提交后与标准 public score 0.97512 持平（ref 56036959）。该方案作为更简洁的
+private-LB 候选保留，但公开榜持平不能证明它更优，也不会据此继续搜索权重。提交复用
+合规的 69,805,793-byte bundle；裁剪已不使用的 Fusion 权重仍属于后续发布打包任务。
 
 ---
 

@@ -70,3 +70,7 @@ Omnivore 的原生四通道 token 融合。Fold-A held accuracy 仅 0.379888，�
 [`temporal_visual_equal`](temporal_visual_equal/) 删除 Fusion，并在冻结 temperature 后
 严格等权融合 Temporal/Visual。OOF 降至 0.948946，Kaggle 为 0.95522（ref
 56036875），因此不修改 strictV3。
+
+[`temporal_visual_inherited`](temporal_visual_inherited/) 仅将 Fusion 冻结基础权重置零，
+继承 strictV3 的 Temporal/Visual temperature、权重与 quality gate。OOF 增加 6 条且
+5/5 folds 不退化，Kaggle 持平 0.97512（ref 56036959）。

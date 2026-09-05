@@ -87,3 +87,8 @@ The [`temporal_visual_equal`](temporal_visual_equal/) ablation removes Fusion
 and combines frozen-temperature Temporal/Visual logits at exact 50/50 weights.
 OOF fell to 0.948946 and Kaggle scored 0.95522 (ref 56036875), so strictV3 is
 unchanged.
+
+The [`temporal_visual_inherited`](temporal_visual_inherited/) optimization sets
+only Fusion's frozen base weight to zero while inheriting the strictV3
+Temporal/Visual temperatures, weights and quality gate. OOF improved 6 rows with
+5/5 folds non-degrading, and Kaggle tied 0.97512 (ref 56036959).

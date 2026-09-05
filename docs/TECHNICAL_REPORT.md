@@ -120,6 +120,7 @@ The best public history, in one table:
 | 56016293 | strictV3 0.50 + sched30 three-seed consensus 0.50 | 0.97014 | offline OOF improved, but public generalisation failed; rejected |
 | 56035438 | full-fit equal Depth Omnivore + IR Omnivore + skeleton, mixed INT8 | 0.58706 | severe cross-user generalisation failure; rejected |
 | 56036875 | strictV3 Temporal + Visual exact 50/50 | 0.95522 | below strictV3; rejected |
+| 56036959 | strictV3 Temporal + Visual inherited gate | **0.97512** | tied canonical; simpler private-LB candidate |
 
 Multiple offline "higher OOF" candidates (Fusion4 raw at 0.970*, etc.)
 were **refused by the public leaderboard**; they are no longer candidates.
@@ -857,6 +858,27 @@ Subject-wise OOF fell from strictV3's 2,903/3,036 (0.956192) to 2,881/3,036
 15 strictV3 rows. The explicitly authorized Kaggle submission scored 0.95522
 (ref 56036875), below strictV3's 0.97512. The ablation is rejected and the
 release contract remains unchanged.
+
+### 5.18 Temporal-dominant Visual optimization, 2026-09-05
+
+The successful follow-up made only one structural change: legacy Fusion's base
+weight was set to zero. All frozen strictV3 fold/full temperatures,
+Temporal/Visual weights and confidence-quality gating were inherited. A
+separate leave-one-fold-out weight search reached only 2,905 rows and regressed
+folds A/E, so it was rejected rather than used to tune this candidate.
+
+The inherited-gate candidate improved subject-wise OOF from 2,903 to
+2,909/3,036 (0.958169). Fold deltas were 0/0/+5/+1/0, macro recall improved
+from 0.953136 to 0.956076, subject-macro accuracy from 0.955794 to 0.957954,
+and worst-user remained 0.8125. Confidence gating kept Temporal dominant: the
+mean effective Visual weight on test was 0.1653. Predictions covered all 40
+classes and changed only 3/405 strictV3 rows.
+
+The authorized submission tied the canonical public score at 0.97512 (ref
+56036959). It is retained as a simpler private-LB candidate, but the public tie
+is not treated as evidence of superiority and no leaderboard-driven weight
+search follows. The submitted artifact reused the compliant 69,805,793-byte
+bundle; pruning the now-unused Fusion weights remains a release-packaging task.
 
 ---
 
