@@ -105,7 +105,7 @@ CUHK-X 小模型赛道（[挑战页面](https://openaiotlab.github.io/CUHK-X-Cha
 4. 构建对齐、以 pelvis 为中心的 H36M-17 skeleton cache，以及 16 帧 crop-scaled
    DSTFormer 输入。Skeleton 缺失只影响 encoder 输入，不作为事后融合 mask。
 5. 分别推理视觉 R(2+1)D、视觉+skeleton Fusion、DSTFormer→TCN；temperature calibration
-   和 quality gate 只由 outer-train 拟合，full-data 发布权重为 0.11/0.22/0.67。
+   和 quality gate 只由 outer-train 拟合；full-data 发布权重为 Fusion 0.11、Visual 0.22、Temporal 0.67。
 
 训练使用五个互斥 held-subject folds。Visual head 使用带 0.02 label smoothing 的
 cross-entropy 和 train-only horizontal flip；Fusion 使用同一视觉 cache、0.005 skeleton
@@ -512,6 +512,35 @@ entropy 及类别先验 nested routing 同样没有提升固定共识。
 仅 1/5 folds 非退化，worst fold 下降 1.4614 pp。该方向未访问测试集，也没有扫描第二个
 采样权重，按门禁否决。固定等概率 `sched30` consensus 是唯一通过离线门禁的新小 trick，
 但其 0.97014 公开分数不支持晋升。
+
+### 5.12 分支冗余与原生帧率 cross-attention，2026-09-05
+
+恢复的 strictV3 15 个分支数组首先全部通过 release manifest 中记录的 SHA-256。
+subject-wise OOF 表明 Temporal 是主模型，Visual 提供有效多样性，而 Fusion 是最弱的
+独立编码器：
+
+| 分支 | 正确数 / 3,036 | Accuracy | Subject-macro | Worst user | 其余两支都错时独立答对 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Fusion | 2,430 | 0.800395 | 0.795598 | 0.478528 | 8 |
+| Visual | 2,723 | 0.896904 | 0.900112 | 0.618750 | 30 |
+| Temporal | 2,854 | 0.940053 | 0.939254 | 0.812500 | 61 |
+
+保持冻结的逐 fold temperature 和 gate，只将一个分支权重置零的诊断结果为：
+Temporal+Visual 2,909 行、Temporal+Fusion 2,867 行、Visual+Fusion 2,766 行，完整三支为
+2,903 行。该结果属于事后结构诊断，不能当作可晋升 OOF 候选；但它支持在未来模型中删除
+重复的 Fusion R(2+1)D 编码器。
+
+随后生成的新 cache 在256帧 padding 上限内保留每个有序原生 Skeleton 帧。帧数
+median/p95/max 为23/69/236；没有 clip 被截断，没有插值或重复，共保留85,879个有效
+Skeleton 帧。单次 R(2+1)D-34 前向提供8个 layer-2 visual token。一个135,465参数的 head
+以 pose 和相邻帧 velocity 为输入，通过无 stride 局部卷积编码，以 Skeleton 帧为 query、
+visual token 为 key/value 执行四头 cross-attention，并对冻结基线添加零初始化 residual。
+
+固定12 epoch 的 v1 将 Temporal 从2,854降到2,844行（修复18、破坏28）。唯一一次预注册
+的保守后续以无 Fusion 的 Temporal+Visual 为基线，固定 residual scale 0.25 和 teacher-KL
+1.0，结果从2,909降到2,904行，各 fold delta 为0/−1/−3/0/−1。两版均失败；未运行测试
+推理，也没有继续扫描 scale/KL。因此结论必须拆开：删除 Fusion 有证据支持，但当前两种
+高频 cross-attention 训练配方没有得到支持。
 
 ---
 

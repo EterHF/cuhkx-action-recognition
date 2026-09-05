@@ -44,3 +44,10 @@ Reproduce one candidate from raw test data and validate its frozen hash:
 No candidate is promoted or submitted based on anonymous-test inspection.
 Promotion requires the frozen OOF gates, exact raw replay, the single-checkpoint 100 MB package
 gate and an explicitly authorized Kaggle submission.
+
+The rejected `highrate_cross_attention` study is retained as structural
+evidence. Exact restored strictV3 branch OOF was Fusion 0.800395, Visual
+0.896904 and Temporal 0.940053. Removing Fusion in a post-hoc diagnostic raised
+the frozen blend from 2,903 to 2,909 rows. Native skeleton cross-attention did
+not improve that Fusion-free baseline (2,904 rows), so no test inference was
+performed. See [`highrate_cross_attention/metrics.json`](highrate_cross_attention/metrics.json).

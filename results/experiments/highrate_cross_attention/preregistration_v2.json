@@ -1,0 +1,24 @@
+{
+  "schema_version": "cuhkx-highrate-cross-attention/v2",
+  "frozen_at_utc": "2026-09-05-after-v1",
+  "v1_observation": {
+    "baseline_correct": 2854,
+    "candidate_correct": 2844,
+    "changed": 47,
+    "recovered": 18,
+    "regressed": 28
+  },
+  "single_change_set": {
+    "baseline": "matching-fold Temporal+Visual quality-gated logits; Fusion weight fixed to zero",
+    "residual_scale": 0.25,
+    "teacher_kl_weight": 1.0
+  },
+  "unchanged": "v1 native skeleton cache, one visual layer2 stream, cross-attention architecture, folds, seed, fixed 12 epochs, optimizer, loss smoothing and no-test boundary",
+  "selection": "one bounded conservative follow-up; no scale or KL sweep",
+  "promotion_gate": {
+    "minimum_oof_accuracy": 0.9581686429512516,
+    "minimum_non_degrading_folds_vs_temporal_visual": 4,
+    "minimum_worst_user_accuracy": 0.8125,
+    "test_inference_only_after_gate": true
+  }
+}

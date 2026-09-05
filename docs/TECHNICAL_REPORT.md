@@ -140,7 +140,7 @@ The shared data path is:
    never a post-hoc blend mask.
 5. Infer visual R(2+1)D, visual+skeleton Fusion, and DSTFormer→TCN branches.
    Apply outer-train-only temperature calibration and the fixed quality gate;
-   full-data release weights are 0.11/0.22/0.67.
+   full-data release weights are Fusion 0.11, Visual 0.22 and Temporal 0.67.
 
 Training uses five disjoint held-subject folds. Visual head adaptation uses
 cross-entropy with 0.02 label smoothing and train-only horizontal flips. Fusion
@@ -720,6 +720,42 @@ worst fold fell by 1.4614 pp. It was rejected without test access or a second
 sampler setting. The fixed equal-probability `sched30` consensus was the only
 new small trick supported by the offline gates, but its 0.97014 public score
 failed to support promotion.
+
+### 5.12 Branch redundancy and native-rate cross-attention, 2026-09-05
+
+The 15 restored strictV3 branch arrays first passed their recorded SHA-256
+contracts. Their subject-wise OOF results show that Temporal is the primary
+model, Visual is useful diversity, and Fusion is the weakest independent
+encoder:
+
+| Branch | Correct / 3,036 | Accuracy | Subject-macro | Worst user | Correct when both other branches are wrong |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Fusion | 2,430 | 0.800395 | 0.795598 | 0.478528 | 8 |
+| Visual | 2,723 | 0.896904 | 0.900112 | 0.618750 | 30 |
+| Temporal | 2,854 | 0.940053 | 0.939254 | 0.812500 | 61 |
+
+A leave-one-branch-out diagnostic, retaining the already frozen per-fold
+temperatures and gates, reached 2,909 rows for Temporal+Visual, 2,867 for
+Temporal+Fusion and 2,766 for Visual+Fusion, versus 2,903 for all three. This is
+post-hoc structural evidence rather than a promotable OOF candidate, but it
+supports removing the duplicate Fusion R(2+1)D encoder from future models.
+
+A new cache then retained every ordered native skeleton frame up to a padded
+limit of 256. The median/p95/maximum were 23/69/236 frames; no clip was
+truncated, no frame was interpolated or repeated, and 85,879 valid skeleton
+frames were retained. One R(2+1)D-34 pass supplied eight layer-2 visual tokens.
+A 135,465-parameter head encoded pose plus adjacent-frame velocity with
+stride-1 convolutions, used skeleton frames as queries in four-head
+cross-attention over the visual tokens, and added a zero-initialised residual
+to the frozen baseline.
+
+The fixed 12-epoch v1 moved Temporal from 2,854 to 2,844 rows (18 recoveries,
+28 regressions). A single preregistered conservative follow-up used the
+Fusion-free Temporal+Visual baseline, residual scale 0.25 and teacher-KL 1.0;
+it moved 2,909 to 2,904 rows, with fold deltas 0/−1/−3/0/−1. Both failed. No
+test inference was run and no scale/KL sweep followed. The architecture result
+is therefore narrower than the design hypothesis: removing Fusion is supported,
+but these high-rate cross-attention training recipes are not.
 
 ---
 

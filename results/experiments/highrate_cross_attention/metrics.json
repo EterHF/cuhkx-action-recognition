@@ -1,0 +1,100 @@
+{
+  "schema_version": "cuhkx-highrate-cross-attention-results/v1",
+  "evaluated_at_utc": "2026-09-05",
+  "strict_v3_branch_audit": {
+    "source_integrity": "all 15 restored branch arrays match release_manifest.json SHA-256",
+    "branches": {
+      "fusion": {
+        "correct": 2430,
+        "accuracy": 0.8003952569169961,
+        "macro_accuracy": 0.777311170203287,
+        "subject_macro_accuracy": 0.7955984773618021,
+        "worst_user_accuracy": 0.4785276073619632,
+        "unique_correct_rows": 8
+      },
+      "visual": {
+        "correct": 2723,
+        "accuracy": 0.8969038208168643,
+        "macro_accuracy": 0.8923737572020173,
+        "subject_macro_accuracy": 0.9001118035677026,
+        "worst_user_accuracy": 0.61875,
+        "unique_correct_rows": 30
+      },
+      "temporal": {
+        "correct": 2854,
+        "accuracy": 0.9400527009222661,
+        "macro_accuracy": 0.9405912545986534,
+        "subject_macro_accuracy": 0.9392536285115379,
+        "worst_user_accuracy": 0.8125,
+        "unique_correct_rows": 61
+      }
+    },
+    "prediction_agreement": {
+      "fusion_visual": 0.7555994729907773,
+      "fusion_temporal": 0.8010540184453228,
+      "visual_temporal": 0.8768115942028986
+    },
+    "leave_one_branch_out_diagnostic": {
+      "temporal_visual": {
+        "correct": 2909,
+        "accuracy": 0.9581686429512516
+      },
+      "temporal_fusion": {
+        "correct": 2867,
+        "accuracy": 0.94433465085639
+      },
+      "visual_fusion": {
+        "correct": 2766,
+        "accuracy": 0.9110671936758893
+      },
+      "strict_v3_all_three": {
+        "correct": 2903,
+        "accuracy": 0.9561923583662714
+      },
+      "status": "post-hoc structural diagnostic only; not a submission candidate"
+    },
+    "conclusion": "Temporal is dominant; Visual is complementary; the independent Fusion encoder is redundant and reduces this diagnostic by six rows"
+  },
+  "native_skeleton_cache": {
+    "rows": 3036,
+    "maximum_frames": 256,
+    "median_native_frames": 23.0,
+    "p95_native_frames": 69.0,
+    "maximum_observed_frames": 236,
+    "truncated_clips": 0,
+    "valid_skeleton_frames": 85879,
+    "clip_presence_rate": 0.9654150197628458,
+    "interpolation": false,
+    "repetition": false
+  },
+  "cross_attention_v1": {
+    "baseline": "strict fold Temporal",
+    "baseline_correct": 2854,
+    "candidate_correct": 2844,
+    "candidate_accuracy": 0.9367588932806324,
+    "fold_delta_rows": [-5, 0, 1, -4, -2],
+    "changed": 47,
+    "recovered": 18,
+    "regressed": 28,
+    "parameters": 135465,
+    "passed": false
+  },
+  "cross_attention_v2": {
+    "baseline": "strict fold Temporal+Visual with Fusion fixed to zero",
+    "baseline_correct": 2909,
+    "candidate_correct": 2904,
+    "candidate_accuracy": 0.9565217391304348,
+    "macro_accuracy": 0.9526339210122533,
+    "subject_macro_accuracy": 0.9564303467328992,
+    "worst_user_accuracy": 0.8125,
+    "fold_delta_rows": [0, -1, -3, 0, -1],
+    "changed": 16,
+    "recovered": 5,
+    "regressed": 10,
+    "parameters": 135465,
+    "residual_scale": 0.25,
+    "teacher_kl_weight": 1.0,
+    "passed": false
+  },
+  "decision": "remove Fusion in future architecture work; retain Temporal and one Visual encoder; reject both trained cross-attention heads and do not run test inference"
+}

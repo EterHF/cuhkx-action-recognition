@@ -1,0 +1,53 @@
+{
+  "schema_version": "cuhkx-highrate-cross-attention/v1",
+  "frozen_at_utc": "2026-09-05",
+  "motivation": "remove the redundant Fusion visual encoder while preserving native skeleton frames before cross-modal attention",
+  "evidence_before_freeze": {
+    "temporal_oof": 0.9400527009222661,
+    "visual_oof": 0.8969038208168643,
+    "fusion_oof": 0.8003952569169961,
+    "strict_v3_oof": 0.9561923583662714,
+    "diagnostic_temporal_visual_oof": 0.9581686429512516,
+    "diagnostic_note": "post-hoc leave-one-branch-out evidence; not a promotable candidate"
+  },
+  "input_contract": {
+    "visual": "one strict fold R(2+1)D-34 stem through layer2; one 16-frame crop; spatially pooled tokens; no second visual encoder or multi-window pass",
+    "skeleton": "all ordered native H36M-17 frames, center-truncated only above 256, zero-padded with an explicit per-frame validity mask; no interpolation or 16-frame resampling",
+    "baseline": "the matching strict fold DSTFormer plus residual-TCN logits"
+  },
+  "model_contract": {
+    "skeleton_queries": "coordinates plus valid adjacent-frame velocity projected to 128 dimensions",
+    "temporal_processing": "stride-1 local residual convolution; no skeleton temporal downsampling before pooling",
+    "fusion": "four-head cross-attention with skeleton frames as queries and visual layer2 tokens as keys/values",
+    "output": "zero-initialized residual correction added to the frozen temporal logits",
+    "forbidden": [
+      "Fusion branch features",
+      "IMU features",
+      "test labels or test statistics",
+      "held-fold checkpoint selection",
+      "post-hoc coefficient search"
+    ]
+  },
+  "training_contract": {
+    "folds": {
+      "A": [1, 6, 17, 22],
+      "B": [2, 7, 18, 23],
+      "C": [3, 8, 19, 24],
+      "D": [4, 9, 20],
+      "E": [5, 16, 21]
+    },
+    "seed": 2026,
+    "epochs": 12,
+    "optimizer": "AdamW(lr=0.0003, weight_decay=0.01)",
+    "schedule": "cosine to zero",
+    "loss": "cross entropy with label smoothing 0.02",
+    "selection": "fixed final epoch; held labels evaluated once"
+  },
+  "promotion_gate": {
+    "minimum_oof_accuracy": 0.9561923583662714,
+    "minimum_non_degrading_folds_vs_strict_v3": 4,
+    "minimum_worst_user_accuracy": 0.8125,
+    "maximum_single_checkpoint_bytes": 100000000,
+    "test_inference_only_after_gate": true
+  }
+}

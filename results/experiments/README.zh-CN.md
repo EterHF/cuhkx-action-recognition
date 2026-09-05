@@ -35,3 +35,9 @@
 ```
 
 不得根据匿名测试集检查结果晋升或提交任何候选。晋升必须同时满足冻结 OOF 门禁、原始数据精确重放、单 checkpoint 100 MB 包大小门禁，以及明确授权的 Kaggle 提交。
+
+失败的 `highrate_cross_attention` 研究保留为结构证据。恢复并校验后的 strictV3 单分支
+OOF 分别为 Fusion 0.800395、Visual 0.896904、Temporal 0.940053。事后去掉 Fusion 的
+诊断将冻结融合从2,903提高到2,909行；原生 Skeleton cross-attention 未超过该无 Fusion
+基线（2,904行），因此没有进行测试推理。详见
+[`highrate_cross_attention/metrics.json`](highrate_cross_attention/metrics.json)。
