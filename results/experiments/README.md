@@ -67,3 +67,8 @@ The authorized [`public_sensor_full_fit`](public_sensor_full_fit/) deployment
 retrained all three branches on 3,036 rows and reached 0.950593 in-sample with
 the actual 57.93 MB mixed-int8 bundle. Its Kaggle public score was only 0.58706
 (ref 56035438), so the route is closed without leaderboard-driven reweighting.
+
+The [`temporal_public_sensor`](temporal_public_sensor/) follow-up anchors on
+strictV3 Temporal and adds fixed 5% Depth and IR probability residuals. Complete
+five-fold OOF fell from 0.940053 to 0.939723, so the sensor gate remains zero and
+no test candidate was built.

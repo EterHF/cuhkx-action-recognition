@@ -1,0 +1,40 @@
+{
+  "protocol": "fixed-temporal-public-sensor-probability-residual/v1",
+  "folds": {
+    "A": [1, 6, 17, 22],
+    "B": [2, 7, 18, 23],
+    "C": [3, 8, 19, 24],
+    "D": [4, 9, 20],
+    "E": [5, 16, 21]
+  },
+  "fixed_epochs": 15,
+  "oof": {
+    "temporal": {"correct": 2854, "accuracy": 0.9400527009222661, "worst_user_accuracy": 0.8125},
+    "depth": {"correct": 1496, "accuracy": 0.4927536231884058, "worst_user_accuracy": 0.23125},
+    "ir": {"correct": 1653, "accuracy": 0.5444664031620553, "worst_user_accuracy": 0.3},
+    "fixed_90_05_05": {
+      "correct": 2853,
+      "accuracy": 0.9397233201581028,
+      "worst_user_accuracy": 0.8125,
+      "fold_correct_delta": {"A": -1, "B": 0, "C": 1, "D": 0, "E": -1}
+    },
+    "nested_weight_diagnostic": {
+      "correct": 2851,
+      "accuracy": 0.939064558629776,
+      "fold_correct_delta": {"A": -2, "B": 0, "C": 0, "D": 0, "E": -1},
+      "zero_sensor_weight_folds": ["B", "C", "D"]
+    }
+  },
+  "complementarity": {
+    "temporal_errors": 182,
+    "depth_correct_on_temporal_errors": 33,
+    "ir_correct_on_temporal_errors": 39,
+    "both_sensors_agree_correct_on_temporal_errors": 23,
+    "both_sensors_agree_wrong_on_temporal_correct": 428
+  },
+  "project_checkpoint_loaded_by_sensor_branches": false,
+  "weight_scan_for_fixed_candidate": false,
+  "anonymous_test_accessed": false,
+  "promotion_gate_passed": false,
+  "decision": "retain the interface with sensor gate zero; do not build or submit a test candidate"
+}

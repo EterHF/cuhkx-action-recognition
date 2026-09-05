@@ -138,7 +138,8 @@ def run(args: argparse.Namespace) -> None:
     with np.load(args.metadata) as metadata:
         labels = metadata["train_y"]
         users = metadata["train_users"]
-    held_mask = np.isin(users, HELD_USERS)
+    held_users = tuple(args.held_users)
+    held_mask = np.isin(users, held_users)
     held_indices = np.flatnonzero(held_mask)
     train_indices = np.arange(len(labels)) if args.full_fit else np.flatnonzero(~held_mask)
     evaluation_indices = train_indices if args.full_fit else held_indices
@@ -224,7 +225,7 @@ def run(args: argparse.Namespace) -> None:
         "model": args.model,
         "modality": args.modality,
         "evaluation_split": "train-in-sample" if args.full_fit else "held-subjects",
-        "held_users": [] if args.full_fit else list(HELD_USERS),
+        "held_users": [] if args.full_fit else list(held_users),
         "train_rows": len(train_indices),
         "held_rows": 0 if args.full_fit else len(held_indices),
         "evaluated_rows": len(evaluation_indices),
@@ -270,6 +271,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--seed", type=int, default=2026)
     result.add_argument("--device", default="cuda:0")
     result.add_argument("--full-fit", action="store_true")
+    result.add_argument("--held-users", type=int, nargs="+", default=list(HELD_USERS))
     result.add_argument("--checkpoint", type=Path)
     result.add_argument("--feature-output", type=Path)
     result.add_argument("--feature-layout", choices=("clip", "temporal"), default="clip")

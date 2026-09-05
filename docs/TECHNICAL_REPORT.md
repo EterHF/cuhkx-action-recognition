@@ -794,6 +794,21 @@ Kaggle submission 56035438 scored 0.58706 publicly, consistent with the weak
 held-fold evidence and far below strictV3. The route was rejected immediately;
 the leaderboard result was not used for reweighting or another submission.
 
+### 5.14 strictV3 Temporal anchor plus public Depth/IR, 2026-09-05
+
+The next experiment restored strictV3 Temporal as the dominant branch and
+trained the missing B–E Depth/IR folds, producing complete public-sensor OOF.
+Depth and IR reached 0.492754 and 0.544466 versus Temporal's 0.940053. The
+single frozen probability rule, Temporal/Depth/IR=`0.90/0.05/0.05`, reached
+0.939723: fold deltas were −1/0/+1/0/−1 and worst-user remained 0.8125. It
+therefore failed the all-fold non-degradation gate.
+
+The sensors jointly corrected 23 of 182 Temporal errors, but agreed on the same
+wrong class for 428 Temporal-correct rows. A separate nested weight diagnostic
+reached 0.939065 and selected zero sensor weight for outer folds B, C and D.
+The interface is retained with a fail-closed sensor gate of zero, exactly
+recovering Temporal; no test inference or Kaggle submission followed.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)

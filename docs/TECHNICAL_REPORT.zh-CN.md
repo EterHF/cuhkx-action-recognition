@@ -570,6 +570,18 @@ INT4 对这些组件过于保守。骨干权重采用按输出通道 int8，输�
 与较弱 held-fold 证据一致且远低于 strictV3。该路线立即否决；排行榜结果没有用于调权
 或再次提交。
 
+### 5.14 strictV3 Temporal 主干加公共 Depth/IR，2026-09-05
+
+下一项实验恢复 strictV3 Temporal 为主分支，并训练缺失的 B–E Depth/IR folds，得到完整
+公共传感器 OOF。Depth、IR 分别为 0.492754、0.544466，Temporal 为 0.940053。唯一
+冻结的概率规则 Temporal/Depth/IR=`0.90/0.05/0.05` 得到 0.939723；fold delta 为
+−1/0/+1/0/−1，worst-user 保持 0.8125，因此未通过逐 fold 非退化门禁。
+
+两个传感器共同修复 182 个 Temporal 错误中的 23 个，但在 Temporal 正确样本上共同
+给出同一错误类别达 428 条。另一次严格 nested 权重诊断为 0.939065，并在 outer
+B/C/D 选择传感器权重为零。融合接口予以保留，但 fail-closed sensor gate 固定为零，
+即精确回退 Temporal；此后没有测试推理或 Kaggle 提交。
+
 ---
 
 ## 6. 通用方法纪律（硬约束）

@@ -54,3 +54,7 @@ Depth/IR Omnivore 分支。整段 token 与时序 token 的 learned cross-attent
 经授权的 [`public_sensor_full_fit`](public_sensor_full_fit/) 使用全部 3,036 条数据重训
 三支，实际 57.93 MB mixed-int8 bundle 的训练集 accuracy 为 0.950593；Kaggle public
 score 仅 0.58706（ref 56035438），因此关闭该路线，不根据排行榜重新调权。
+
+[`temporal_public_sensor`](temporal_public_sensor/) 后续以 strictV3 Temporal 为主干，
+固定加入各 5% 的 Depth/IR 概率残差。完整五折 OOF 从 0.940053 降到 0.939723，因此
+sensor gate 保持为零，没有构建测试候选。
