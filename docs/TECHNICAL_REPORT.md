@@ -118,6 +118,7 @@ The best public history, in one table:
 | 56006027 | strictV3 0.90 + PKU bridge INT4 0.10 | **0.97512** | tied canonical; confirmatory external-data diagnostic, not promoted |
 | 56014518 | strictV3 0.90 + NTU120 INT4 0.10 | **0.97512** | tied canonical; larger-NTU confirmation, not promoted |
 | 56016293 | strictV3 0.50 + sched30 three-seed consensus 0.50 | 0.97014 | offline OOF improved, but public generalisation failed; rejected |
+| 56035438 | full-fit equal Depth Omnivore + IR Omnivore + skeleton, mixed INT8 | 0.58706 | severe cross-user generalisation failure; rejected |
 
 Multiple offline "higher OOF" candidates (Fusion4 raw at 0.970*, etc.)
 were **refused by the public leaderboard**; they are no longer candidates.
@@ -779,10 +780,19 @@ int8 backbone weights with sensitive patch embeddings, relative-position
 biases, heads, norms and biases in fp16 serialized the two sensor models to
 57,007,698 bytes total. Including the retained skeleton/temporal/detector
 estimate gives 67,657,705 bytes before final bundle overhead. Thus int8 is the
-preferred next deployment precision; int6 is only a size-gate fallback. No
-anonymous-test inference or Kaggle submission was performed. In matched
+preferred next deployment precision; int6 is only a size-gate fallback. At
+this preliminary stage no anonymous-test inference was performed. In matched
 batch-16 inference, mixed int8 changed Depth from 0.472067 to 0.467877 and kept
 aggregate IR unchanged at 0.544693.
+
+After explicit authorization, all three branches were retrained on all 3,036
+rows with the same augmentation and fixed equal-logit rule. Unaugmented
+in-sample accuracy was 0.950264 in fp32 and 0.950593 with the actual mixed-int8
+bundle. The single bundle was 57,925,224 bytes. Its 405 test predictions covered
+39 classes naturally (class 25 absent); none was edited to manufacture coverage.
+Kaggle submission 56035438 scored 0.58706 publicly, consistent with the weak
+held-fold evidence and far below strictV3. The route was rejected immediately;
+the leaderboard result was not used for reweighting or another submission.
 
 ---
 

@@ -120,9 +120,10 @@ def run(args: argparse.Namespace) -> None:
         labels = metadata["train_y"]
         users = metadata["train_users"]
     held = np.isin(users, HELD_USERS)
-    train_indices = np.flatnonzero(~held)
     held_indices = np.flatnonzero(held)
-    if np.intersect1d(users[train_indices], users[held_indices]).size:
+    train_indices = np.arange(len(labels)) if args.full_fit else np.flatnonzero(~held)
+    evaluation_indices = train_indices if args.full_fit else held_indices
+    if not args.full_fit and np.intersect1d(users[train_indices], users[held_indices]).size:
         raise RuntimeError("subject leakage")
     train_loader = make_loader(
         FusionDataset(
@@ -138,9 +139,9 @@ def run(args: argparse.Namespace) -> None:
         args.workers,
         args.seed,
     )
-    held_loader = make_loader(
+    evaluation_loader = make_loader(
         FusionDataset(
-            held_indices,
+            evaluation_indices,
             labels,
             args.depth_features,
             args.ir_features,
@@ -204,24 +205,36 @@ def run(args: argparse.Namespace) -> None:
         history.append(record)
         print(json.dumps(record), flush=True)
 
-    logits = evaluate(model, args.mode, held_loader, device)
+    logits = evaluate(model, args.mode, evaluation_loader, device)
     prediction = logits.argmax(1)
-    held_labels = labels[held_indices]
-    held_users = users[held_indices]
+    evaluation_labels = labels[evaluation_indices]
+    evaluation_users = users[evaluation_indices]
     user_accuracy = {
-        str(int(user)): float(np.mean(prediction[held_users == user] == held_labels[held_users == user]))
-        for user in np.unique(held_users)
+        str(int(user)): float(
+            np.mean(
+                prediction[evaluation_users == user]
+                == evaluation_labels[evaluation_users == user]
+            )
+        )
+        for user in np.unique(evaluation_users)
     }
     feature_manifests = {
         "depth": json.loads(args.depth_features.with_suffix(".json").read_text()),
         "ir": json.loads(args.ir_features.with_suffix(".json").read_text()),
     }
     metrics = {
-        "protocol": "single-subject-fold-public-sensor-fusion/v1",
+        "protocol": (
+            "full-fit-public-sensor/v1"
+            if args.full_fit
+            else "single-subject-fold-public-sensor-fusion/v1"
+        ),
         "mode": args.mode,
-        "held_users": list(HELD_USERS),
-        "held_rows": len(held_indices),
-        "accuracy": float(np.mean(prediction == held_labels)),
+        "evaluation_split": "train-in-sample" if args.full_fit else "held-subjects",
+        "held_users": [] if args.full_fit else list(HELD_USERS),
+        "train_rows": len(train_indices),
+        "held_rows": 0 if args.full_fit else len(held_indices),
+        "evaluated_rows": len(evaluation_indices),
+        "accuracy": float(np.mean(prediction == evaluation_labels)),
         "worst_user_accuracy": min(user_accuracy.values()),
         "user_accuracy": user_accuracy,
         "fixed_epoch": args.epochs,
@@ -240,8 +253,9 @@ def run(args: argparse.Namespace) -> None:
         "history": history,
     }
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    np.save(args.output_dir / "held_indices.npy", held_indices)
-    np.save(args.output_dir / "held_logits.npy", logits)
+    prefix = "train" if args.full_fit else "held"
+    np.save(args.output_dir / f"{prefix}_indices.npy", evaluation_indices)
+    np.save(args.output_dir / f"{prefix}_logits.npy", logits)
     torch.save(model.state_dict(), args.output_dir / "model.pt")
     (args.output_dir / "metrics.json").write_text(
         json.dumps(metrics, indent=2) + "\n", encoding="utf-8"
@@ -269,6 +283,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--skeleton-noise", type=float, default=0.003)
     result.add_argument("--seed", type=int, default=2026)
     result.add_argument("--device", default="cuda:0")
+    result.add_argument("--full-fit", action="store_true")
     return result
 
 

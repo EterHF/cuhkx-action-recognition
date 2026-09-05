@@ -62,3 +62,8 @@ native-rate skeleton plus independent Depth and IR Omnivore branches. Learned
 clip-token and temporal-token cross-attention both failed, while a diagnostic
 fixed equal-logit ensemble reached 0.597765 on the reused held fold. It remains
 selection-biased evidence pending a fresh full OOF.
+
+The authorized [`public_sensor_full_fit`](public_sensor_full_fit/) deployment
+retrained all three branches on 3,036 rows and reached 0.950593 in-sample with
+the actual 57.93 MB mixed-int8 bundle. Its Kaggle public score was only 0.58706
+(ref 56035438), so the route is closed without leaderboard-driven reweighting.

@@ -89,6 +89,7 @@ CUHK-X 小模型赛道（[挑战页面](https://openaiotlab.github.io/CUHK-X-Cha
 | 56006027 | strictV3 0.90 + PKU bridge INT4 0.10 | **0.97512** | 与标准结果持平；确认性外部数据诊断，不晋升 |
 | 56014518 | strictV3 0.90 + NTU120 INT4 0.10 | **0.97512** | 与标准结果持平；更大 NTU 确认，不晋升 |
 | 56016293 | strictV3 0.50 + sched30 三随机种子 consensus 0.50 | 0.97014 | 离线 OOF 提升，但公开榜泛化失败；否决 |
+| 56035438 | full-fit 等权 Depth Omnivore + IR Omnivore + skeleton，mixed INT8 | 0.58706 | 跨用户泛化严重失败；否决 |
 
 多个离线“更高 OOF”候选（如 OOF 为 0.970* 的 Fusion4 raw）均被公开排行榜否定，不再属于候选方案。
 
@@ -558,9 +559,16 @@ Cross-attention 没有提升该证据：两个整段传感器 token 得到 0.539
 INT4 对这些组件过于保守。骨干权重采用按输出通道 int8，输入 patch、相对位置偏置、
 分类头、norm 和 bias 保持 fp16 后，两个传感器模型合计序列化为 57,007,698 bytes；
 计入保留的 skeleton/temporal/detector 估算后为 67,657,705 bytes，尚未计最终 bundle
-开销。因此下一次部署优先使用 int8，int6 仅作为大小门禁后备。本实验没有运行匿名测试
-推理，也没有提交 Kaggle。在相同 batch-16 推理下，混合 int8 使 Depth 从 0.472067
+开销。因此下一次部署优先使用 int8，int6 仅作为大小门禁后备。该初筛阶段没有运行
+匿名测试推理。在相同 batch-16 推理下，混合 int8 使 Depth 从 0.472067
 变为 0.467877，IR 的整体 accuracy 保持 0.544693。
+
+用户随后明确授权后，三个分支用全部 3,036 条样本、相同增强和固定等权 logits 规则
+重新训练。无增强训练集 accuracy 为 fp32 0.950264、实际 mixed-int8 bundle 0.950593；
+单文件 bundle 为 57,925,224 bytes。405 条测试预测自然覆盖 39 类（缺少类别 25），未
+为补齐类别而修改任何预测。Kaggle submission 56035438 的 public score 为 0.58706，
+与较弱 held-fold 证据一致且远低于 strictV3。该路线立即否决；排行榜结果没有用于调权
+或再次提交。
 
 ---
 

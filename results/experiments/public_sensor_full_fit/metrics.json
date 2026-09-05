@@ -1,0 +1,42 @@
+{
+  "protocol": "full-fit-public-sensor-equal-logit/v1",
+  "train_rows": 3036,
+  "seed": 2026,
+  "sensor_epochs": 15,
+  "skeleton_epochs": 30,
+  "initialization": {
+    "depth": "official public Omnivore Swin-T",
+    "ir": "official public Omnivore Swin-T",
+    "skeleton": "random",
+    "historical_project_checkpoint_loaded": false
+  },
+  "augmentation": {
+    "depth_ir": "random intensity scale [0.9,1.1] and offset [-0.03,0.03]",
+    "skeleton": "valid-frame Gaussian noise 0.003 and skeleton dropout 0.05"
+  },
+  "unaugmented_train_accuracy": {
+    "depth": 0.9318181818181818,
+    "ir": 0.9407114624505929,
+    "skeleton": 0.8336627140974967,
+    "equal_logit_fp32": {"correct": 2885, "accuracy": 0.9502635046113307},
+    "equal_logit_mixed_int8": {"correct": 2886, "accuracy": 0.950592885375494}
+  },
+  "deployment": {
+    "format": "public-sensor-equal-logit-mixed-int8/v1",
+    "bundle_bytes": 57925224,
+    "bundle_sha256": "df9944026c86c2a893594b6b98ef7893e9921ac2a838708baab1b5b454765785",
+    "size_limit_bytes": 100000000,
+    "test_rows": 405,
+    "natural_class_coverage": 39,
+    "missing_classes": [25],
+    "submission_sha256": "fe85be36112a646de85ca165d9df6de4d9e46d6c4e77a8b1dce38e616e07d172"
+  },
+  "kaggle": {
+    "competition": "cuhk-x-competition-small-model-track",
+    "submission_ref": 56035438,
+    "public_score": 0.58706,
+    "remaining_daily_submissions_after_submit": 4
+  },
+  "anonymous_test_labels_accessed": false,
+  "decision": "rejected; no leaderboard-driven reweighting or resubmission"
+}

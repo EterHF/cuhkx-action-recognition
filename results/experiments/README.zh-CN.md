@@ -50,3 +50,7 @@ fold 结果尚不足以晋升到 `main`。
 Depth/IR Omnivore 分支。整段 token 与时序 token 的 learned cross-attention 均失败；
 固定等权 logits 诊断在复用 held fold 上达到 0.597765，但仍属于 selection-biased
 证据，必须等待一次全新 full OOF。
+
+经授权的 [`public_sensor_full_fit`](public_sensor_full_fit/) 使用全部 3,036 条数据重训
+三支，实际 57.93 MB mixed-int8 bundle 的训练集 accuracy 为 0.950593；Kaggle public
+score 仅 0.58706（ref 56035438），因此关闭该路线，不根据排行榜重新调权。

@@ -139,9 +139,10 @@ def run(args: argparse.Namespace) -> None:
         labels = metadata["train_y"]
         users = metadata["train_users"]
     held_mask = np.isin(users, HELD_USERS)
-    train_indices = np.flatnonzero(~held_mask)
     held_indices = np.flatnonzero(held_mask)
-    if np.intersect1d(users[train_indices], users[held_indices]).size:
+    train_indices = np.arange(len(labels)) if args.full_fit else np.flatnonzero(~held_mask)
+    evaluation_indices = train_indices if args.full_fit else held_indices
+    if not args.full_fit and np.intersect1d(users[train_indices], users[held_indices]).size:
         raise RuntimeError("subject leakage")
 
     trunk = load_omnivore(args)
@@ -164,8 +165,8 @@ def run(args: argparse.Namespace) -> None:
         persistent_workers=args.workers > 0,
         generator=torch.Generator().manual_seed(args.seed),
     )
-    held_loader = DataLoader(
-        RawSubset(args.cache, held_indices, labels),
+    evaluation_loader = DataLoader(
+        RawSubset(args.cache, evaluation_indices, labels),
         batch_size=args.batch_size,
         shuffle=False,
         num_workers=args.workers,
@@ -195,27 +196,39 @@ def run(args: argparse.Namespace) -> None:
         print(f"epoch={epoch} train_accuracy={accuracy:.6f}", flush=True)
 
     model.eval()
-    held_logits = []
+    evaluation_logits = []
     with torch.inference_mode():
-        for frames, _ in held_loader:
+        for frames, _ in evaluation_loader:
             inputs = prepare_inputs(frames.to(device, non_blocking=True), args.modality, False)
             with torch.autocast(device.type, dtype=torch.bfloat16):
-                held_logits.append(model(inputs).float().cpu().numpy())
-    held_logits = np.concatenate(held_logits)
-    prediction = held_logits.argmax(1)
-    held_labels = labels[held_indices]
-    held_users = users[held_indices]
+                evaluation_logits.append(model(inputs).float().cpu().numpy())
+    evaluation_logits = np.concatenate(evaluation_logits)
+    prediction = evaluation_logits.argmax(1)
+    evaluation_labels = labels[evaluation_indices]
+    evaluation_users = users[evaluation_indices]
     user_accuracy = {
-        str(int(user)): float(np.mean(prediction[held_users == user] == held_labels[held_users == user]))
-        for user in np.unique(held_users)
+        str(int(user)): float(
+            np.mean(
+                prediction[evaluation_users == user]
+                == evaluation_labels[evaluation_users == user]
+            )
+        )
+        for user in np.unique(evaluation_users)
     }
     metrics = {
-        "protocol": "single-subject-fold-public-encoder-finetune/v1",
+        "protocol": (
+            "full-fit-public-encoder/v1"
+            if args.full_fit
+            else "single-subject-fold-public-encoder-finetune/v1"
+        ),
         "model": args.model,
         "modality": args.modality,
-        "held_users": list(HELD_USERS),
-        "held_rows": len(held_indices),
-        "accuracy": float(np.mean(prediction == held_labels)),
+        "evaluation_split": "train-in-sample" if args.full_fit else "held-subjects",
+        "held_users": [] if args.full_fit else list(HELD_USERS),
+        "train_rows": len(train_indices),
+        "held_rows": 0 if args.full_fit else len(held_indices),
+        "evaluated_rows": len(evaluation_indices),
+        "accuracy": float(np.mean(prediction == evaluation_labels)),
         "worst_user_accuracy": min(user_accuracy.values()),
         "user_accuracy": user_accuracy,
         "fixed_epoch": args.epochs,
@@ -229,8 +242,9 @@ def run(args: argparse.Namespace) -> None:
         "history": history,
     }
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    np.save(args.output_dir / "held_indices.npy", held_indices)
-    np.save(args.output_dir / "held_logits.npy", held_logits)
+    prefix = "train" if args.full_fit else "held"
+    np.save(args.output_dir / f"{prefix}_indices.npy", evaluation_indices)
+    np.save(args.output_dir / f"{prefix}_logits.npy", evaluation_logits)
     torch.save(model.state_dict(), args.output_dir / "model.pt")
     (args.output_dir / "metrics.json").write_text(
         json.dumps(metrics, indent=2) + "\n", encoding="utf-8"
@@ -255,6 +269,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--workers", type=int, default=4)
     result.add_argument("--seed", type=int, default=2026)
     result.add_argument("--device", default="cuda:0")
+    result.add_argument("--full-fit", action="store_true")
     result.add_argument("--checkpoint", type=Path)
     result.add_argument("--feature-output", type=Path)
     result.add_argument("--feature-layout", choices=("clip", "temporal"), default="clip")
