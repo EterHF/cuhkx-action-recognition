@@ -51,3 +51,8 @@ evidence. Exact restored strictV3 branch OOF was Fusion 0.800395, Visual
 the frozen blend from 2,903 to 2,909 rows. Native skeleton cross-attention did
 not improve that Fusion-free baseline (2,904 rows), so no test inference was
 performed. See [`highrate_cross_attention/metrics.json`](highrate_cross_attention/metrics.json).
+
+The [`public_backbone_screen`](public_backbone_screen/) study evaluates public
+Depth/IR pretrained encoders without any project checkpoint. Omnivore Swin-T
+wins both sensor tracks, but the fixed-fold result is not strong enough for
+promotion to `main`.

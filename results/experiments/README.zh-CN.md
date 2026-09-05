@@ -41,3 +41,7 @@ OOF 分别为 Fusion 0.800395、Visual 0.896904、Temporal 0.940053。事后去�
 诊断将冻结融合从2,903提高到2,909行；原生 Skeleton cross-attention 未超过该无 Fusion
 基线（2,904行），因此没有进行测试推理。详见
 [`highrate_cross_attention/metrics.json`](highrate_cross_attention/metrics.json)。
+
+[`public_backbone_screen`](public_backbone_screen/) 在不读取项目 checkpoint 的前提下
+评估公共 Depth/IR 预训练编码器。Omnivore Swin-T 在两个传感器方向均胜出，但固定
+fold 结果尚不足以晋升到 `main`。

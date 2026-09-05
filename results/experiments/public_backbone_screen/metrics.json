@@ -1,0 +1,76 @@
+{
+  "schema_version": "cuhkx-public-backbone-screen/v1",
+  "evaluated_at_utc": "2026-09-05",
+  "protocol": {
+    "split": "single subject-held fold",
+    "held_users": [1, 6, 17, 22],
+    "held_rows": 716,
+    "seed": 2026,
+    "frozen_probe_epochs": 25,
+    "winner_finetune_epochs": 15,
+    "held_labels_used_for_epoch_or_checkpoint_selection": false,
+    "held_fold_used_for_model_family_screening": true,
+    "fusion_weight_selection": "selected from an exploratory frozen-probe grid on this held fold; diagnostic only",
+    "project_checkpoint_loaded": false,
+    "anonymous_test_accessed": false
+  },
+  "frozen_encoder_screen": [
+    {"model": "DeFM EfficientNet-B0", "modality": "depth", "parameters": 3009620, "accuracy": 0.25, "worst_user_accuracy": 0.2019704433497537},
+    {"model": "DeFM RegNetY-800MF", "modality": "depth", "parameters": 6252224, "accuracy": 0.2527932960893855, "worst_user_accuracy": 0.21674876847290642},
+    {"model": "DeFM ResNet-18", "modality": "depth", "parameters": 11735624, "accuracy": 0.25, "worst_user_accuracy": 0.17733990147783252},
+    {"model": "DeFM ViT-S/14", "modality": "depth", "parameters": 21635328, "accuracy": 0.2527932960893855, "worst_user_accuracy": 0.21182266009852216},
+    {"model": "DFormerv2-S", "modality": "depth", "parameters": 25416730, "accuracy": 0.28212290502793296, "worst_user_accuracy": 0.24630541871921183},
+    {"model": "DFormerv2-B", "modality": "depth", "parameters": 52604610, "accuracy": 0.26675977653631283, "worst_user_accuracy": 0.21674876847290642},
+    {"model": "DFormerv2-L", "modality": "depth", "parameters": 93784146, "accuracy": 0.21508379888268156, "worst_user_accuracy": 0.17733990147783252},
+    {"model": "Omnivore Swin-T", "modality": "depth", "parameters": 27853830, "accuracy": 0.3477653631284916, "worst_user_accuracy": 0.2561576354679803},
+    {"model": "Omnivore Swin-T", "modality": "ir", "parameters": 27853830, "accuracy": 0.4329608938547486, "worst_user_accuracy": 0.3333333333333333},
+    {"model": "M-SpecGene ViT-B", "modality": "ir", "parameters": 85798656, "accuracy": 0.24441340782122906, "worst_user_accuracy": 0.1830065359477124}
+  ],
+  "winner_finetune": {
+    "depth": {"model": "Omnivore Swin-T", "parameters": 27886126, "accuracy": 0.4720670391061452, "worst_user_accuracy": 0.37254901960784315},
+    "ir": {"model": "Omnivore Swin-T", "parameters": 27886126, "accuracy": 0.5446927374301676, "worst_user_accuracy": 0.41830065359477125},
+    "fixed_late_fusion": {"depth_weight": 0.25, "ir_weight": 0.75, "accuracy": 0.553072625698324, "worst_user_accuracy": 0.43790849673202614}
+  },
+  "naive_feature_concatenation": {
+    "best_accuracy": 0.4217877094972067,
+    "ir_only_accuracy": 0.4329608938547486,
+    "conclusion": "all tested concatenations underperformed the IR-only frozen probe"
+  },
+  "public_weight_sha256": {
+    "defm_efficientnet_b0": "47bf4231d0aac2cbb7ab8965904c79de7c4cc3c877abd99852872c8fa2208595",
+    "defm_regnet_y_800mf": "6a78e6cce176e691cfbc1c8991815c5c90e98b369ecc153ddf48a6cc8641f14d",
+    "defm_resnet18": "781d61dda55a789f445f23445cf7cba5d83693e3cc002281245240c523b56a44",
+    "defm_vit_s14": "37a6e95befea3a16732a743b2ebec854fd5eaed912ebaf9fbffc63a2306f1e90",
+    "dformerv2_small": "19116988fc86dc9f3e879282237941e11b9b1b5c480edb51e92807311dbc11a6",
+    "dformerv2_base": "0839a1260fe17edb98fbc30a12240115fb14d2f28ef58b1abad637fda927ff37",
+    "dformerv2_large": "a6e4afd94b27d1a059b76c8035c755d6d20b20ac7d585afda1e3d047aea43950",
+    "omnivore_swint": "e1c8100ea9aa2d9b1a816d6edc92d59d9b9ee4c9a5f656bc2bc0dde2846794d4",
+    "mspecgene_vit_b": "9be4dffeae0ae1e294ebef9f5febe58a34a7121e89454a0cbef060ed9f08ed13"
+  },
+  "public_source_commits": {
+    "DeFM": "63ec5e1c1a9b280dcde9910b845f57e9224ebab5",
+    "DFormer": "814799bb1f39eb380f72fdea1cd591f2cc27b6aa",
+    "Omnivore": "1d55abdc8dfc7bd5cbf69316841ab804d0acf1ca",
+    "M-SpecGene": "bb8b1b4ab3901961b49545f6cfb3b4c4b3026e27"
+  },
+  "unavailable_or_excluded": {
+    "InfMAE": "official pretrained checkpoint is published only through Baidu Netdisk and was not materialized in this environment",
+    "Thermal-MAE pilot": "official Hugging Face repository returned HTTP 403 because the weights are gated",
+    "DuGI-MAE": "no stable official public checkpoint was verified",
+    "ViT-Lens Depth": "ViT-L is not competitive with the package budget once two sensor models, skeleton, and detector are retained"
+  },
+  "package_budget_screen": {
+    "competition_limit_bytes": 100000000,
+    "retained_skeleton_temporal_detector_estimate_bytes": 10650007,
+    "two_omnivore_int4_parameter_payload_estimate_bytes": 27886126,
+    "combined_estimate_before_serialization_overhead_bytes": 38536133,
+    "verified_submission_package": false,
+    "note": "parameter arithmetic is only an early screen; a serialized candidate must still pass the official package gate"
+  },
+  "decision": {
+    "research_candidate": "retained skeleton + independently fine-tuned Omnivore Depth and IR branches",
+    "fusion": "separate branch probabilities now; cross-attention only after branch-level promotion gates pass",
+    "promoted_to_main": false,
+    "reason": "the preliminary held-fold score is insufficient and selection-biased, so it cannot replace the strictV3 release"
+  }
+}
