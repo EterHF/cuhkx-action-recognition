@@ -82,3 +82,8 @@ The [`omnivore_native_rgbd`](omnivore_native_rgbd/) screen activates one
 Omnivore trunk's native four-channel token fusion with repeated IR plus
 inverse-depth. Fold-A held accuracy was 0.379888, exposing a strong mismatch
 with its natural-RGB plus metric-depth pretraining contract; the route is closed.
+
+The [`temporal_visual_equal`](temporal_visual_equal/) ablation removes Fusion
+and combines frozen-temperature Temporal/Visual logits at exact 50/50 weights.
+OOF fell to 0.948946 and Kaggle scored 0.95522 (ref 56036875), so strictV3 is
+unchanged.

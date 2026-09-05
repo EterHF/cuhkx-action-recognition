@@ -119,6 +119,7 @@ The best public history, in one table:
 | 56014518 | strictV3 0.90 + NTU120 INT4 0.10 | **0.97512** | tied canonical; larger-NTU confirmation, not promoted |
 | 56016293 | strictV3 0.50 + sched30 three-seed consensus 0.50 | 0.97014 | offline OOF improved, but public generalisation failed; rejected |
 | 56035438 | full-fit equal Depth Omnivore + IR Omnivore + skeleton, mixed INT8 | 0.58706 | severe cross-user generalisation failure; rejected |
+| 56036875 | strictV3 Temporal + Visual exact 50/50 | 0.95522 | below strictV3; rejected |
 
 Multiple offline "higher OOF" candidates (Fusion4 raw at 0.970*, etc.)
 were **refused by the public leaderboard**; they are no longer candidates.
@@ -842,6 +843,20 @@ native code path was verified directly, performance fell below independent IR
 is a pretraining-contract mismatch: Omnivore learned natural RGB plus metric
 depth, whereas this dataset supplies repeated IR plus JET-inverted pseudo-depth.
 The gate stopped B–E training, anonymous-test inference and Kaggle submission.
+
+### 5.17 strictV3 Temporal + Visual exact equal fusion, 2026-09-05
+
+This ablation removed legacy Fusion and disabled the per-sample quality gate.
+After the frozen fold/full temperatures, Temporal and Visual logits received
+exact `0.50/0.50` weights. No model was retrained; the unchanged 69,805,793-byte
+strictV3 bundle contains every inference weight and remains below 100 MB.
+
+Subject-wise OOF fell from strictV3's 2,903/3,036 (0.956192) to 2,881/3,036
+(0.948946); fold accuracies A–E were 0.959497/0.936107/0.979381/0.955010/
+0.901879. The 405 test predictions naturally covered all 40 classes and changed
+15 strictV3 rows. The explicitly authorized Kaggle submission scored 0.95522
+(ref 56036875), below strictV3's 0.97512. The ablation is rejected and the
+release contract remains unchanged.
 
 ---
 

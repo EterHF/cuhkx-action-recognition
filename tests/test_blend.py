@@ -1,5 +1,8 @@
 import numpy as np
 
+from yolo_r2plus1d.strict_v3.evaluation.temporal_visual_equal import (
+    equal_tempered_logits,
+)
 from yolo_r2plus1d.strict_v3.release.blend import apply_gate
 
 
@@ -35,3 +38,10 @@ def test_gate_rejects_invalid_quality_contract() -> None:
         except ValueError:
             continue
         raise AssertionError("invalid quality contract was accepted")
+
+
+def test_equal_tempered_logits_uses_fixed_half_weights() -> None:
+    visual = np.array([[2.0, 4.0]], dtype=np.float32)
+    temporal = np.array([[3.0, 9.0]], dtype=np.float32)
+    observed = equal_tempered_logits(visual, temporal, 2.0, 3.0)
+    np.testing.assert_allclose(observed, [[1.0, 2.5]])

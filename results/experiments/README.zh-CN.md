@@ -66,3 +66,7 @@ Depth/IR Omnivore 四个 stage，再进入统一分类器。Fold-A held accuracy
 [`omnivore_native_rgbd`](omnivore_native_rgbd/) 用重复 IR 加 inverse-depth 启用单个
 Omnivore 的原生四通道 token 融合。Fold-A held accuracy 仅 0.379888，表明它与
 自然 RGB 加米制 Depth 的预训练契约存在明显域差，因此关闭该路线。
+
+[`temporal_visual_equal`](temporal_visual_equal/) 删除 Fusion，并在冻结 temperature 后
+严格等权融合 Temporal/Visual。OOF 降至 0.948946，Kaggle 为 0.95522（ref
+56036875），因此不修改 strictV3。

@@ -1,0 +1,65 @@
+{
+  "protocol": "strictv3-temporal-visual-equal-tempered-logits/v1",
+  "weights": {
+    "visual": 0.5,
+    "temporal": 0.5,
+    "fusion": 0.0
+  },
+  "quality_gate": false,
+  "temperature_source": "frozen strictV3 fold/full contracts",
+  "oof": {
+    "rows": 3036,
+    "correct": 2881,
+    "accuracy": 0.9489459815546772,
+    "folds": [
+      {
+        "fold": "A",
+        "rows": 716,
+        "correct": 687,
+        "accuracy": 0.9594972067039106
+      },
+      {
+        "fold": "B",
+        "rows": 673,
+        "correct": 630,
+        "accuracy": 0.9361069836552749
+      },
+      {
+        "fold": "C",
+        "rows": 679,
+        "correct": 665,
+        "accuracy": 0.979381443298969
+      },
+      {
+        "fold": "D",
+        "rows": 489,
+        "correct": 467,
+        "accuracy": 0.9550102249488752
+      },
+      {
+        "fold": "E",
+        "rows": 479,
+        "correct": 432,
+        "accuracy": 0.9018789144050104
+      }
+    ]
+  },
+  "test": {
+    "rows": 405,
+    "classes": 40,
+    "changed_vs_strictv3": 15
+  },
+  "bundle": {
+    "path": "checkpoints/strict_v3/submission_bundle.pt",
+    "bytes": 69805793,
+    "sha256": "4856eacc9f10043e873a6ac8c4c1359e9cf7d2a13685d8d07c6b2a7594800bf3"
+  },
+  "kaggle": {
+    "submission_ref": 56036875,
+    "public_score": 0.95522,
+    "submission_sha256": "e4f36bcebfbe96046048705d58fef948fb6711c0a7c1354d33bd5545bd0f996d",
+    "remaining_daily_submissions_after_submit": 3
+  },
+  "decision": "reject; retain legal_strict_v3 as the release baseline",
+  "anonymous_test_labels_used": false
+}

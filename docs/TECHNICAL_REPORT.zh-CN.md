@@ -90,6 +90,7 @@ CUHK-X 小模型赛道（[挑战页面](https://openaiotlab.github.io/CUHK-X-Cha
 | 56014518 | strictV3 0.90 + NTU120 INT4 0.10 | **0.97512** | 与标准结果持平；更大 NTU 确认，不晋升 |
 | 56016293 | strictV3 0.50 + sched30 三随机种子 consensus 0.50 | 0.97014 | 离线 OOF 提升，但公开榜泛化失败；否决 |
 | 56035438 | full-fit 等权 Depth Omnivore + IR Omnivore + skeleton，mixed INT8 | 0.58706 | 跨用户泛化严重失败；否决 |
+| 56036875 | strictV3 Temporal + Visual 严格 50/50 | 0.95522 | 低于 strictV3；否决 |
 
 多个离线“更高 OOF”候选（如 OOF 为 0.970* 的 Fusion4 raw）均被公开排行榜否定，不再属于候选方案。
 
@@ -608,6 +609,18 @@ accuracy 为 0.379888，worst-user 为 0.290640。虽然已直接验证原生代
 结果仍低于独立 IR（0.544693）和双 trunk 多层模型（0.512570）。最可能的原因是预训练
 契约不匹配：Omnivore 学习的是自然 RGB 加米制 Depth，本数据却是重复 IR 加 JET 反解
 伪深度。门禁据此停止 B–E 训练、匿名测试推理和 Kaggle 提交。
+
+### 5.17 strictV3 Temporal + Visual 严格等权融合，2026-09-05
+
+该消融删除 legacy Fusion 并关闭逐样本 quality gate，在冻结的逐 fold/full temperature
+之后给 Temporal、Visual logits 严格 `0.50/0.50` 权重。没有重新训练模型；未改变的
+strictV3 bundle 为 69,805,793 bytes，包含全部推理权重且低于 100 MB。
+
+Subject-wise OOF 从 strictV3 的 2,903/3,036（0.956192）降至 2,881/3,036
+（0.948946）；A–E fold accuracy 为 0.959497/0.936107/0.979381/0.955010/0.901879。
+405 条测试预测自然覆盖全部 40 类，相对 strictV3 改变 15 条。经用户明确授权的 Kaggle
+提交得到 0.95522（ref 56036875），低于 strictV3 的 0.97512。该消融否决，发布契约
+保持不变。
 
 ---
 
