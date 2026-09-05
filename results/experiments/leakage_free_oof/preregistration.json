@@ -1,0 +1,31 @@
+{
+  "schema_version": "fully-leakage-free-subject-oof/v1",
+  "status": "locked_before_training",
+  "locked_utc": "2026-09-05T06:06:07Z",
+  "question": "What cross-subject accuracy is supported when no checkpoint has previously seen any CUHK-X label?",
+  "data": {
+    "modality": "native-rate supplied skeleton only",
+    "maximum_frames": 256,
+    "temporal_interpolation": false,
+    "temporal_downsampling": false,
+    "anonymous_test_access": false
+  },
+  "model": {
+    "initialization": "random",
+    "features": ["root-normalized position", "adjacent-valid-frame velocity", "bone vector"],
+    "spatial_encoder": "one four-head joint self-attention block",
+    "temporal_encoder": "six stride-1 depthwise residual blocks with dilations 1,2,4,8,16,32",
+    "pooling": "masked learned attention"
+  },
+  "formal_cv": {
+    "seed": 2026,
+    "folds": {"A": [1, 6, 17, 22], "B": [2, 7, 18, 23], "C": [3, 8, 19, 24], "D": [4, 9, 20], "E": [5, 16, 21]},
+    "epochs": 40,
+    "checkpoint": "fixed final epoch",
+    "optimizer": "AdamW, lr=0.0003, weight_decay=0.02, cosine schedule",
+    "loss": "cross entropy with label smoothing 0.05",
+    "held_fold_use": "one final inference only; never checkpoint or hyperparameter selection"
+  },
+  "reporting": ["micro accuracy", "macro class accuracy", "subject-macro accuracy", "worst-user accuracy", "per-fold accuracy"],
+  "promotion_or_kaggle_submission": false
+}
