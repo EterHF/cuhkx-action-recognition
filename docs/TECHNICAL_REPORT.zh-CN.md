@@ -542,6 +542,26 @@ visual token 为 key/value 执行四头 cross-attention，并对冻结基线添�
 推理，也没有继续扫描 scale/KL。因此结论必须拆开：删除 Fusion 有证据支持，但当前两种
 高频 cross-attention 训练配方没有得到支持。
 
+### 5.13 独立公共 Depth/IR 分支，2026-09-05
+
+后续实验使用分别微调的公共 Omnivore Swin-T 替换旧 Visual/Fusion 编码器，同时保留
+原生帧率 skeleton 编码器；没有加载历史项目 checkpoint。在固定 716 行跨用户 holdout
+上，独立 Depth、IR、skeleton 的 accuracy 分别为 0.472067、0.544693、0.455307，
+worst-user 分别为 0.372549、0.418301、0.359477。
+
+Cross-attention 没有提升该证据：两个整段传感器 token 得到 0.539106/0.411765
+（accuracy/worst-user）；每个传感器保留 8 个时间 token 后仅为 0.515363/0.392157，
+尽管训练 accuracy 达到 0.9651，故该 learned fusion head 被判定为过拟合。三个独立监督
+分支固定等权 logits 得到 0.597765/0.503268；由于同一 held fold 此前已经被查看，该
+数字明确属于 selection-biased 互补性诊断，而不是可晋升 OOF。
+
+INT4 对这些组件过于保守。骨干权重采用按输出通道 int8，输入 patch、相对位置偏置、
+分类头、norm 和 bias 保持 fp16 后，两个传感器模型合计序列化为 57,007,698 bytes；
+计入保留的 skeleton/temporal/detector 估算后为 67,657,705 bytes，尚未计最终 bundle
+开销。因此下一次部署优先使用 int8，int6 仅作为大小门禁后备。本实验没有运行匿名测试
+推理，也没有提交 Kaggle。在相同 batch-16 推理下，混合 int8 使 Depth 从 0.472067
+变为 0.467877，IR 的整体 accuracy 保持 0.544693。
+
 ---
 
 ## 6. 通用方法纪律（硬约束）

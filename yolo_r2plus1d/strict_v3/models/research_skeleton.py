@@ -65,12 +65,12 @@ class HighRateSkeletonClassifier(nn.Module):
         )
         nn.init.trunc_normal_(self.joint_embedding, std=0.02)
 
-    def forward(
+    def forward_sequence(
         self,
         skeleton: torch.Tensor,
         mask: torch.Tensor,
         positions: torch.Tensor,
-    ) -> torch.Tensor:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         if skeleton.ndim != 4 or skeleton.shape[-2:] != (17, 3):
             raise ValueError("skeleton must have shape [B,T,17,3]")
         if mask.shape != skeleton.shape[:2] or positions.shape != mask.shape:
@@ -95,9 +95,27 @@ class HighRateSkeletonClassifier(nn.Module):
         value *= mask[..., None].to(value.dtype)
         for block in self.temporal:
             value = block(value, mask)
+        return value, mask
 
+    def pool_sequence(self, value: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         scores = self.temporal_pool(value).squeeze(-1).masked_fill(~mask, -1e4)
         weights = scores.softmax(dim=1) * mask.to(scores.dtype)
         weights /= weights.sum(dim=1, keepdim=True).clamp_min(1e-6)
-        summary = (value * weights[..., None]).sum(dim=1)
-        return self.classifier(summary)
+        return (value * weights[..., None]).sum(dim=1)
+
+    def forward_features(
+        self,
+        skeleton: torch.Tensor,
+        mask: torch.Tensor,
+        positions: torch.Tensor,
+    ) -> torch.Tensor:
+        value, mask = self.forward_sequence(skeleton, mask, positions)
+        return self.pool_sequence(value, mask)
+
+    def forward(
+        self,
+        skeleton: torch.Tensor,
+        mask: torch.Tensor,
+        positions: torch.Tensor,
+    ) -> torch.Tensor:
+        return self.classifier(self.forward_features(skeleton, mask, positions))

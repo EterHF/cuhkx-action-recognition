@@ -56,3 +56,9 @@ The [`public_backbone_screen`](public_backbone_screen/) study evaluates public
 Depth/IR pretrained encoders without any project checkpoint. Omnivore Swin-T
 wins both sensor tracks, but the fixed-fold result is not strong enough for
 promotion to `main`.
+
+The follow-up [`public_sensor_fusion`](public_sensor_fusion/) study retains
+native-rate skeleton plus independent Depth and IR Omnivore branches. Learned
+clip-token and temporal-token cross-attention both failed, while a diagnostic
+fixed equal-logit ensemble reached 0.597765 on the reused held fold. It remains
+selection-biased evidence pending a fresh full OOF.

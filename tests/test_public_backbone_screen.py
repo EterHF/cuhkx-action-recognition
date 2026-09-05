@@ -4,7 +4,10 @@ import json
 import numpy as np
 import torch
 
-from yolo_r2plus1d.strict_v3.training.finetune_public_omnivore import prepare_inputs
+from yolo_r2plus1d.strict_v3.training.finetune_public_omnivore import (
+    prepare_inputs,
+    validate_checkpoint_lineage,
+)
 from yolo_r2plus1d.strict_v3.training.public_backbone_screen import (
     TemporalProbe,
     combine_features,
@@ -70,3 +73,16 @@ def test_omnivore_preprocessing_preserves_video_shape() -> None:
         inputs = prepare_inputs(frames, modality, augment=False)
         assert inputs.shape == (2, 3, 4, 16, 16)
         assert torch.isfinite(inputs).all()
+
+
+def test_finetuned_checkpoint_lineage_must_match_sensor() -> None:
+    metrics = {
+        "model": "omnivore_swinT",
+        "modality": "ir",
+        "public_weights_sha256": "public-hash",
+        "project_checkpoint_loaded": False,
+    }
+    validate_checkpoint_lineage(metrics, "ir", "public-hash")
+
+    with np.testing.assert_raises(RuntimeError):
+        validate_checkpoint_lineage(metrics, "depth", "public-hash")

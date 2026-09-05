@@ -45,3 +45,8 @@ OOF 分别为 Fusion 0.800395、Visual 0.896904、Temporal 0.940053。事后去�
 [`public_backbone_screen`](public_backbone_screen/) 在不读取项目 checkpoint 的前提下
 评估公共 Depth/IR 预训练编码器。Omnivore Swin-T 在两个传感器方向均胜出，但固定
 fold 结果尚不足以晋升到 `main`。
+
+后续 [`public_sensor_fusion`](public_sensor_fusion/) 保留原生帧率 skeleton 及独立的
+Depth/IR Omnivore 分支。整段 token 与时序 token 的 learned cross-attention 均失败；
+固定等权 logits 诊断在复用 held fold 上达到 0.597765，但仍属于 selection-biased
+证据，必须等待一次全新 full OOF。

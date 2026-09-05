@@ -66,10 +66,14 @@ verified. ViT-Lens Depth was excluded because ViT-L is a poor use of the 100 MB
 two-sensor package budget. The M-SpecGene release includes training state and
 decoders (1.44 GB); only its verified 85.80 M-parameter encoder was evaluated.
 
-The two Omnivore branches have an estimated 27.89 MB int4 parameter payload;
-adding the retained skeleton/temporal/detector estimate gives about 38.54 MB
-before serialization overhead. This passes only the preliminary arithmetic
-screen. No official submission package has been built or size-certified.
+The two Omnivore branches have an estimated 55.77 MB int8 parameter payload;
+adding the retained skeleton/temporal/detector estimate gives about 66.42 MB
+before serialization overhead. The intended policy is per-output-channel int8
+for backbone Conv/Linear and fp16 for patch embedding, relative position bias,
+heads, normalization, bias, fusion, and skeleton. Int6 is
+only a fallback if the serialized package gate requires it. This passes only the
+preliminary arithmetic screen; no official submission package has been built or
+size-certified.
 
 Public sources: [DeFM](https://github.com/leggedrobotics/defm),
 [DFormer](https://github.com/VCIP-RGBD/DFormer),

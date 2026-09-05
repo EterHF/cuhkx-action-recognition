@@ -64,6 +64,74 @@ class OmnivoreClassifier(nn.Module):
         return self.head(self.trunk(inputs))
 
 
+def validate_checkpoint_lineage(
+    metrics: dict, modality: str, public_weights_sha256: str
+) -> None:
+    expected = {
+        "model": "omnivore_swinT",
+        "modality": modality,
+        "public_weights_sha256": public_weights_sha256,
+        "project_checkpoint_loaded": False,
+    }
+    observed = {key: metrics.get(key) for key in expected}
+    if observed != expected:
+        raise RuntimeError(f"invalid fine-tune checkpoint lineage: {observed}")
+
+
+@torch.inference_mode()
+def extract_features(args: argparse.Namespace) -> None:
+    public_hash = sha256_file(args.weights)
+    metrics_path = args.checkpoint.parent / "metrics.json"
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    validate_checkpoint_lineage(metrics, args.modality, public_hash)
+    device = torch.device(args.device)
+    model = OmnivoreClassifier(load_omnivore(args))
+    state = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
+    model.load_state_dict(state, strict=True)
+    model.to(device)
+    model.eval()
+    with np.load(args.metadata) as metadata:
+        labels = metadata["train_y"]
+    data_loader = DataLoader(
+        RawSubset(args.cache, np.arange(len(labels)), labels),
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=args.workers,
+        pin_memory=True,
+        persistent_workers=args.workers > 0,
+    )
+    values = []
+    for batch_index, (frames, _) in enumerate(data_loader, 1):
+        inputs = prepare_inputs(frames.to(device, non_blocking=True), args.modality, False)
+        with torch.autocast(device.type, dtype=torch.bfloat16):
+            if args.feature_layout == "temporal":
+                features = model.trunk(inputs, out_feat_keys=["stage3"])[0]
+                features = features.mean(dim=(-2, -1)).permute(0, 2, 1)
+            else:
+                features = model.trunk(inputs)[:, None]
+        values.append(features.float().cpu().numpy().astype(np.float16))
+        if batch_index % 20 == 0:
+            print(f"batches={batch_index}", flush=True)
+    output = np.concatenate(values)
+    args.feature_output.parent.mkdir(parents=True, exist_ok=True)
+    np.save(args.feature_output, output)
+    manifest = {
+        "model": args.model,
+        "modality": args.modality,
+        "shape": output.shape,
+        "feature_layout": args.feature_layout,
+        "public_source_commit": args.source_commit,
+        "public_weights_sha256": public_hash,
+        "fine_tune_checkpoint_sha256": sha256_file(args.checkpoint),
+        "fine_tune_protocol": metrics["protocol"],
+        "old_project_checkpoint_loaded": False,
+        "anonymous_test_accessed": False,
+    }
+    args.feature_output.with_suffix(".json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+    )
+
+
 def run(args: argparse.Namespace) -> None:
     seed_everything(args.seed)
     device = torch.device(args.device)
@@ -187,8 +255,17 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--workers", type=int, default=4)
     result.add_argument("--seed", type=int, default=2026)
     result.add_argument("--device", default="cuda:0")
+    result.add_argument("--checkpoint", type=Path)
+    result.add_argument("--feature-output", type=Path)
+    result.add_argument("--feature-layout", choices=("clip", "temporal"), default="clip")
     return result
 
 
 if __name__ == "__main__":
-    run(parser().parse_args())
+    parsed = parser().parse_args()
+    if (parsed.checkpoint is None) != (parsed.feature_output is None):
+        raise ValueError("--checkpoint and --feature-output must be provided together")
+    if parsed.checkpoint is None:
+        run(parsed)
+    else:
+        extract_features(parsed)

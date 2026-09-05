@@ -62,8 +62,10 @@
   "package_budget_screen": {
     "competition_limit_bytes": 100000000,
     "retained_skeleton_temporal_detector_estimate_bytes": 10650007,
-    "two_omnivore_int4_parameter_payload_estimate_bytes": 27886126,
-    "combined_estimate_before_serialization_overhead_bytes": 38536133,
+    "two_omnivore_int8_parameter_payload_estimate_bytes": 55772252,
+    "combined_estimate_before_serialization_overhead_bytes": 66422259,
+    "preferred_quantization": "per-output-channel int8 for backbone Conv/Linear; fp16 for patch embedding, relative position bias, heads, normalization, bias, fusion, and skeleton",
+    "fallback_quantization": "int6 only if the serialized package gate requires it",
     "verified_submission_package": false,
     "note": "parameter arithmetic is only an early screen; a serialized candidate must still pass the official package gate"
   },

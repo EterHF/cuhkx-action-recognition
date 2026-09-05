@@ -1,0 +1,36 @@
+{
+  "protocol": "single-subject-fold-public-sensor-fusion/v1",
+  "held_users": [1, 6, 17, 22],
+  "held_rows": 716,
+  "seed": 2026,
+  "fixed_epoch": 30,
+  "old_project_checkpoint_loaded": false,
+  "anonymous_test_accessed": false,
+  "results": {
+    "skeleton_only": {"accuracy": 0.4553072625698324, "worst_user_accuracy": 0.35947712418300654},
+    "depth_omnivore": {"accuracy": 0.4720670391061452, "worst_user_accuracy": 0.37254901960784315},
+    "ir_omnivore": {"accuracy": 0.5446927374301676, "worst_user_accuracy": 0.41830065359477125},
+    "clip_token_cross_attention": {"accuracy": 0.5391061452513967, "worst_user_accuracy": 0.4117647058823529},
+    "temporal_token_cross_attention": {"accuracy": 0.5153631284916201, "worst_user_accuracy": 0.39215686274509803},
+    "equal_logit_three_branch_diagnostic": {
+      "accuracy": 0.5977653631284916,
+      "worst_user_accuracy": 0.5032679738562091,
+      "selection_unbiased": false
+    }
+  },
+  "mixed_int8": {
+    "policy": "backbone Conv/Linear per-output-channel int8; sensitive layers fp16",
+    "depth_serialized_bytes": 28504203,
+    "ir_serialized_bytes": 28503495,
+    "two_sensor_serialized_bytes": 57007698,
+    "with_retained_skeleton_temporal_detector_estimate_bytes": 67657705,
+    "held_accuracy": {
+      "depth_fp32": 0.4720670391061452,
+      "depth_mixed_int8": 0.46787709497206703,
+      "ir_fp32": 0.5446927374301676,
+      "ir_mixed_int8": 0.5446927374301676
+    },
+    "official_single_checkpoint_verified": false
+  },
+  "decision": "retain independent branches and equal-logit path for a future fresh OOF; reject both learned cross-attention classifiers"
+}

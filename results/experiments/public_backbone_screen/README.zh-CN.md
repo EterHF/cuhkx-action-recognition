@@ -61,9 +61,11 @@ InfMAE 的官方预训练 checkpoint 仅通过百度网盘发布，本环境未�
 M-SpecGene 的 1.44 GB 发布文件包含优化器和双解码器，本实验只加载并验证其中
 85.80 M 参数的编码器。
 
-两个 Omnivore 分支的 int4 参数载荷估算为 27.89 MB；加上保留的骨骼、时序和检测器
-后约为 38.54 MB（尚未计序列化开销）。这只通过了参数算术初筛，尚未构建或认证符合
-官方规则的提交包。
+两个 Omnivore 分支的 int8 参数载荷估算为 55.77 MB；加上保留的骨骼、时序和检测器
+后约为 66.42 MB（尚未计序列化开销）。预定策略是骨干 Conv/Linear 按输出通道 int8，
+输入 patch、相对位置偏置、分类头、归一化、偏置、融合和骨骼分支保留 fp16；只有实际
+序列化包仍超限时才退到 int6。
+这只通过了参数算术初筛，尚未构建或认证符合官方规则的提交包。
 
 公共来源：[DeFM](https://github.com/leggedrobotics/defm)、
 [DFormer](https://github.com/VCIP-RGBD/DFormer)、

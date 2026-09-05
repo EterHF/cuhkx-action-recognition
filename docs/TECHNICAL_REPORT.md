@@ -757,6 +757,33 @@ test inference was run and no scale/KL sweep followed. The architecture result
 is therefore narrower than the design hypothesis: removing Fusion is supported,
 but these high-rate cross-attention training recipes are not.
 
+### 5.13 Independent public Depth/IR branches, 2026-09-05
+
+A follow-up replaced the old Visual/Fusion encoders with independently
+fine-tuned public Omnivore Swin-T branches while retaining the native-rate
+skeleton encoder. No historical project checkpoint was loaded. On the fixed
+716-row subject holdout, standalone Depth, IR and skeleton reached 0.472067,
+0.544693 and 0.455307; their worst-user accuracies were 0.372549, 0.418301 and
+0.359477.
+
+Cross-attention did not improve this evidence. Two clip-level sensor tokens
+reached 0.539106/0.411765 (accuracy/worst-user). Preserving eight time tokens
+per sensor reached only 0.515363/0.392157 despite 0.9651 training accuracy, so
+the learned fusion head was rejected as over-fit. A fixed equal-logit mean of
+the three independently supervised branches reached 0.597765/0.503268. Because
+the same held fold had already been inspected, that number is explicitly a
+selection-biased complementarity diagnostic, not promotable OOF.
+
+INT4 was unnecessarily conservative for these components. Per-output-channel
+int8 backbone weights with sensitive patch embeddings, relative-position
+biases, heads, norms and biases in fp16 serialized the two sensor models to
+57,007,698 bytes total. Including the retained skeleton/temporal/detector
+estimate gives 67,657,705 bytes before final bundle overhead. Thus int8 is the
+preferred next deployment precision; int6 is only a size-gate fallback. No
+anonymous-test inference or Kaggle submission was performed. In matched
+batch-16 inference, mixed int8 changed Depth from 0.472067 to 0.467877 and kept
+aggregate IR unchanged at 0.544693.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)
