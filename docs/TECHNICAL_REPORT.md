@@ -880,6 +880,11 @@ is not treated as evidence of superiority and no leaderboard-driven weight
 search follows. The submitted artifact reused the compliant 69,805,793-byte
 bundle; pruning the now-unused Fusion weights remains a release-packaging task.
 
+A later deployment audit qualifies the 2,909 OOF figure: that diagnostic did
+not apply the package-only `visual_package_output_scale=0.5`, whereas the
+submitted compact-package inference did. The 0.97512 submission remains valid,
+but 2,909 is not a deployment-matched OOF estimate.
+
 ### 5.19 Ordered Visual architecture priorities, 2026-09-07
 
 Three cumulative Visual changes were trained from the same public IG-65M to
@@ -908,6 +913,10 @@ counts were 2,893/2,892/2,893. A traceable NTU120 proxy fell from 1,788 FP16 to
 worse at 1,716, showing that its INT4 error is distributed through the trunk.
 The attachment's separate 1,998/1,859 source checkpoint is unavailable, so it
 was not falsely reconstructed from INT4.
+
+Under the exact deployed 0.5 Visual scale, the regenerated 5-bit T+V OOF is
+2,893/3,036; this is the appropriate quantization anchor rather than the
+historical unscaled 2,909 diagnostic.
 
 ### 5.21 Temporal-conditioned Visual corrector, 2026-09-07
 

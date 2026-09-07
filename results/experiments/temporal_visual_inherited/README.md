@@ -14,6 +14,13 @@ worst-user remained 0.8125. This is stronger than the rejected exact-equal
 blend because Temporal remains dominant: the mean effective Visual test weight
 is 0.1653 after confidence gating.
 
+Follow-up deployment audit: the 2,909 OOF diagnostic fused the frozen Visual
+OOF artifact without the package-only `visual_package_output_scale=0.5`, while
+the submitted compact-package inference did apply that scale. Therefore 2,909
+is not deployment-matched OOF; regenerating the same T+V rule under the exact
+release contract gives 2,893/3,036. The recorded Kaggle score below remains a
+factual property of the submitted artifact.
+
 The unchanged 69,805,793-byte strictV3 bundle is reused. Test predictions cover
 all 40 classes and differ from strictV3 on only 3/405 rows. Kaggle ref
 `56036959` was submitted after the all-fold gate passed and scored `0.97512`,

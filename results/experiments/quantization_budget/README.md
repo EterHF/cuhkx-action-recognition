@@ -26,6 +26,12 @@ Visual branch and final T+V result were:
 Higher precision fits comfortably but produces no positive final net
 correction, so the main Visual remains 5-bit.
 
+The deployment-matched 2,893 baseline is intentionally lower than the earlier
+2,909 inherited-gate diagnostic. That diagnostic fused the frozen Visual OOF
+artifact without the package-only 0.5 output scale, while test inference used
+the compact package and did apply the scale. The 0.97512 Kaggle observation
+remains factual, but 2,909 is not a deployment-matched OOF result.
+
 The exact attachment candidate with 1,998 FP16 and 1,859 INT4 correct rows has
 no original float checkpoint in the workspace. A clearly labelled traceable
 NTU120 proxy nevertheless confirms the mechanism: FP16 scored 1,788, INT4

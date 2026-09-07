@@ -23,7 +23,8 @@
       "late8": {"visual_correct": 2754, "fused_correct": 2893, "bundle_bytes": 65385317},
       "mixed6_late8": {"visual_correct": 2746, "fused_correct": 2892, "bundle_bytes": 68437719}
     },
-    "decision": "retain uniform5; higher precision has no positive final-fusion net correction"
+    "decision": "retain uniform5; higher precision has no positive final-fusion net correction",
+    "prior_2909_oof_comparability": "not deployment-matched: the earlier diagnostic omitted visual_package_output_scale=0.5 on OOF while test inference applied it"
   },
   "ntu120_proxy": {
     "source": "target_source_r2plus1d34_3ch_ntu120_full32_e8_strict_fixed5",

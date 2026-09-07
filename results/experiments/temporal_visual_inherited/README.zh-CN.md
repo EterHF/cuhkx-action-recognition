@@ -12,6 +12,11 @@ Subject-wise OOF 从 2,903/3,036（`0.956192`）提升至 2,909/3,036
 0.8125。它优于已否决的严格等权方案，因为 Temporal 仍占主导：经过置信度门控后，
 测试集 Visual 平均有效权重只有 0.1653。
 
+后续部署审计发现：2,909 条的 OOF 诊断在融合冻结 Visual OOF artifact 时没有应用仅存在
+于发布包的 `visual_package_output_scale=0.5`，但已提交的 compact-package 推理实际应用了
+该缩放。因此 2,909 并不是与部署完全一致的 OOF；按精确发布契约重新生成相同 T+V 规则
+得到 2,893/3,036。下述 Kaggle 分数仍是已提交 artifact 的事实结果。
+
 复用未改变的 69,805,793-byte strictV3 bundle。测试预测覆盖全部 40 类，仅相对
 strictV3 改变 3/405 条。通过逐 fold 门禁后提交 Kaggle，ref `56036959` 得分
 `0.97512`，与 strictV3 持平。该方案作为更简洁的 private-LB 候选保留，不根据公开榜
