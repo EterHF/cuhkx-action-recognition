@@ -1,0 +1,69 @@
+{
+  "protocol": "visual-architecture-priorities-foldA/v1",
+  "date": "2026-09-07",
+  "input": "16-frame [Depth_Color RGB, IR] clips",
+  "held_users": [1, 6, 17, 22],
+  "train_rows": 2320,
+  "held_rows": 716,
+  "fixed_epoch": 15,
+  "batch_size": 4,
+  "seed": 2026,
+  "initialization": {
+    "source_dataset": "IG-65M -> Kinetics-400 public checkpoint",
+    "name": "r2plus1d_34_clip32_ft_kinetics_from_ig65m-ade133f1.pth",
+    "source_encoder_sha256": "3f3bfc8c91bbd9d070f166857c9a0aaec87070c8fbde61afac3fde1557867d75",
+    "target_data_used": false,
+    "project_checkpoint_loaded": false
+  },
+  "variants": {
+    "control": {
+      "changes": [],
+      "last_train_accuracy_with_augmentation": 0.9599137931034483,
+      "held_correct": 448,
+      "held_accuracy": 0.6256983240223464,
+      "worst_user_accuracy": 0.5172413793103449,
+      "user_accuracy": {"1": 0.5947712418300654, "6": 0.5172413793103449, "17": 0.7228915662650602, "22": 0.6804123711340206},
+      "trainable_parameters": 39098202,
+      "model_parameters": 63514700
+    },
+    "multiscale": {
+      "changes": ["layer2/3/4 temporal residual head"],
+      "last_train_accuracy_with_augmentation": 0.9594827586206897,
+      "held_correct": 436,
+      "held_accuracy": 0.6089385474860335,
+      "delta_correct_vs_previous": -12,
+      "worst_user_accuracy": 0.4975369458128079,
+      "user_accuracy": {"1": 0.5490196078431373, "6": 0.4975369458128079, "17": 0.7108433734939759, "22": 0.6855670103092784},
+      "trainable_parameters": 39236099,
+      "model_parameters": 63652597
+    },
+    "highres": {
+      "changes": ["layer2/3/4 temporal residual head", "preserve layer4 temporal resolution"],
+      "last_train_accuracy_with_augmentation": 0.9573275862068965,
+      "held_correct": 443,
+      "held_accuracy": 0.6187150837988827,
+      "delta_correct_vs_previous": 7,
+      "delta_correct_vs_control": -5,
+      "worst_user_accuracy": 0.4975369458128079,
+      "user_accuracy": {"1": 0.5882352941176471, "6": 0.4975369458128079, "17": 0.7409638554216867, "22": 0.6649484536082474},
+      "trainable_parameters": 39236099,
+      "model_parameters": 63652597
+    },
+    "modality_gate": {
+      "changes": ["layer2/3/4 temporal residual head", "preserve layer4 temporal resolution", "zero-initialized bounded Depth/IR gate"],
+      "last_train_accuracy_with_augmentation": 0.9586206896551724,
+      "held_correct": 442,
+      "held_accuracy": 0.61731843575419,
+      "delta_correct_vs_previous": -1,
+      "delta_correct_vs_control": -6,
+      "worst_user_accuracy": 0.4975369458128079,
+      "user_accuracy": {"1": 0.5490196078431373, "6": 0.4975369458128079, "17": 0.7409638554216867, "22": 0.6907216494845361},
+      "trainable_parameters": 39236213,
+      "model_parameters": 63652711
+    }
+  },
+  "held_labels_used_for_checkpoint_selection": false,
+  "anonymous_test_accessed": false,
+  "fold_a_gate_passed": false,
+  "decision": "retain strictV3; stop before B-E, full-fit, test inference, or Kaggle submission"
+}

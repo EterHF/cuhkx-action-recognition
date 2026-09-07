@@ -74,3 +74,8 @@ Omnivore 的原生四通道 token 融合。Fold-A held accuracy 仅 0.379888，�
 [`temporal_visual_inherited`](temporal_visual_inherited/) 仅将 Fusion 冻结基础权重置零，
 继承 strictV3 的 Temporal/Visual temperature、权重与 quality gate。OOF 增加 6 条且
 5/5 folds 不退化，Kaggle 持平 0.97512（ref 56036959）。
+
+[`visual_priorities`](visual_priorities/) 按顺序为 Visual R(2+1)D-34 累加 layer2/3/4
+时序残差 head、layer4 高时间分辨率以及零初始化 Depth/IR 门控。control 与三个累加
+版本的固定 Fold-A accuracy 分别为 0.625698/0.608939/0.618715/0.617318，均未超过
+control，因此没有进行测试推理或提交。

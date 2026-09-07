@@ -92,3 +92,9 @@ The [`temporal_visual_inherited`](temporal_visual_inherited/) optimization sets
 only Fusion's frozen base weight to zero while inheriting the strictV3
 Temporal/Visual temperatures, weights and quality gate. OOF improved 6 rows with
 5/5 folds non-degrading, and Kaggle tied 0.97512 (ref 56036959).
+
+The [`visual_priorities`](visual_priorities/) study sequentially adds a
+layer2/3/4 temporal residual head, high-resolution layer4 time stride, and a
+zero-initialized Depth/IR gate to the Visual R(2+1)D-34. Fixed Fold-A accuracy
+was 0.625698/0.608939/0.618715/0.617318 for control and the three cumulative
+arms. None exceeded control, so no test inference or submission followed.

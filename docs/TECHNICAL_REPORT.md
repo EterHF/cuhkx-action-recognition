@@ -880,6 +880,22 @@ is not treated as evidence of superiority and no leaderboard-driven weight
 search follows. The submitted artifact reused the compliant 69,805,793-byte
 bundle; pruning the now-unused Fusion weights remains a release-packaging task.
 
+### 5.19 Ordered Visual architecture priorities, 2026-09-07
+
+Three cumulative Visual changes were trained from the same public IG-65M to
+Kinetics-400 R(2+1)D-34 initialization, without loading any project checkpoint.
+The protocol used the train-only Fold-A preprocessing contract, 2,320 training
+rows, 716 held-subject rows, fixed 15 epochs and a single final held evaluation.
+
+The control scored 448/716 (0.625698). A zero-initialized layer2/3/4 temporal
+residual head fell to 436/716 (0.608939). Preserving layer4 temporal resolution
+recovered seven rows to 443/716 (0.618715), but remained five below control.
+A 114-parameter, zero-initialized bounded Depth/IR gate then reached 442/716
+(0.617318). Worst-user accuracy was 0.517241 for control and 0.497537 for every
+modified arm. The high-resolution result is directional evidence that late
+temporal downsampling can matter, but no cumulative candidate passed Fold A;
+B-E, full fit, anonymous-test inference and Kaggle submission were stopped.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)
