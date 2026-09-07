@@ -1,0 +1,51 @@
+import numpy as np
+import pytest
+import torch
+
+from yolo_r2plus1d.strict_v3.models.conditional_corrector import ConditionalCorrector
+from yolo_r2plus1d.strict_v3.training.conditional_corrector import (
+    correction_loss,
+    prediction_delta,
+    validate_provenance,
+)
+
+
+def test_corrector_is_exact_zero_residual_but_hidden_layer_is_not_zero() -> None:
+    torch.manual_seed(2026)
+    model = ConditionalCorrector(visual_dim=8, classes=4, hidden_dim=6).eval()
+    residual = model(torch.randn(3, 8), torch.randn(3, 4))
+    assert torch.equal(residual, torch.zeros_like(residual))
+    assert torch.count_nonzero(model.hidden[0].weight) > 0
+    assert torch.count_nonzero(model.output.weight) == 0
+
+
+def test_loss_protects_only_correct_confident_baseline_rows() -> None:
+    baseline = torch.tensor([[8.0, 0.0], [8.0, 0.0], [0.0, 0.0]])
+    candidate = baseline.clone().requires_grad_()
+    labels = torch.tensor([0, 1, 0])
+    loss, protected = correction_loss(baseline, candidate, labels, 0.8, 1.0)
+    assert protected == 1
+    loss.backward()
+    assert candidate.grad is not None
+
+
+def test_nested_provenance_fails_loud_on_outer_or_inner_leakage() -> None:
+    safe = {
+        "upstream_excluded_users": [1, 6],
+        "cross_fitted_within_outer_train": True,
+        "target_labels_used_for_upstream_selection": False,
+    }
+    validate_provenance(safe, {1, 6}, training=True)
+    with pytest.raises(RuntimeError, match="outer-held"):
+        validate_provenance({**safe, "upstream_excluded_users": [1]}, {1, 6}, True)
+    with pytest.raises(RuntimeError, match="inner cross-fitted"):
+        validate_provenance(
+            {**safe, "cross_fitted_within_outer_train": False}, {1, 6}, True
+        )
+
+
+def test_prediction_delta_uses_net_corrections() -> None:
+    labels = np.array([0, 0, 0])
+    assert prediction_delta(
+        np.array([1, 0, 0]), np.array([0, 1, 0]), labels
+    ) == {"corrected": 1, "broken": 1, "net": 0}

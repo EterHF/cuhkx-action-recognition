@@ -79,3 +79,12 @@ Omnivore 的原生四通道 token 融合。Fold-A held accuracy 仅 0.379888，�
 时序残差 head、layer4 高时间分辨率以及零初始化 Depth/IR 门控。control 与三个累加
 版本的固定 Fold-A accuracy 分别为 0.625698/0.608939/0.618715/0.617318，均未超过
 control，因此没有进行测试推理或提交。
+
+[`quantization_budget`](quantization_budget/) 真正删除 Fusion 与未启用 thermal 权重，
+得到预测完全一致的 50.73 MB T+V 单 checkpoint。主 Visual 从 5-bit 提至 6/8-bit
+没有最终 OOF 收益；可追溯 NTU120 代理则确认 INT4 会损失外部预训练信息，而从原始
+浮点重新做 5-bit 可以恢复。
+
+[`conditional_corrector`](conditional_corrector/) 实现了以 Temporal logits 为条件、
+零初始化的小型 Visual 残差头。当前缺少 20 组 outer×inner 上游特征，训练在 fail-closed
+数据门禁处停止，并明确拒绝普通全局 OOF stacking。

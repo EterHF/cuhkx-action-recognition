@@ -652,6 +652,26 @@ control 为 448/716（0.625698）。零初始化的 layer2/3/4 时序残差 head
 均为 0.497537。高时间分辨率结果说明末端时间降采样可能值得独立研究，但本次累加候选
 均未通过 Fold A，因此停止 B–E、full-fit、匿名测试推理和 Kaggle 提交。
 
+### 5.20 删除 Fusion 后的量化预算，2026-09-07
+
+物理删除 Fusion 与未启用 thermal 占位权重后，单 checkpoint 降至 50,730,599 bytes，
+T/V temperature、权重、quality gate 和 Visual output scale 均保持不变；405 条预测与
+Fusion 权重置零候选完全一致。从原始 FP16 fold 权重重新量化后，主 Visual 没有收益：
+5/6/8-bit 的最终 T+V 正确数分别为 2,893/2,892/2,893。可追溯 NTU120 代理从 FP16
+1,788 降至 INT4 1,730，而 uniform 5-bit 达到 1,804；只保护末层的 mixed precision
+仅 1,716，说明 INT4 误差分布在整个 trunk。附件中的另一份 1,998/1,859 源 checkpoint
+不可用，因此没有用 INT4 伪造恢复。
+
+### 5.21 Temporal 条件 Visual 纠错器，2026-09-07
+
+已实现 `z_new = z0 + r(hV, zT)` 小型 head。隐藏投影正常初始化，仅最后一层为零，
+所以初始输出严格等于 `z0`。固定目标为最终 CE，并在训练集中基线预测正确且置信度不低于
+0.8 的样本上加入 `KL(p0 || p_new)`。
+
+当前不报告分数。严格评估需要 20 组 outer×inner 上游特征/logits：纠错器训练输入在
+outer-train 内交叉生成，且每个上游模型同时排除 outer-held 用户。现有仓库缺少这些
+artifact；实现会对普通全局 OOF fail closed，不提供有泄漏偏差的 stacking 分数。
+
 ---
 
 ## 6. 通用方法纪律（硬约束）

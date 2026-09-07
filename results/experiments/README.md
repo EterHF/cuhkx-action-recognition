@@ -98,3 +98,15 @@ layer2/3/4 temporal residual head, high-resolution layer4 time stride, and a
 zero-initialized Depth/IR gate to the Visual R(2+1)D-34. Fixed Fold-A accuracy
 was 0.625698/0.608939/0.618715/0.617318 for control and the three cumulative
 arms. None exceeded control, so no test inference or submission followed.
+
+The [`quantization_budget`](quantization_budget/) study physically removes
+Fusion and inactive thermal weights, producing a 50.73 MB T+V single
+checkpoint with identical predictions. Raising the main Visual from 5-bit to
+6/8-bit gives no final OOF gain. A traceable NTU120 proxy confirms that INT4
+can destroy external-pretraining information and that fresh 5-bit quantization
+can recover it.
+
+The [`conditional_corrector`](conditional_corrector/) implementation adds a
+small zero-initialized Visual residual conditioned on Temporal logits. Training
+is held at the fail-closed data gate until 20 outer-by-inner upstream feature
+sets exist; ordinary global OOF stacking is explicitly rejected.

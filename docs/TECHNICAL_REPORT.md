@@ -896,6 +896,32 @@ modified arm. The high-resolution result is directional evidence that late
 temporal downsampling can matter, but no cumulative candidate passed Fold A;
 B-E, full fit, anonymous-test inference and Kaggle submission were stopped.
 
+### 5.20 Fusion-free quantization budget, 2026-09-07
+
+Physical removal of Fusion and the inactive thermal placeholder reduced the
+single checkpoint to 50,730,599 bytes while preserving the T/V temperatures,
+weights, quality gate and Visual output scale. Its 405 predictions exactly
+matched the zero-Fusion-weight candidate. Fresh quantization from original
+FP16 fold weights showed no main-Visual benefit: 5/6/8-bit final T+V correct
+counts were 2,893/2,892/2,893. A traceable NTU120 proxy fell from 1,788 FP16 to
+1,730 INT4, while uniform 5-bit reached 1,804. Late-only mixed precision was
+worse at 1,716, showing that its INT4 error is distributed through the trunk.
+The attachment's separate 1,998/1,859 source checkpoint is unavailable, so it
+was not falsely reconstructed from INT4.
+
+### 5.21 Temporal-conditioned Visual corrector, 2026-09-07
+
+A small head now implements `z_new = z0 + r(hV, zT)`. Its hidden projection is
+normally initialized and only the final layer is zero, making the initial
+output exactly equal to `z0`. The fixed objective combines final CE with
+`KL(p0 || p_new)` on correct, confidence-at-least-0.8 training rows.
+
+No score is reported yet. Strict evaluation requires 20 outer-by-inner
+upstream feature/logit runs: inner cross-fitted inputs for the corrector, with
+every upstream model also excluding the outer-held users. Those artifacts do
+not exist. The implementation fails closed on ordinary global OOF input rather
+than presenting a leakage-biased stacking score.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)

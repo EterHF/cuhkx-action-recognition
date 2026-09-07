@@ -451,6 +451,10 @@ def validate_contract(
     package_scale = float(release.get("visual_package_output_scale", 1.0))
     if not np.isfinite(package_scale) or package_scale <= 0.0:
         raise RuntimeError("unsafe release contract visual_package_output_scale")
+    if "fusion_4bit" not in package and not np.isclose(
+        float(release.get("weights", {}).get("fusion", float("nan"))), 0.0
+    ):
+        raise RuntimeError("Fusion-free package must have zero Fusion weight")
     # New release packages embed the contract.  A small number of legacy
     # candidates predate that field; those may still be replayed when the
     # caller explicitly supplies a train-only contract (the CLI fallback
@@ -626,24 +630,26 @@ def main() -> None:
             ],
             REPO_ROOT,
         )
+        fusion_enabled = "fusion_4bit" in package
         skeleton_dir = work / "skeleton"
-        run_command(
-            [
-                sys.executable,
-                "-m",
-                "yolo_r2plus1d.strict_v3.data.skeleton_cache",
-                "--metadata",
-                str(RESULT_DIR / "metadata.npz"),
-                "--test-root",
-                str(args.test_root),
-                "--output-dir",
-                str(skeleton_dir),
-                "--test-only",
-                "--workers",
-                str(args.workers),
-            ],
-            REPO_ROOT,
-        )
+        if fusion_enabled:
+            run_command(
+                [
+                    sys.executable,
+                    "-m",
+                    "yolo_r2plus1d.strict_v3.data.skeleton_cache",
+                    "--metadata",
+                    str(RESULT_DIR / "metadata.npz"),
+                    "--test-root",
+                    str(args.test_root),
+                    "--output-dir",
+                    str(skeleton_dir),
+                    "--test-only",
+                    "--workers",
+                    str(args.workers),
+                ],
+                REPO_ROOT,
+            )
         visual_logits = infer_visual(
             visual_dir / "test_depth_ir.npy",
             contract,
@@ -652,15 +658,19 @@ def main() -> None:
             args.batch_size,
             args.workers,
         )
-        fusion_logits = infer_fusion(
-            visual_dir / "test_depth_ir.npy",
-            skeleton_dir / "test_skeleton.npy",
-            skeleton_dir / "test_skeleton_mask.npy",
-            contract,
-            package,
-            device,
-            args.batch_size,
-            args.workers,
+        fusion_logits = (
+            infer_fusion(
+                visual_dir / "test_depth_ir.npy",
+                skeleton_dir / "test_skeleton.npy",
+                skeleton_dir / "test_skeleton_mask.npy",
+                contract,
+                package,
+                device,
+                args.batch_size,
+                args.workers,
+            )
+            if fusion_enabled
+            else np.zeros_like(visual_logits)
         )
         raw_frames = raw_dst_frames(args.test_root, test_ids, 16)
         temporal_logits = infer_temporal(raw_frames, package, device, args.batch_size)

@@ -1,0 +1,19 @@
+{
+  "schema_version": "conditional-corrector-preregistration/v1",
+  "architecture": "zero-initialized residual r(h_visual_512, temporal_logits_40), hidden_dim=128",
+  "objective": "CE(y, p_new) + 1.0 * a(x) * KL(p0 || p_new)",
+  "protection_mask": "baseline prediction correct and confidence >= 0.8; train only",
+  "fixed_epochs": 60,
+  "seed": 2026,
+  "required_protocol": {
+    "outer_folds": 5,
+    "inner_upstream_runs_per_outer": 4,
+    "upstream_excludes_outer_held_users": true,
+    "outer_train_inputs_are_inner_cross_fitted": true,
+    "held_labels_used_for_checkpoint_selection": false
+  },
+  "current_status": "implementation complete; training blocked before data access",
+  "missing_artifacts": "20 outer-by-inner strictV3 Temporal/Visual feature and logit sets",
+  "ordinary_global_oof_accepted": false,
+  "anonymous_test_accessed": false
+}

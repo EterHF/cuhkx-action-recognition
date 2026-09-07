@@ -1,0 +1,46 @@
+{
+  "protocol": "fusion-free-quantization-budget/v1",
+  "date": "2026-09-07",
+  "temporal_visual_bundle": {
+    "model_bytes": 45111978,
+    "single_checkpoint_bytes": 50730599,
+    "single_checkpoint_margin_bytes": 49269401,
+    "reclaimed_model_bytes": 19094022,
+    "removed": ["fusion_4bit", "thermal_mobilenet"],
+    "visual_package_output_scale": 0.5,
+    "prediction_differences_vs_zero_weight_candidate": 0,
+    "rows_replayed": 405,
+    "sha256": "feb60ac6c9f6ac17219ca9d3d829883faa6dea6b3bef89340e40c49c3036befc"
+  },
+  "strictv3_visual": {
+    "source": "five original affine_head_fold{A-E}/best_fp16.pt checkpoints",
+    "rows": 3036,
+    "policies": {
+      "fp16": {"visual_correct": 2754, "fused_correct": 2893},
+      "uniform5": {"visual_correct": 2755, "fused_correct": 2893, "bundle_bytes": 50732895},
+      "uniform6": {"visual_correct": 2747, "fused_correct": 2892, "bundle_bytes": 58666015},
+      "uniform8": {"visual_correct": 2754, "fused_correct": 2893, "bundle_bytes": 74532191},
+      "late8": {"visual_correct": 2754, "fused_correct": 2893, "bundle_bytes": 65385317},
+      "mixed6_late8": {"visual_correct": 2746, "fused_correct": 2892, "bundle_bytes": 68437719}
+    },
+    "decision": "retain uniform5; higher precision has no positive final-fusion net correction"
+  },
+  "ntu120_proxy": {
+    "source": "target_source_r2plus1d34_3ch_ntu120_full32_e8_strict_fixed5",
+    "source_is_attachment_1998_1859": false,
+    "rows": 3036,
+    "policies": {
+      "fp16": {"correct": 1788},
+      "uniform4": {"correct": 1730, "net_vs_fp16": -58},
+      "uniform5": {"correct": 1804, "net_vs_fp16": 16, "net_vs_int4": 74},
+      "uniform6": {"correct": 1779, "net_vs_fp16": -9, "net_vs_int4": 49},
+      "uniform8": {"correct": 1786, "net_vs_fp16": -2, "net_vs_int4": 56},
+      "mixed4_late8": {"correct": 1716, "net_vs_fp16": -72, "net_vs_int4": -14}
+    },
+    "decision": "uniform5 is the best proxy policy; late-only precision is rejected"
+  },
+  "brecq_status": "not started: simple uniform5 already closes the proxy FP16 accuracy gap",
+  "attachment_blocker": "the original FP16 checkpoint producing 1998/3036 is not present, so its 1859/3036 INT4 artifact cannot be legally re-quantized",
+  "anonymous_test_labels_used": false,
+  "kaggle_submitted": false
+}
