@@ -86,5 +86,6 @@ control，因此没有进行测试推理或提交。
 浮点重新做 5-bit 可以恢复。
 
 [`conditional_corrector`](conditional_corrector/) 实现了以 Temporal logits 为条件、
-零初始化的小型 Visual 残差头。当前缺少 20 组 outer×inner 上游特征，训练在 fail-closed
-数据门禁处停止，并明确拒绝普通全局 OOF stacking。
+零初始化的小型 Visual 残差头。严格 external-only nested OOF 净纠错 264/3,036 条，
+所有折和用户均为正向；但代理分支显著弱于 strictV3 且强弱次序不同，因此只验证机制，
+不授权部署或提交。

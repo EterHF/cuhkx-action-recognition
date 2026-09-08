@@ -1,0 +1,258 @@
+{
+  "protocol": "conditional-corrector-nested-oof/v1",
+  "interpretation": "strict external-only research proxy; not a strictV3 deployment score",
+  "rows": 3036,
+  "branches": {
+    "visual": {
+      "correct": 1310,
+      "accuracy": 0.43148880105401843,
+      "macro_recall": 0.3638712379484331,
+      "subject_macro_accuracy": 0.43047274215798714,
+      "worst_user_accuracy": 0.25625,
+      "user_accuracy": {
+        "1": 0.38562091503267976,
+        "2": 0.4523809523809524,
+        "3": 0.37423312883435583,
+        "4": 0.46153846153846156,
+        "5": 0.25625,
+        "6": 0.3497536945812808,
+        "7": 0.4756756756756757,
+        "8": 0.378698224852071,
+        "9": 0.49732620320855614,
+        "16": 0.46236559139784944,
+        "17": 0.4759036144578313,
+        "18": 0.3687150837988827,
+        "19": 0.5478723404255319,
+        "20": 0.5094339622641509,
+        "21": 0.43609022556390975,
+        "22": 0.4587628865979381,
+        "23": 0.41134751773049644,
+        "24": 0.44654088050314467
+      }
+    },
+    "temporal": {
+      "correct": 902,
+      "accuracy": 0.2971014492753623,
+      "macro_recall": 0.2352554734451318,
+      "subject_macro_accuracy": 0.2933337481731794,
+      "worst_user_accuracy": 0.1125,
+      "user_accuracy": {
+        "1": 0.1895424836601307,
+        "2": 0.2976190476190476,
+        "3": 0.3128834355828221,
+        "4": 0.25874125874125875,
+        "5": 0.1125,
+        "6": 0.3054187192118227,
+        "7": 0.3567567567567568,
+        "8": 0.2603550295857988,
+        "9": 0.3155080213903743,
+        "16": 0.3387096774193548,
+        "17": 0.3192771084337349,
+        "18": 0.3575418994413408,
+        "19": 0.3882978723404255,
+        "20": 0.3081761006289308,
+        "21": 0.2631578947368421,
+        "22": 0.30927835051546393,
+        "23": 0.23404255319148937,
+        "24": 0.3522012578616352
+      }
+    },
+    "baseline": {
+      "correct": 1201,
+      "accuracy": 0.3955862977602108,
+      "macro_recall": 0.31895163684540345,
+      "subject_macro_accuracy": 0.39196243607995174,
+      "worst_user_accuracy": 0.1625,
+      "user_accuracy": {
+        "1": 0.3333333333333333,
+        "2": 0.4226190476190476,
+        "3": 0.3803680981595092,
+        "4": 0.4125874125874126,
+        "5": 0.1625,
+        "6": 0.3793103448275862,
+        "7": 0.44324324324324327,
+        "8": 0.3668639053254438,
+        "9": 0.39037433155080214,
+        "16": 0.46236559139784944,
+        "17": 0.46987951807228917,
+        "18": 0.40782122905027934,
+        "19": 0.5159574468085106,
+        "20": 0.42138364779874216,
+        "21": 0.3609022556390977,
+        "22": 0.42783505154639173,
+        "23": 0.2765957446808511,
+        "24": 0.42138364779874216
+      }
+    },
+    "candidate": {
+      "correct": 1465,
+      "accuracy": 0.48254281949934125,
+      "macro_recall": 0.424718607897771,
+      "subject_macro_accuracy": 0.47993375973889457,
+      "worst_user_accuracy": 0.29375,
+      "user_accuracy": {
+        "1": 0.41830065359477125,
+        "2": 0.47619047619047616,
+        "3": 0.4110429447852761,
+        "4": 0.5244755244755245,
+        "5": 0.29375,
+        "6": 0.42857142857142855,
+        "7": 0.5351351351351351,
+        "8": 0.4319526627218935,
+        "9": 0.5454545454545454,
+        "16": 0.543010752688172,
+        "17": 0.5542168674698795,
+        "18": 0.48044692737430167,
+        "19": 0.6117021276595744,
+        "20": 0.5534591194968553,
+        "21": 0.43609022556390975,
+        "22": 0.4742268041237113,
+        "23": 0.41134751773049644,
+        "24": 0.5094339622641509
+      }
+    }
+  },
+  "candidate_vs_baseline": {
+    "delta": {
+      "corrected": 438,
+      "broken": 174,
+      "net": 264
+    },
+    "paired_exact_pvalue": 3.2516767556647706e-27,
+    "subject_bootstrap_accuracy_delta_95ci": [
+      0.0730971840550396,
+      0.10375218936060669
+    ]
+  },
+  "candidate_vs_visual": {
+    "delta": {
+      "corrected": 353,
+      "broken": 198,
+      "net": 155
+    },
+    "paired_exact_pvalue": 4.013998226579826e-11,
+    "subject_bootstrap_accuracy_delta_95ci": [
+      0.03607705291928979,
+      0.06273193777243442
+    ]
+  },
+  "candidate_vs_temporal": {
+    "delta": {
+      "corrected": 717,
+      "broken": 154,
+      "net": 563
+    },
+    "paired_exact_pvalue": 1.6905904926087517e-87,
+    "subject_bootstrap_accuracy_delta_95ci": [
+      0.1656378208444413,
+      0.20671170592014784
+    ]
+  },
+  "folds": [
+    {
+      "fold": "A",
+      "rows": 716,
+      "baseline_correct": 289,
+      "candidate_correct": 335,
+      "delta": {
+        "corrected": 85,
+        "broken": 39,
+        "net": 46
+      },
+      "protected_train_rows": 21
+    },
+    {
+      "fold": "B",
+      "rows": 673,
+      "baseline_correct": 265,
+      "candidate_correct": 323,
+      "delta": {
+        "corrected": 92,
+        "broken": 34,
+        "net": 58
+      },
+      "protected_train_rows": 14
+    },
+    {
+      "fold": "C",
+      "rows": 679,
+      "baseline_correct": 288,
+      "candidate_correct": 336,
+      "delta": {
+        "corrected": 94,
+        "broken": 46,
+        "net": 48
+      },
+      "protected_train_rows": 14
+    },
+    {
+      "fold": "D",
+      "rows": 489,
+      "baseline_correct": 199,
+      "candidate_correct": 265,
+      "delta": {
+        "corrected": 94,
+        "broken": 28,
+        "net": 66
+      },
+      "protected_train_rows": 20
+    },
+    {
+      "fold": "E",
+      "rows": 479,
+      "baseline_correct": 160,
+      "candidate_correct": 206,
+      "delta": {
+        "corrected": 73,
+        "broken": 27,
+        "net": 46
+      },
+      "protected_train_rows": 28
+    }
+  ],
+  "all_folds_positive": true,
+  "per_user_net_correct": {
+    "1": 13,
+    "2": 9,
+    "3": 5,
+    "4": 16,
+    "5": 21,
+    "6": 10,
+    "7": 17,
+    "8": 11,
+    "9": 29,
+    "16": 15,
+    "17": 14,
+    "18": 13,
+    "19": 18,
+    "20": 21,
+    "21": 10,
+    "22": 9,
+    "23": 19,
+    "24": 14
+  },
+  "all_users_positive": true,
+  "protected_train_rows_per_fold": [
+    21,
+    14,
+    14,
+    20,
+    28
+  ],
+  "limitations": [
+    "External-only proxy branch accuracies are much lower than deployed strictV3.",
+    "Frozen strictV3 Temporal-dominant fusion weights are mismatched to this proxy, where Visual is stronger.",
+    "Few inner-training baseline rows exceed the preregistered 0.8 KL-protection threshold.",
+    "The result validates the correction mechanism under strict isolation but does not estimate Kaggle gain."
+  ],
+  "reproducibility": {
+    "manifest_sha256": "ae893204e0f9863df4ec64cce0799f6d3797acf2375c4924529defd312ffcbaa",
+    "corrected_oof_sha256": "fff984ab6d3c161a9e2cb3355a47b04ac1a44ae9cd7bd183e7c6d896fc52f125",
+    "baseline_oof_sha256": "85c061025d6d7042173e41053a4ece3c94c8bcbda2387437b9ec68312972c3ce",
+    "fixed_epochs": 60,
+    "seed": 2026
+  },
+  "held_labels_used_for_checkpoint_selection": false,
+  "anonymous_test_accessed": false,
+  "kaggle_submitted": false
+}

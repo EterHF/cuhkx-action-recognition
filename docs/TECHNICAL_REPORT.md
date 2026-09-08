@@ -918,18 +918,30 @@ Under the exact deployed 0.5 Visual scale, the regenerated 5-bit T+V OOF is
 2,893/3,036; this is the appropriate quantization anchor rather than the
 historical unscaled 2,909 diagnostic.
 
-### 5.21 Temporal-conditioned Visual corrector, 2026-09-07
+### 5.21 Temporal-conditioned Visual corrector, 2026-09-08
 
 A small head now implements `z_new = z0 + r(hV, zT)`. Its hidden projection is
 normally initialized and only the final layer is zero, making the initial
 output exactly equal to `z0`. The fixed objective combines final CE with
 `KL(p0 || p_new)` on correct, confidence-at-least-0.8 training rows.
 
-No score is reported yet. Strict evaluation requires 20 outer-by-inner
-upstream feature/logit runs: inner cross-fitted inputs for the corrector, with
-every upstream model also excluding the outer-held users. Those artifacts do
-not exist. The implementation fails closed on ordinary global OOF input rather
-than presenting a leakage-biased stacking score.
+Strict evaluation used frozen external-only encoders (PKU-MMD R(2+1)D-34
+Visual and NTU DSTFormer skeleton Temporal), fresh fixed-final 40-class heads,
+20 outer-by-inner cross-fitted runs, and five separate outer-train heads. Every
+upstream target head excluded its outer-held users. No anonymous-test input was
+accessed. The 3,036-row baseline improved from 1,201 (0.395586) to 1,465
+(0.482543): 438 corrected, 174 broken, net +264. Fold A-E net changes were
++46/+58/+48/+66/+46 and all 18 users improved. Subject-macro accuracy rose from
+0.391962 to 0.479934, worst-user from 0.1625 to 0.29375, and the user-clustered
+95% accuracy-delta interval was [+0.07310,+0.10375]. A second run reproduced
+both OOF arrays byte-for-byte.
+
+This confirms the correction mechanism under strict isolation, not its gain on
+deployed strictV3. The external-only proxy is substantially weaker; Visual
+scored 1,310 while Temporal scored 902, making frozen strictV3
+Temporal-dominant fusion weights mismatched. The candidate still exceeded
+Visual alone by 155 rows, but the result does not authorize full-fit, anonymous
+test inference, or Kaggle submission.
 
 ---
 

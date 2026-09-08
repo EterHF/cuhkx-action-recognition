@@ -669,15 +669,24 @@ Fusion 权重置零候选完全一致。从原始 FP16 fold 权重重新量化�
 在精确部署的 Visual 0.5 缩放下，重新生成的 5-bit T+V OOF 为 2,893/3,036；量化比较
 应以它为锚点，而不是历史上未缩放的 2,909 条诊断。
 
-### 5.21 Temporal 条件 Visual 纠错器，2026-09-07
+### 5.21 Temporal 条件 Visual 纠错器，2026-09-08
 
 已实现 `z_new = z0 + r(hV, zT)` 小型 head。隐藏投影正常初始化，仅最后一层为零，
 所以初始输出严格等于 `z0`。固定目标为最终 CE，并在训练集中基线预测正确且置信度不低于
 0.8 的样本上加入 `KL(p0 || p_new)`。
 
-当前不报告分数。严格评估需要 20 组 outer×inner 上游特征/logits：纠错器训练输入在
-outer-train 内交叉生成，且每个上游模型同时排除 outer-held 用户。现有仓库缺少这些
-artifact；实现会对普通全局 OOF fail closed，不提供有泄漏偏差的 stacking 分数。
+严格评估使用冻结的外部-only 编码器（PKU-MMD R(2+1)D-34 Visual 与 NTU DSTFormer
+骨骼 Temporal）、全新固定终轮 40 类 head、20 组 outer×inner cross-fit，以及 5 个独立
+outer-train head。每个目标上游 head 都排除 outer-held 用户，全程未访问匿名测试输入。
+3,036 条基线从 1,201（0.395586）提高到 1,465（0.482543）：纠正 438、破坏 174，
+净纠错 +264；A–E 分别为 +46/+58/+48/+66/+46，18 个用户全部改善。subject-macro
+从 0.391962 提高到 0.479934，worst-user 从 0.1625 提高到 0.29375，按用户重采样的
+accuracy delta 95% 区间为 [+0.07310,+0.10375]。第二次运行的两份 OOF 数组逐字节一致。
+
+这证明条件纠错机制在严格隔离下有效，但不能估计部署 strictV3 的增益。外部-only 代理
+显著更弱，其中 Visual 为 1,310 条、Temporal 仅 902 条，导致冻结的 strictV3 Temporal
+主导融合权重失配。候选仍比 Visual 单支多 155 条，但该结果不授权 full-fit、匿名测试
+推理或 Kaggle 提交。
 
 ---
 

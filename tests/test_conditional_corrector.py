@@ -4,7 +4,9 @@ import torch
 
 from yolo_r2plus1d.strict_v3.models.conditional_corrector import ConditionalCorrector
 from yolo_r2plus1d.strict_v3.training.conditional_corrector import (
+    classification_metrics,
     correction_loss,
+    paired_exact_pvalue,
     prediction_delta,
     validate_provenance,
 )
@@ -29,6 +31,16 @@ def test_loss_protects_only_correct_confident_baseline_rows() -> None:
     assert candidate.grad is not None
 
 
+def test_paired_metrics_reward_net_corrections() -> None:
+    labels = np.array([0, 1, 0, 1])
+    candidate = np.array([0, 1, 0, 0])
+    users = np.array([1, 1, 2, 2])
+    metrics = classification_metrics(candidate, labels, users)
+    assert metrics["correct"] == 3
+    assert metrics["worst_user_accuracy"] == 0.5
+    assert paired_exact_pvalue(corrected=3, broken=0) == 0.25
+
+
 def test_nested_provenance_fails_loud_on_outer_or_inner_leakage() -> None:
     safe = {
         "upstream_excluded_users": [1, 6],
@@ -39,13 +51,13 @@ def test_nested_provenance_fails_loud_on_outer_or_inner_leakage() -> None:
     with pytest.raises(RuntimeError, match="outer-held"):
         validate_provenance({**safe, "upstream_excluded_users": [1]}, {1, 6}, True)
     with pytest.raises(RuntimeError, match="inner cross-fitted"):
-        validate_provenance(
-            {**safe, "cross_fitted_within_outer_train": False}, {1, 6}, True
-        )
+        validate_provenance({**safe, "cross_fitted_within_outer_train": False}, {1, 6}, True)
 
 
 def test_prediction_delta_uses_net_corrections() -> None:
     labels = np.array([0, 0, 0])
-    assert prediction_delta(
-        np.array([1, 0, 0]), np.array([0, 1, 0]), labels
-    ) == {"corrected": 1, "broken": 1, "net": 0}
+    assert prediction_delta(np.array([1, 0, 0]), np.array([0, 1, 0]), labels) == {
+        "corrected": 1,
+        "broken": 1,
+        "net": 0,
+    }

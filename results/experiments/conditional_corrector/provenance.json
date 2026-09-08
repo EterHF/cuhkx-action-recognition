@@ -1,0 +1,53 @@
+{
+  "schema_version": "conditional-corrector-strict-provenance/v1",
+  "date": "2026-09-08",
+  "outer_folds": {
+    "A": [1, 6, 17, 22],
+    "B": [2, 7, 18, 23],
+    "C": [3, 8, 19, 24],
+    "D": [4, 9, 20],
+    "E": [5, 16, 21]
+  },
+  "inner_runs": 20,
+  "outer_held_runs": 5,
+  "external_sources": {
+    "visual": {
+      "description": "PKU-MMD phase2 R(2+1)D-34 external encoder",
+      "sha256": "23540d3469ce123a037f40008c610ca7ffbcc8e31069b4b87ac912cbc2f21a83",
+      "target_validation_users_used": false,
+      "test_statistics_used": false
+    },
+    "temporal": {
+      "description": "NTU student_e30 DSTFormer skeleton encoder",
+      "sha256": "ef32f60828fdd0bc1307d93aed63b028d9f95c1e4a109ad1d3a8ce011703ab19",
+      "cuhkx_data_used": false,
+      "test_statistics_used": false
+    }
+  },
+  "target_heads": {
+    "architecture": "LayerNorm + Linear(40)",
+    "epochs": 60,
+    "optimizer": "AdamW",
+    "learning_rate": 0.003,
+    "weight_decay": 0.01,
+    "label_smoothing": 0.02,
+    "checkpoint_selection": "fixed final epoch"
+  },
+  "corrector": {
+    "hidden_dim": 128,
+    "epochs": 60,
+    "seed": 2026,
+    "kl_weight": 1.0,
+    "confidence_threshold": 0.8,
+    "checkpoint_selection": "fixed final epoch"
+  },
+  "runtime_artifact_hashes": {
+    "nested_manifest": "ae893204e0f9863df4ec64cce0799f6d3797acf2375c4924529defd312ffcbaa",
+    "baseline_oof": "85c061025d6d7042173e41053a4ece3c94c8bcbda2387437b9ec68312972c3ce",
+    "corrected_oof": "fff984ab6d3c161a9e2cb3355a47b04ac1a44ae9cd7bd183e7c6d896fc52f125"
+  },
+  "second_run_byte_identical": true,
+  "held_labels_used_for_checkpoint_selection": false,
+  "anonymous_test_accessed": false,
+  "kaggle_submitted": false
+}

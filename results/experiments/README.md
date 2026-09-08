@@ -107,6 +107,8 @@ can destroy external-pretraining information and that fresh 5-bit quantization
 can recover it.
 
 The [`conditional_corrector`](conditional_corrector/) implementation adds a
-small zero-initialized Visual residual conditioned on Temporal logits. Training
-is held at the fail-closed data gate until 20 outer-by-inner upstream feature
-sets exist; ordinary global OOF stacking is explicitly rejected.
+small zero-initialized Visual residual conditioned on Temporal logits. Its
+strict external-only nested OOF corrected a net 264/3,036 rows with positive
+changes in all folds and users. Because the proxy branches are much weaker and
+differently ordered than strictV3, this validates the mechanism but does not
+authorize deployment or submission.

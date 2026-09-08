@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -31,9 +32,7 @@ def correction_loss(
     protect = (prediction == labels) & (confidence >= confidence_threshold)
     if bool(protect.any()):
         log_corrected = corrected_logits.log_softmax(dim=1)
-        kl = F.kl_div(
-            log_corrected[protect], baseline_probability[protect], reduction="batchmean"
-        )
+        kl = F.kl_div(log_corrected[protect], baseline_probability[protect], reduction="batchmean")
     else:
         kl = corrected_logits.sum() * 0.0
     return ce + kl_weight * kl, int(protect.sum())
@@ -47,6 +46,53 @@ def prediction_delta(
     corrected = int(np.sum(~baseline_correct & candidate_correct))
     broken = int(np.sum(baseline_correct & ~candidate_correct))
     return {"corrected": corrected, "broken": broken, "net": corrected - broken}
+
+
+def classification_metrics(prediction: np.ndarray, labels: np.ndarray, users: np.ndarray) -> dict:
+    class_accuracy = [
+        float(np.mean(prediction[labels == target] == target)) for target in np.unique(labels)
+    ]
+    user_accuracy = {
+        str(int(user)): float(np.mean(prediction[users == user] == labels[users == user]))
+        for user in np.unique(users)
+    }
+    return {
+        "correct": int(np.sum(prediction == labels)),
+        "accuracy": float(np.mean(prediction == labels)),
+        "macro_recall": float(np.mean(class_accuracy)),
+        "subject_macro_accuracy": float(np.mean(list(user_accuracy.values()))),
+        "worst_user_accuracy": float(min(user_accuracy.values())),
+        "user_accuracy": user_accuracy,
+    }
+
+
+def paired_exact_pvalue(corrected: int, broken: int) -> float:
+    discordant = corrected + broken
+    if not discordant:
+        return 1.0
+    tail = sum(math.comb(discordant, value) for value in range(min(corrected, broken) + 1))
+    return min(1.0, 2.0 * tail / (2**discordant))
+
+
+def subject_bootstrap_interval(
+    baseline: np.ndarray,
+    candidate: np.ndarray,
+    labels: np.ndarray,
+    users: np.ndarray,
+    seed: int,
+    replicates: int = 10_000,
+) -> list[float]:
+    unique_users = np.unique(users)
+    contributions = np.asarray(
+        [
+            np.mean(candidate[users == user] == labels[users == user])
+            - np.mean(baseline[users == user] == labels[users == user])
+            for user in unique_users
+        ]
+    )
+    generator = np.random.default_rng(seed)
+    samples = generator.choice(contributions, (replicates, len(unique_users)), replace=True)
+    return [float(value) for value in np.quantile(samples.mean(axis=1), (0.025, 0.975))]
 
 
 def checked_array(path: Path, rows: int, columns: int) -> np.ndarray:
@@ -117,12 +163,8 @@ def run(args: argparse.Namespace) -> None:
         train_record, held_record = fold_record["train"], fold_record["held"]
         validate_provenance(train_record, held_users, training=True)
         validate_provenance(held_record, held_users, training=False)
-        train_features, train_temporal, train_baseline = load_split(
-            train_record, train_indices
-        )
-        held_features, held_temporal, held_baseline = load_split(
-            held_record, held_indices
-        )
+        train_features, train_temporal, train_baseline = load_split(train_record, train_indices)
+        held_features, held_temporal, held_baseline = load_split(held_record, held_indices)
 
         seed_everything(args.seed)
         model = ConditionalCorrector(hidden_dim=args.hidden_dim).to(device)
@@ -171,9 +213,7 @@ def run(args: argparse.Namespace) -> None:
                 nn.utils.clip_grad_norm_(model.parameters(), 5.0)
                 optimizer.step()
 
-        held_corrected = predict(
-            model, held_features, held_temporal, held_baseline, device
-        )
+        held_corrected = predict(model, held_features, held_temporal, held_baseline, device)
         corrected_oof[held_indices] = held_corrected
         baseline_oof[held_indices] = held_baseline
         baseline_prediction = held_baseline.argmax(1)
@@ -182,12 +222,8 @@ def run(args: argparse.Namespace) -> None:
             {
                 "fold": fold,
                 "rows": len(held_indices),
-                "baseline_correct": int(
-                    np.sum(baseline_prediction == labels[held_indices])
-                ),
-                "candidate_correct": int(
-                    np.sum(corrected_prediction == labels[held_indices])
-                ),
+                "baseline_correct": int(np.sum(baseline_prediction == labels[held_indices])),
+                "candidate_correct": int(np.sum(corrected_prediction == labels[held_indices])),
                 "delta": prediction_delta(
                     baseline_prediction, corrected_prediction, labels[held_indices]
                 ),
@@ -211,11 +247,19 @@ def run(args: argparse.Namespace) -> None:
         "baseline_correct": int(np.sum(baseline_prediction == labels)),
         "candidate_correct": int(np.sum(corrected_prediction == labels)),
         "delta": prediction_delta(baseline_prediction, corrected_prediction, labels),
+        "baseline_metrics": classification_metrics(baseline_prediction, labels, users),
+        "candidate_metrics": classification_metrics(corrected_prediction, labels, users),
         "folds": fold_metrics,
         "all_folds_non_degrading": all(item["delta"]["net"] >= 0 for item in fold_metrics),
         "held_labels_used_for_checkpoint_selection": False,
         "anonymous_test_accessed": False,
     }
+    metrics["paired_exact_pvalue"] = paired_exact_pvalue(
+        metrics["delta"]["corrected"], metrics["delta"]["broken"]
+    )
+    metrics["subject_bootstrap_accuracy_delta_95ci"] = subject_bootstrap_interval(
+        baseline_prediction, corrected_prediction, labels, users, args.seed
+    )
     np.save(args.output_dir / "baseline_oof.npy", baseline_oof)
     np.save(args.output_dir / "corrected_oof.npy", corrected_oof)
     (args.output_dir / "metrics.json").write_text(
