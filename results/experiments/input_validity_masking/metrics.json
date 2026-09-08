@@ -1,0 +1,32 @@
+{
+  "schema_version": "cuhkx-input-validity-masking-result/v1",
+  "rows": 3036,
+  "audit": {
+    "visual_valid": 2933,
+    "skeleton_valid": 2931,
+    "both_primary_valid": 2931,
+    "no_primary_input": 103,
+    "release_oof_no_primary_correct": 30,
+    "release_oof_no_primary_errors": 73,
+    "no_primary_user_5": 60,
+    "no_primary_class_36": 30
+  },
+  "paired_oof": {
+    "control_correct": 2889,
+    "visual_masked_only_correct": 2888,
+    "temporal_masked_only_correct": 2885,
+    "both_masked_correct": 2885,
+    "both_masked_corrected": 8,
+    "both_masked_broken": 12,
+    "both_masked_net": -4,
+    "both_masked_fold_nets": [-1, -5, 2, 0, 0],
+    "control_subject_macro_accuracy": 0.9506166398834098,
+    "both_masked_subject_macro_accuracy": 0.9495874149060146,
+    "control_valid_input_accuracy": 0.9754350051177073,
+    "both_masked_valid_input_accuracy": 0.9740702831798022,
+    "no_primary_accuracy_unchanged": 0.2912621359223301
+  },
+  "promotion_gate_passed": false,
+  "held_labels_used_for_checkpoint_selection": false,
+  "anonymous_test_accessed": false
+}

@@ -960,6 +960,40 @@ Both preregistered deployment screens failed the non-degradation gates.
 Consequently the corrector was neither full-fit nor submitted to Kaggle; doing
 so would turn a failed confirmatory endpoint into leaderboard-guided tuning.
 
+### 5.22 Input validity and action-invariance controls, 2026-09-08
+
+A source-decoding audit, rather than a black-pixel heuristic, found 2,933 clips
+with usable Depth-or-IR and 2,931 with at least one parsed skeleton frame. There
+are 103 clips with neither primary input. The frozen release correctly predicts
+only 30/103, so these clips contribute 73 of its 133 OOF errors; 60 belong to
+user 5 and 30 to class 36. This confirms a severe missingness confound and its
+overlap with the corrector's earlier class-by-user failure.
+
+Three preregistered, fixed-final subject-OOF controls were then tested without
+anonymous-test access. First, every row remained in the forward pass and
+BatchNorm stream, while CE gradients were removed only for branch-invalid rows.
+The paired frozen-gate T+V control scored 2,889; Visual-only, Temporal-only and
+both-branch masking scored 2,888/2,885/2,885. Both masking corrected 8 and broke
+12 rows (net -4), with folds -1/-5/+2/0/0. The valid-input subset and
+subject-macro accuracy also fell.
+
+Second, a naive fixed-absolute-length skeleton reconstruction was rejected by
+geometry QC before training because maximum normalized displacement reached
+2.474. The accepted variant used clip-fixed bilateral ±5% bone multipliers and
+preserved projected motion, direction, root, confidence, and missing frames;
+mean/max displacement was 0.0153/0.1460. It changed Temporal 2,847→2,846 and
+T+V 2,889→2,888, with no corrected row and one broken row.
+
+Third, a weight-0.05, temperature-0.1 supervised contrastive term acted on the
+40-D representation used by the TCN classifier. Positives were same-class,
+different-user outer-train clips; different classes were negatives and
+same-class/same-user pairs were ignored. Every fold had at least 2,118 valid
+anchors per epoch and decreasing contrast loss, but Temporal changed
+2,847→2,843 and T+V 2,889→2,888 (5 corrected, 6 broken; fold nets
+-1/-1/+1/0/0). Thus signal availability was not the issue. All three candidates
+failed their gates, and no post-result mask, magnitude, weight, or temperature
+scan was performed.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)

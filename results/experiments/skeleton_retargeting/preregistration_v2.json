@@ -1,0 +1,35 @@
+{
+  "schema_version": "cuhkx-mild-skeleton-retarget-preregistration/v2",
+  "locked_utc": "2026-09-08T13:15:00Z",
+  "supersedes": "preregistration.json before any model training or OOF evaluation",
+  "v1_geometry_rejection": {
+    "reason": "Forcing every projected 2D bone to its clip-median absolute length produced a maximum normalized joint displacement of 2.4738 and was not credibly action-preserving.",
+    "model_trained": false,
+    "oof_evaluated": false
+  },
+  "question": "Does a mild action-preserving change in clip-fixed body proportions improve cross-subject Temporal generalization?",
+  "single_change": "During Temporal training, use a deterministic 50/50 assignment to original or retargeted DSTFormer frame logits; validation always uses original inputs.",
+  "transform": {
+    "clip_fixed_bone_scale_range": [0.95, 1.05],
+    "same_scale_for_bilateral_counterparts": true,
+    "per_frame_projected_length_variation_preserved": true,
+    "bone_directions_preserved": true,
+    "root_trajectory_preserved": true,
+    "confidence_and_missing_frames_preserved": true
+  },
+  "unchanged": {
+    "folds": "subject folds A-E",
+    "seed": 2026,
+    "temporal_recipe": "TCN residual, five epochs with 30-epoch cosine period, fixed final checkpoint",
+    "visual_branch": "input-validity experiment control OOF",
+    "fusion_contract": "frozen release T+V gate",
+    "anonymous_test_access": false
+  },
+  "promotion_gate": {
+    "combined_oof_net_positive": true,
+    "at_least_four_of_five_folds_non_degrading": true,
+    "subject_macro_accuracy_non_degrading": true,
+    "both_primary_valid_accuracy_non_degrading": true
+  },
+  "no_transform_scan_after_result": true
+}

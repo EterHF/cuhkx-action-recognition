@@ -115,3 +115,12 @@ authorize deployment. The subsequent deployment-aligned screens failed: the
 512-D and 40-D versions lost 24 and 11 rows respectively, with the latter
 showing a class-36/user-5 failure and Fold-E net -32. It was not full-fit or
 submitted.
+
+The representation-focused follow-up tested three isolated interventions.
+[`input_validity_masking`](input_validity_masking/) found that 103 clips have
+neither usable Visual nor skeleton input and account for 73/133 release OOF
+errors, but exact CE masking reduced paired T+V by four rows.
+[`skeleton_retargeting`](skeleton_retargeting/) passed geometry QC but reduced
+T+V by one row. [`cross_user_contrast`](cross_user_contrast/) supplied thousands
+of valid same-class/different-user anchors per fold, yet also reduced T+V by one
+row. None was promoted or scanned further.

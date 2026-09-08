@@ -90,3 +90,9 @@ control，因此没有进行测试推理或提交。
 所有折和用户均为正向；但代理分支显著弱于 strictV3 且强弱次序不同，因此只验证机制，
 不授权部署。后续部署一致筛选中，512 维与 40 维版本分别净下降 24 与 11 条；后者出现
 类别 36/用户 5 的集中失败，E 折净下降 32 条，因此未 full-fit、未提交。
+
+后续表示层探索隔离测试了三个方向。[`input_validity_masking`](input_validity_masking/)
+发现 103 条样本既无有效 Visual 也无 Skeleton，并贡献发布 OOF 133 个错误中的 73 个，
+但严格只屏蔽 CE 后配对 T+V 净下降 4 条。[`skeleton_retargeting`](skeleton_retargeting/)
+通过几何质检但 T+V 下降 1 条；[`cross_user_contrast`](cross_user_contrast/) 每折获得数千
+个同类不同用户 anchor，T+V 仍下降 1 条。三者均未晋级，也未继续扫描。

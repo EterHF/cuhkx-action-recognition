@@ -10,8 +10,14 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torch import nn
 from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
+
+from yolo_r2plus1d.strict_v3.data.validity import (
+    load_validity_mask,
+    masked_classification_loss,
+)
 
 
 def sha256(path: Path) -> str:
@@ -24,7 +30,18 @@ def sha256(path: Path) -> str:
 
 class Set(Dataset):
     def __init__(
-        self, path, idx, y, train=False, seed=2026, reverse_prob=0.25, noise_std=0.01
+        self,
+        path,
+        idx,
+        y,
+        train=False,
+        seed=2026,
+        reverse_prob=0.25,
+        noise_std=0.01,
+        loss_mask=None,
+        secondary_path=None,
+        secondary_probability=0.5,
+        users=None,
     ):
         self.x = np.load(path, mmap_mode="r")
         self.idx = np.asarray(idx)
@@ -33,20 +50,41 @@ class Set(Dataset):
         self.seed = seed
         self.reverse_prob = float(reverse_prob)
         self.noise_std = float(noise_std)
+        self.loss_mask = loss_mask
+        self.secondary = (
+            None if secondary_path is None else np.load(secondary_path, mmap_mode="r")
+        )
+        self.secondary_probability = float(secondary_probability)
+        self.users = users
+        if self.secondary is not None and self.secondary.shape != self.x.shape:
+            raise ValueError("primary and secondary temporal logits must align")
 
     def __len__(self):
         return len(self.idx)
 
     def __getitem__(self, k):
         i = int(self.idx[k])
-        x = np.array(self.x[i], copy=True).astype(np.float32)
+        source = (
+            self.secondary
+            if self.train
+            and self.secondary is not None
+            and np.random.default_rng(self.seed + k * 3571).random()
+            < self.secondary_probability
+            else self.x
+        )
+        x = np.array(source[i], copy=True).astype(np.float32)
         if self.train:
             rng = np.random.default_rng(self.seed + k * 7919)
             if rng.random() < self.reverse_prob:
                 x = x[::-1].copy()
             if self.noise_std:
                 x += rng.normal(0, self.noise_std, x.shape).astype(np.float32)
-        return torch.from_numpy(x), int(self.y[i]) if self.train else i
+        result = (torch.from_numpy(x), int(self.y[i]) if self.train else i)
+        if self.train and self.loss_mask is not None:
+            result += (bool(self.loss_mask[i]),)
+        if self.train and self.users is not None:
+            result += (int(self.users[i]),)
+        return result
 
 
 class Residual(nn.Module):
@@ -81,7 +119,7 @@ class Residual(nn.Module):
         nn.init.zeros_(self.out[-1].weight)
         nn.init.zeros_(self.out[-1].bias)
 
-    def forward(self, x):
+    def forward_features(self, x):
         base = x.mean(1)
         z = self.norm(x)
         if self.kind == "gru":
@@ -90,7 +128,35 @@ class Residual(nn.Module):
             z = self.temporal(z.transpose(1, 2)).transpose(1, 2)
         else:
             z = self.temporal(z + self.pos)
-        return base + self.out(z.mean(1))
+        return base, z.mean(1)
+
+    def forward(self, x):
+        base, features = self.forward_features(x)
+        return base + self.out(features)
+
+
+def cross_user_supervised_contrastive_loss(
+    features: torch.Tensor,
+    labels: torch.Tensor,
+    users: torch.Tensor,
+    temperature: float,
+) -> tuple[torch.Tensor, int]:
+    """Use same-class/different-user positives without false same-class negatives."""
+    normalized = F.normalize(features.float(), dim=1)
+    logits = normalized @ normalized.T / float(temperature)
+    identity = torch.eye(len(labels), dtype=torch.bool, device=labels.device)
+    same_class = labels[:, None] == labels[None, :]
+    positive = same_class & (users[:, None] != users[None, :])
+    denominator = (~same_class | positive) & ~identity
+    anchors = positive.any(dim=1)
+    anchor_count = int(anchors.sum().item())
+    if anchor_count == 0:
+        return features.sum() * 0.0, 0
+    logits = logits - logits.max(dim=1, keepdim=True).values.detach()
+    exp_logits = logits.exp() * denominator
+    log_probability = logits - exp_logits.sum(dim=1, keepdim=True).clamp_min(1e-12).log()
+    positive_mean = (log_probability * positive).sum(dim=1) / positive.sum(dim=1).clamp_min(1)
+    return -positive_mean[anchors].mean(), anchor_count
 
 
 @torch.inference_mode()
@@ -127,6 +193,16 @@ def main():
     ap.add_argument(
         "--metadata", type=Path, default=Path("results/strict_v3/metadata.npz")
     )
+    ap.add_argument(
+        "--validity-mask",
+        type=Path,
+        help="optional NPZ; exclude invalid branch inputs from training CE only",
+    )
+    ap.add_argument("--validity-key", default="skeleton")
+    ap.add_argument("--secondary-logits", type=Path)
+    ap.add_argument("--secondary-probability", type=float, default=0.5)
+    ap.add_argument("--cross-user-contrast-weight", type=float, default=0.0)
+    ap.add_argument("--contrast-temperature", type=float, default=0.1)
     ap.add_argument("--val-users", nargs="*", type=int, default=None)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--kind", choices=["gru", "tcn", "transformer"], default="gru")
@@ -168,6 +244,14 @@ def main():
     dev = torch.device(args.device)
     if args.defer_val_metrics and not args.select_last:
         raise ValueError("--defer-val-metrics requires --select-last")
+    if not 0.0 <= args.secondary_probability <= 1.0:
+        raise ValueError("--secondary-probability must be in [0,1]")
+    if args.cross_user_contrast_weight < 0.0:
+        raise ValueError("--cross-user-contrast-weight must be non-negative")
+    if args.contrast_temperature <= 0.0:
+        raise ValueError("--contrast-temperature must be positive")
+    if args.cross_user_contrast_weight > 0.0 and args.validity_mask is not None:
+        raise ValueError("contrast and validity masking are separate experiments")
     scheduler_epochs = (
         args.epochs if args.scheduler_epochs is None else args.scheduler_epochs
     )
@@ -180,6 +264,12 @@ def main():
     vm = np.isin(u, np.asarray(val_users))
     tr = np.flatnonzero(~vm)
     va = np.flatnonzero(vm)
+    unmasked_train_rows = len(tr)
+    validity = None
+    if args.validity_mask is not None:
+        validity = load_validity_mask(args.validity_mask, args.validity_key, len(y))
+        if not validity[tr].any():
+            raise RuntimeError("validity masking removed every temporal training target")
     model = Residual(args.kind).to(dev)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.01)
     sch = torch.optim.lr_scheduler.CosineAnnealingLR(opt, scheduler_epochs)
@@ -205,6 +295,10 @@ def main():
             seed=args.seed,
             reverse_prob=args.reverse_prob,
             noise_std=args.noise_std,
+            loss_mask=validity,
+            secondary_path=args.secondary_logits,
+            secondary_probability=args.secondary_probability,
+            users=u if args.cross_user_contrast_weight > 0.0 else None,
         ),
         args.batch,
         shuffle=sampler is None,
@@ -220,20 +314,47 @@ def main():
         model.train()
         n = correct = 0
         total = 0.0
-        for x, t in ld:
+        contrast_total = contrast_anchors = 0
+        for batch_values in ld:
+            if args.cross_user_contrast_weight > 0.0:
+                x, t, batch_users = batch_values
+                batch_users = batch_users.to(dev, non_blocking=True)
+                loss_mask = None
+            elif len(batch_values) == 3:
+                x, t, loss_mask = batch_values
+                loss_mask = loss_mask.to(dev, non_blocking=True)
+            else:
+                x, t = batch_values
+                loss_mask = None
             opt.zero_grad(set_to_none=True)
             with torch.autocast(
                 device_type=dev.type,
                 dtype=torch.bfloat16,
                 enabled=dev.type == "cuda",
             ):
-                z = model(x.to(dev, non_blocking=True))
-                loss = lossfn(z, t.to(dev, non_blocking=True))
+                inputs = x.to(dev, non_blocking=True)
+                if args.cross_user_contrast_weight > 0.0:
+                    base, features = model.forward_features(inputs)
+                    z = base + model.out(features)
+                else:
+                    z = model(inputs)
+                target = t.to(dev, non_blocking=True)
+                loss = masked_classification_loss(lossfn, z, target, loss_mask)
+                if args.cross_user_contrast_weight > 0.0:
+                    contrast, anchors = cross_user_supervised_contrastive_loss(
+                        features,
+                        target,
+                        batch_users,
+                        args.contrast_temperature,
+                    )
+                    loss = loss + args.cross_user_contrast_weight * contrast
+                    contrast_total += float(contrast.detach()) * anchors
+                    contrast_anchors += anchors
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step()
             total += float(loss.detach()) * len(t)
-            correct += int((z.argmax(1) == t.to(dev)).sum())
+            correct += int((z.argmax(1) == target).sum())
             n += len(t)
         sch.step()
         if len(va) and not args.defer_val_metrics:
@@ -252,6 +373,8 @@ def main():
             "train_acc": correct / max(1, n),
             "loss": total / max(1, n),
             "val_acc": acc,
+            "contrast_loss": contrast_total / max(1, contrast_anchors),
+            "contrast_anchors": contrast_anchors,
         }
         hist.append(row)
         print(json.dumps(row), flush=True)
@@ -327,6 +450,25 @@ def main():
                 "scheduler_epochs": scheduler_epochs,
                 "balance_power": args.balance_power,
                 "defer_val_metrics": args.defer_val_metrics,
+                "train_rows": len(tr),
+                "unmasked_train_rows": unmasked_train_rows,
+                "masked_training_rows": int((~validity[tr]).sum())
+                if validity is not None
+                else 0,
+                "validity_mask": str(args.validity_mask.resolve())
+                if args.validity_mask is not None
+                else None,
+                "validity_key": args.validity_key
+                if args.validity_mask is not None
+                else None,
+                "secondary_logits": str(args.secondary_logits.resolve())
+                if args.secondary_logits is not None
+                else None,
+                "secondary_probability": args.secondary_probability
+                if args.secondary_logits is not None
+                else 0.0,
+                "cross_user_contrast_weight": args.cross_user_contrast_weight,
+                "contrast_temperature": args.contrast_temperature,
                 "inputs": {
                     "frame_logits": str(args.logits.resolve()),
                     "frame_logits_sha256": sha256(args.logits),

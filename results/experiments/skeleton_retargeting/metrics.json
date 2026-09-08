@@ -1,0 +1,26 @@
+{
+  "schema_version": "cuhkx-mild-skeleton-retarget-result/v2",
+  "geometry_qc": {
+    "v1_rejected_before_training": true,
+    "v1_max_normalized_displacement": 2.473764657974243,
+    "v2_mean_normalized_displacement": 0.015337028540670872,
+    "v2_max_normalized_displacement": 0.14603646099567413,
+    "v2_mean_frame_logit_abs_change": 0.1786036491394043,
+    "root_and_confidence_unchanged": true
+  },
+  "paired_oof": {
+    "control_temporal_correct": 2847,
+    "retargeted_temporal_correct": 2846,
+    "control_combined_correct": 2889,
+    "retargeted_combined_correct": 2888,
+    "corrected": 0,
+    "broken": 1,
+    "net": -1,
+    "fold_nets": [0, -1, 0, 0, 0],
+    "control_subject_macro_accuracy": 0.9506166398834098,
+    "retargeted_subject_macro_accuracy": 0.9503062736512558
+  },
+  "promotion_gate_passed": false,
+  "held_labels_used_for_checkpoint_selection": false,
+  "anonymous_test_accessed": false
+}

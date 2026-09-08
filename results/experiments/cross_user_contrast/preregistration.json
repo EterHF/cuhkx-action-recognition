@@ -1,0 +1,29 @@
+{
+  "schema_version": "cuhkx-cross-user-supervised-contrast-preregistration/v1",
+  "locked_utc": "2026-09-08T13:35:00Z",
+  "question": "Does explicitly aligning same-action clips from different outer-train users improve cross-subject Temporal generalization?",
+  "single_change": "Add weight-0.05 supervised contrastive loss at temperature 0.1 to the 40-D pre-classifier TCN representation.",
+  "positive_pairs": "same class and different user",
+  "negative_pairs": "different class",
+  "ignored_pairs": "same class and same user; never treated as negatives",
+  "classification_path_affected": true,
+  "projection_head_added": false,
+  "unchanged": {
+    "primary_input": "regenerated original DSTFormer frame logits",
+    "input_validity_masking": false,
+    "bone_retargeting": false,
+    "folds": "subject folds A-E",
+    "seed": 2026,
+    "temporal_recipe": "TCN residual, five epochs with 30-epoch cosine period, fixed final checkpoint",
+    "visual_branch": "input-validity experiment control OOF",
+    "fusion_contract": "frozen release T+V gate",
+    "anonymous_test_access": false
+  },
+  "promotion_gate": {
+    "combined_oof_net_positive": true,
+    "at_least_four_of_five_folds_non_degrading": true,
+    "subject_macro_accuracy_non_degrading": true,
+    "both_primary_valid_accuracy_non_degrading": true
+  },
+  "no_weight_or_temperature_scan_after_result": true
+}

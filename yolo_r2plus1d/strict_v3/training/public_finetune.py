@@ -22,6 +22,10 @@ import torch.nn.functional as F
 from torch import nn
 from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 
+from yolo_r2plus1d.strict_v3.data.validity import (
+    load_validity_mask,
+    masked_classification_loss,
+)
 from yolo_r2plus1d.strict_v3.models.r2plus1d34 import r2plus1d_34
 from yolo_r2plus1d.strict_v3.paths import CHECKPOINT_DIR, REPO_ROOT, RESULT_DIR
 
@@ -63,6 +67,7 @@ class VideoDataset(Dataset):
         modality_dropout: float = 0.0,
         temporal_difference: bool = False,
         secondary_cache: Path | None = None,
+        loss_mask: np.ndarray | None = None,
     ):
         self.cache = np.load(cache, mmap_mode="r")
         self.secondary_cache = (
@@ -93,6 +98,11 @@ class VideoDataset(Dataset):
             raise ValueError("modality_dropout must be in [0,1]")
         self.modality_dropout = float(modality_dropout)
         self.temporal_difference = bool(temporal_difference)
+        self.loss_mask = (
+            None if loss_mask is None else np.asarray(loss_mask, dtype=np.bool_)
+        )
+        if self.loss_mask is not None and self.loss_mask.shape != (len(self.cache),):
+            raise ValueError("loss mask must align with the complete cache")
 
     def __len__(self) -> int:
         return len(self.indices)
@@ -202,7 +212,10 @@ class VideoDataset(Dataset):
             difference = torch.zeros_like(frames)
             difference[1:, 3:] = frames[1:, 3:] - frames[:-1, 3:]
             return frames, difference, int(self.labels[index])
-        return frames, int(self.labels[index])
+        result = (frames, int(self.labels[index]))
+        if self.loss_mask is not None:
+            result += (bool(self.loss_mask[index]),)
+        return result
 
 
 class InputAdapter(nn.Module):
@@ -388,8 +401,13 @@ def train_epoch(
         if temporal_difference:
             frames, difference, labels = batch
             difference = difference.to(device, non_blocking=True)
+            loss_mask = None
+        elif len(batch) == 3:
+            frames, labels, loss_mask = batch
+            loss_mask = loss_mask.to(device, non_blocking=True)
         else:
             frames, labels = batch
+            loss_mask = None
         frames, labels = (
             frames.to(device, non_blocking=True),
             labels.to(device, non_blocking=True),
@@ -411,7 +429,9 @@ def train_epoch(
             else:
                 logits = model(frames)
             if mixup_lambda is None:
-                loss = criterion(logits, labels)
+                loss = masked_classification_loss(
+                    criterion, logits, labels, loss_mask
+                )
             else:
                 loss = mixup_lambda * criterion(logits, labels_a) + (
                     1.0 - mixup_lambda
@@ -579,6 +599,12 @@ def main() -> None:
         help="train-only alternate view sampled with fixed probability 0.5",
     )
     parser.add_argument("--metadata", type=Path, default=RESULT_DIR / "metadata.npz")
+    parser.add_argument(
+        "--validity-mask",
+        type=Path,
+        help="optional NPZ; exclude invalid branch inputs from training CE only",
+    )
+    parser.add_argument("--validity-key", default="visual")
     parser.add_argument("--packed", type=Path, default=CHECKPOINT_DIR / "model.pt")
     parser.add_argument(
         "--source-encoder",
@@ -757,6 +783,12 @@ def main() -> None:
         args.hard_example_multiplier
     ):
         raise ValueError("--hard-example-multiplier must be finite and at least one")
+    if args.validity_mask is not None and (
+        args.mixup_alpha > 0.0 or args.temporal_difference
+    ):
+        raise ValueError(
+            "validity loss masking is incompatible with mixup/temporal-difference"
+        )
     if args.cuda_memory_fraction is not None:
         if not 0.0 < args.cuda_memory_fraction <= 1.0:
             raise ValueError("--cuda-memory-fraction must be in (0,1]")
@@ -779,6 +811,10 @@ def main() -> None:
         np.flatnonzero(fit_mask & ~val_mask),
         np.flatnonzero(val_mask),
     )
+    unmasked_train_clips = len(train_indices)
+    validity = None
+    if args.validity_mask is not None:
+        validity = load_validity_mask(args.validity_mask, args.validity_key, len(labels))
     if not len(train_indices):
         raise RuntimeError("the requested training-user pool is empty")
     if set(users[train_indices]).intersection(set(users[val_indices])):
@@ -983,6 +1019,7 @@ def main() -> None:
         args.modality_dropout,
         args.temporal_difference,
         args.secondary_cache,
+        validity,
     )
     train_sampler = None
     sample_weights = np.ones(len(train_indices), dtype=np.float64)
@@ -1086,6 +1123,9 @@ def main() -> None:
                 "model_index": args.model_index,
                 "mode": args.mode,
                 "train": len(train_indices),
+                "masked_training_rows": int((~validity[train_indices]).sum())
+                if validity is not None
+                else 0,
                 "val": len(val_indices),
                 "trainable_parameters": sum(p.numel() for p in trainable),
                 "user_balanced": args.user_balanced,
@@ -1276,6 +1316,14 @@ def main() -> None:
         "deterministic": args.deterministic,
         "val_users": args.val_users,
         "train_clips": len(train_indices),
+        "unmasked_train_clips": unmasked_train_clips,
+        "validity_mask": str(args.validity_mask.resolve())
+        if args.validity_mask is not None
+        else None,
+        "validity_key": args.validity_key if args.validity_mask is not None else None,
+        "masked_training_rows": int((~validity[train_indices]).sum())
+        if validity is not None
+        else 0,
         "validation_clips": len(val_indices),
         "best_validation_accuracy": best[0],
         "best_epoch": best[2],

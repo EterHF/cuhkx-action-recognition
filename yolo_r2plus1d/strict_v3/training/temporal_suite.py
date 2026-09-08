@@ -74,6 +74,15 @@ def command(
         result.extend(
             ["--scheduler-epochs", "30", "--select-last", "--defer-val-metrics"]
         )
+    if args.validity_mask is not None:
+        result.extend(
+            [
+                "--validity-mask",
+                str(args.validity_mask),
+                "--validity-key",
+                args.validity_key,
+            ]
+        )
     return result
 
 
@@ -111,6 +120,8 @@ def main() -> None:
     parser.add_argument("--frame-logits", type=Path, required=True)
     parser.add_argument("--test-frame-logits", type=Path)
     parser.add_argument("--metadata", type=Path, required=True)
+    parser.add_argument("--validity-mask", type=Path)
+    parser.add_argument("--validity-key", default="skeleton")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--recipe", choices=("strict", "sched30"), required=True)
     parser.add_argument("--device", default="cuda:0")
@@ -127,6 +138,8 @@ def main() -> None:
     for path in (args.frame_logits, args.metadata):
         if not path.is_file():
             parser.error(f"input does not exist: {path}")
+    if args.validity_mask is not None and not args.validity_mask.is_file():
+        parser.error(f"input does not exist: {args.validity_mask}")
     if args.oof_only and args.test_frame_logits is not None:
         parser.error("--test-frame-logits must be omitted with --oof-only")
     if not args.oof_only and args.test_frame_logits is None:
@@ -183,6 +196,17 @@ def main() -> None:
             ),
             "metadata": str(args.metadata.resolve()),
             "metadata_sha256": sha256(args.metadata),
+            "validity_mask": (
+                None
+                if args.validity_mask is None
+                else str(args.validity_mask.resolve())
+            ),
+            "validity_mask_sha256": (
+                None if args.validity_mask is None else sha256(args.validity_mask)
+            ),
+            "validity_key": args.validity_key
+            if args.validity_mask is not None
+            else None,
         },
         **metrics,
         "outputs": {

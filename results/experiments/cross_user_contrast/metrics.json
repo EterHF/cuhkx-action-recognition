@@ -1,0 +1,22 @@
+{
+  "schema_version": "cuhkx-cross-user-supervised-contrast-result/v1",
+  "weight": 0.05,
+  "temperature": 0.1,
+  "minimum_epoch_anchor_count_across_folds": 2118,
+  "contrast_loss_decreased_in_every_fold": true,
+  "paired_oof": {
+    "control_temporal_correct": 2847,
+    "contrast_temporal_correct": 2843,
+    "control_combined_correct": 2889,
+    "contrast_combined_correct": 2888,
+    "corrected": 5,
+    "broken": 6,
+    "net": -1,
+    "fold_nets": [-1, -1, 1, 0, 0],
+    "control_subject_macro_accuracy": 0.9506166398834098,
+    "contrast_subject_macro_accuracy": 0.9504593419611397
+  },
+  "promotion_gate_passed": false,
+  "held_labels_used_for_checkpoint_selection": false,
+  "anonymous_test_accessed": false
+}
