@@ -1,0 +1,33 @@
+{
+  "schema_version": "conditional-corrector-deployment-screen/v1",
+  "locked_utc": "2026-09-08T01:45:00Z",
+  "purpose": "screen a full-fit corrector under the exact current Temporal+Visual deployment feature contract",
+  "known_limitation": "meta-fold training inputs come from ordinary base-model OOF whose upstream models may have seen the meta-held users; this screen is deployment-aligned but not the strict causal estimate",
+  "visual_contract": {
+    "quantization": "fresh uniform 5-bit from each original FP16 checkpoint",
+    "inference": "single view, matching release replay; no flip TTA",
+    "output_scale": 0.5,
+    "features": "512-D pooled representation before the classifier"
+  },
+  "temporal_contract": "frozen strictV3 residual TCN OOF/test logits",
+  "fusion_contract": "Fusion absent; frozen full-release temperatures, weights and quality gate",
+  "corrector": {
+    "architecture": "r(h_visual_512, temporal_logits_40), hidden_dim=128",
+    "epochs": 60,
+    "seed": 2026,
+    "objective": "CE + 1.0 KL protection at baseline confidence >= 0.8",
+    "checkpoint_selection": "fixed final epoch"
+  },
+  "promotion_gate": {
+    "all_five_meta_folds_non_degrading": true,
+    "aggregate_net_correction_positive": true,
+    "subject_macro_accuracy_non_degrading": true,
+    "worst_user_accuracy_non_degrading": true,
+    "single_bundle_under_bytes": 100000000,
+    "cached_replay_exact": true,
+    "raw_replay_exact": true,
+    "natural_test_class_coverage": 40
+  },
+  "submission": "one Kaggle submission explicitly authorized by the user only after every promotion gate passes",
+  "anonymous_test_labels_used": false
+}

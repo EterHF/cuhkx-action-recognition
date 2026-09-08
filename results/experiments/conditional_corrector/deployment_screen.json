@@ -1,0 +1,52 @@
+{
+  "schema_version": "conditional-corrector-deployment-screen/v1",
+  "date_utc": "2026-09-08",
+  "deployment_baseline": {
+    "contract": "single-view uniform5 Visual with output scale 0.5 plus Temporal frozen gate",
+    "correct": 2890,
+    "rows": 3036,
+    "accuracy": 0.9519104084321476,
+    "subject_macro_accuracy": 0.951297119077625,
+    "worst_user_accuracy": 0.8125,
+    "test_prediction_differences_from_submitted_t_v": 0
+  },
+  "external_only_proxy_seed_stability": {
+    "seeds": [2026, 2027, 2028],
+    "net_corrections": [264, 261, 276],
+    "all_15_fold_seed_pairs_positive": true,
+    "interpretation": "The mechanism is stable on the weak proxy, but that stability does not transfer to the deployment-aligned strictV3 baseline."
+  },
+  "screens": {
+    "checkpoint_specific_512d_features": {
+      "correct": 2866,
+      "net": -24,
+      "fold_nets": [3, 2, 6, 1, -36],
+      "promotion_gate_passed": false
+    },
+    "checkpoint_aligned_40d_class_logits": {
+      "correct": 2879,
+      "accuracy": 0.9482872200263505,
+      "corrected": 32,
+      "broken": 43,
+      "net": -11,
+      "fold_nets": [6, 9, 6, 0, -32],
+      "subject_macro_accuracy": 0.9473414530508489,
+      "worst_user_accuracy": 0.625,
+      "promotion_gate_passed": false
+    }
+  },
+  "bias_diagnosis": {
+    "changed_rows": 113,
+    "dominant_failure_true_class": 36,
+    "class_36_correct_to_incorrect": 31,
+    "class_36_net": -28,
+    "class_36_user_5_to_class_10": 30,
+    "interpretation": "A localized class-by-subject failure dominates Fold E and is incompatible with robust user generalization."
+  },
+  "decision": {
+    "full_fit_run": false,
+    "kaggle_submitted": false,
+    "reason": "Both preregistered deployment screens failed; the semantic screen degraded aggregate, subject-macro, worst-user, and Fold E metrics."
+  },
+  "anonymous_test_labels_used": false
+}

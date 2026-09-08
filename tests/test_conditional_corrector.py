@@ -10,6 +10,7 @@ from yolo_r2plus1d.strict_v3.training.conditional_corrector import (
     prediction_delta,
     validate_provenance,
 )
+from yolo_r2plus1d.strict_v3.training.deployment_corrector import promotion_passed
 
 
 def test_corrector_is_exact_zero_residual_but_hidden_layer_is_not_zero() -> None:
@@ -61,3 +62,17 @@ def test_prediction_delta_uses_net_corrections() -> None:
         "broken": 1,
         "net": 0,
     }
+
+
+def test_deployment_promotion_gate_fails_on_one_bad_fold() -> None:
+    baseline = {"subject_macro_accuracy": 0.95, "worst_user_accuracy": 0.8}
+    candidate = {"subject_macro_accuracy": 0.96, "worst_user_accuracy": 0.81}
+    folds = [{"net": 2}, {"net": 1}, {"net": 1}, {"net": 0}, {"net": -1}]
+    assert not promotion_passed(folds, {"net": 3}, baseline, candidate)
+
+
+def test_deployment_promotion_gate_requires_user_metric_non_degradation() -> None:
+    baseline = {"subject_macro_accuracy": 0.95, "worst_user_accuracy": 0.8}
+    candidate = {"subject_macro_accuracy": 0.96, "worst_user_accuracy": 0.79}
+    folds = [{"net": 1} for _ in range(5)]
+    assert not promotion_passed(folds, {"net": 5}, baseline, candidate)

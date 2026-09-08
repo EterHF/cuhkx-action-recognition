@@ -25,7 +25,8 @@ and the net correction was +264. Fold A-E net changes were
 from `0.391962` to `0.479934`, worst-user accuracy from `0.1625` to `0.29375`,
 and the user-clustered 95% interval for accuracy change was
 `[+0.07310,+0.10375]`. A second identical run reproduced both OOF arrays
-byte-for-byte.
+byte-for-byte. Fixed-seed replications at seeds 2026/2027/2028 produced net
+corrections +264/+261/+276, with all 15 fold-seed pairs positive.
 
 This is evidence that conditional residual correction works under strict
 isolation, but it is not a strictV3 deployment estimate. The external-only
@@ -34,3 +35,19 @@ stronger than its Temporal branch (902), so the frozen strictV3
 Temporal-dominant fusion weights are mismatched. The corrector still exceeded
 Visual alone by 155 rows, but no full-fit, test inference, or Kaggle submission
 is authorized from this result.
+
+A separate deployment-aligned screen rebuilt uniform-5-bit Visual OOF logits
+from the original fold checkpoints using the release single-view preprocessing.
+Its frozen T+V baseline scored 2,890/3,036 (`0.951910`) and reproduced the
+previous T+V test predictions exactly. The 512-D corrector fell by 24 rows.
+The one preregistered coordinate-alignment change—using 40-D Visual class
+logits—still fell by 11 rows (32 corrected, 43 broken), with fold nets
+`+6/+9/+6/0/-32`. Subject-macro fell from `0.951297` to `0.947341`, and
+worst-user accuracy from `0.8125` to `0.625`.
+
+The failure is highly localized rather than harmless noise: 30 correct class-36
+examples from user 5 were changed to class 10. This class-by-subject bias
+dominates Fold E and contradicts the desired unseen-user generalization. Both
+preregistered deployment variants therefore failed promotion; full-fit and the
+Kaggle submission were deliberately not run. Exact machine-readable results are
+in [`deployment_screen.json`](deployment_screen.json).

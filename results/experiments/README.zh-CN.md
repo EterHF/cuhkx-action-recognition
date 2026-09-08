@@ -88,4 +88,5 @@ control，因此没有进行测试推理或提交。
 [`conditional_corrector`](conditional_corrector/) 实现了以 Temporal logits 为条件、
 零初始化的小型 Visual 残差头。严格 external-only nested OOF 净纠错 264/3,036 条，
 所有折和用户均为正向；但代理分支显著弱于 strictV3 且强弱次序不同，因此只验证机制，
-不授权部署或提交。
+不授权部署。后续部署一致筛选中，512 维与 40 维版本分别净下降 24 与 11 条；后者出现
+类别 36/用户 5 的集中失败，E 折净下降 32 条，因此未 full-fit、未提交。

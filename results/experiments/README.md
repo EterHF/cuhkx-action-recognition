@@ -111,4 +111,7 @@ small zero-initialized Visual residual conditioned on Temporal logits. Its
 strict external-only nested OOF corrected a net 264/3,036 rows with positive
 changes in all folds and users. Because the proxy branches are much weaker and
 differently ordered than strictV3, this validates the mechanism but does not
-authorize deployment or submission.
+authorize deployment. The subsequent deployment-aligned screens failed: the
+512-D and 40-D versions lost 24 and 11 rows respectively, with the latter
+showing a class-36/user-5 failure and Fold-E net -32. It was not full-fit or
+submitted.

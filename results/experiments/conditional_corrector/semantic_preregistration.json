@@ -1,0 +1,25 @@
+{
+  "schema_version": "conditional-corrector-semantic-screen/v1",
+  "locked_utc": "2026-09-08T01:51:00Z",
+  "trigger": "the preregistered 512-D feature corrector failed Fold E by net -36, consistent with checkpoint-specific feature-coordinate drift",
+  "single_change": "replace the 512-D Visual hidden feature with the corresponding 40-D Visual class logits",
+  "unchanged": {
+    "temporal_input": "40-D strictV3 Temporal logits",
+    "baseline": "deployment-aligned single-view 5-bit T+V gate",
+    "hidden_dim": 128,
+    "epochs": 60,
+    "seed": 2026,
+    "learning_rate": 0.0003,
+    "kl_weight": 1.0,
+    "confidence_threshold": 0.8,
+    "checkpoint_selection": "fixed final epoch"
+  },
+  "promotion_gate": {
+    "all_five_meta_folds_non_degrading": true,
+    "aggregate_net_correction_positive": true,
+    "subject_macro_accuracy_non_degrading": true,
+    "worst_user_accuracy_non_degrading": true
+  },
+  "no_further_screening_variants_after_result": true,
+  "anonymous_test_labels_used": false
+}

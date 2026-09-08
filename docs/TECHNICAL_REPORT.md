@@ -943,6 +943,23 @@ Temporal-dominant fusion weights mismatched. The candidate still exceeded
 Visual alone by 155 rows, but the result does not authorize full-fit, anonymous
 test inference, or Kaggle submission.
 
+Deployment-aligned validation then regenerated each held-user Visual output by
+freshly applying uniform 5-bit quantization to the original FP16 fold weights,
+with the exact release single-view preprocessing and 0.5 package scale. The
+resulting T+V baseline was 2,890/3,036 (0.951910), and its test predictions
+matched the already submitted T+V CSV exactly. A corrector using the 512-D
+pre-classifier features lost 24 rows. The single preregistered alignment change,
+replacing checkpoint-specific features with 40-D class logits, still lost 11
+rows: 32 corrected versus 43 broken, with fold nets +6/+9/+6/0/-32.
+Subject-macro accuracy fell from 0.951297 to 0.947341 and worst-user accuracy
+from 0.8125 to 0.625.
+
+The error is a concrete generalization bias: 30 correct class-36 examples from
+user 5 were redirected to class 10, accounting for most of the Fold-E failure.
+Both preregistered deployment screens failed the non-degradation gates.
+Consequently the corrector was neither full-fit nor submitted to Kaggle; doing
+so would turn a failed confirmatory endpoint into leaderboard-guided tuning.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)
