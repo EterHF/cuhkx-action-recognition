@@ -1027,6 +1027,38 @@ or followed by PCA-width/attention scans. A local-view experiment remains
 conditional on direct original-frame evidence of crop, resolution, or sampling
 loss.
 
+### 5.24 Current T+V error coverage and raw-to-cache evidence, 2026-09-09
+
+The error list was reset to the current paired T+V control, not inherited from
+the older 2,903-row release. Its 2,889/3,036 OOF result has 147 errors: 73 among
+the 103 no-primary clips and 74 elsewhere (72 with both primary inputs and two
+with only one). Among those 74, Temporal alone has the correct top-1 for six,
+Visual alone for 53, and both top-1 predictions are wrong for only 15. For all
+15 joint errors, Temporal ranks the true class second; Visual ranks it second
+in 11, third in one, and 13/25/36 in the remaining three. Thus most current
+valid-input failures concern preservation of evidence already present in one
+branch. This is neither a soft-fusion upper bound nor permission to tune branch
+weights on these OOF errors.
+
+Six directly comparable completed candidates were then used only as review
+priority markers. They ever corrected 10 unique baseline errors; 137 persisted.
+The persistent set contains all 73 no-primary errors, six Temporal-only-correct,
+45 Visual-only-correct and 13 joint-top-1 errors. Candidate outputs were not
+combined and these rows were not converted into a training target.
+
+For input evidence, one row from each of ten independent persistent joint-error
+clusters was paired with a same-class, different-user correct control. Before
+opening labels, predictions or error/control roles, the reviewer compared every
+original Depth_Color frame, the actual 16 uncropped selections, the exact
+release-contract union crop resized to 128×128 in Depth and IR, and the matched
+H36M-17 skeleton. No clear sampling-stage or spatial-processing loss appeared
+in either group. Suspected skeleton anomalies occurred in 2/10 errors and 2/10
+controls; Depth, IR and skeleton source-frame counts aligned in all 20 clips.
+Median maximum normalized skeleton step was 0.488 for errors and 0.629 for
+controls. This limited descriptive sample does not prove absence of recoverable
+raw evidence, but it exposes no repeated cross-user mechanism that authorizes
+sampling, local-view, resolution, or skeleton-repair training.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)

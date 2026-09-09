@@ -1,0 +1,102 @@
+{
+  "schema_version": "cuhkx-current-tv-error-audit/v1",
+  "baseline": {
+    "correct": 2889,
+    "errors": 147,
+    "rows": 3036
+  },
+  "input_validity": {
+    "no_primary_rows": 103,
+    "no_primary_errors": 73,
+    "remaining_errors": 74,
+    "both_primary_valid_errors": 72,
+    "partial_primary_errors": 2
+  },
+  "remaining_error_top1_coverage": {
+    "temporal_top1_only": 6,
+    "visual_top1_only": 53,
+    "both_top1_wrong": 15
+  },
+  "both_top1_wrong_true_rank": {
+    "rows": 15,
+    "temporal_true_rank_histogram": {
+      "2": 15
+    },
+    "visual_true_rank_histogram": {
+      "2": 11,
+      "3": 1,
+      "13": 1,
+      "25": 1,
+      "36": 1
+    },
+    "either_branch_true_rank_le_2": 15,
+    "either_branch_true_rank_le_3": 15,
+    "either_branch_true_rank_le_5": 15,
+    "both_branches_true_rank_gt_5": 0,
+    "both_branches_true_rank_gt_10": 0
+  },
+  "historical_candidate_priority": {
+    "candidate_names": [
+      "visual_masked_only",
+      "temporal_masked_only",
+      "both_masked",
+      "skeleton_retargeting",
+      "cross_user_contrast",
+      "prelogit_feature_tcn"
+    ],
+    "ever_corrected": 10,
+    "persistent": 137,
+    "per_candidate_all_rows": {
+      "visual_masked_only": {
+        "corrected": 0,
+        "broken": 1
+      },
+      "temporal_masked_only": {
+        "corrected": 8,
+        "broken": 12
+      },
+      "both_masked": {
+        "corrected": 8,
+        "broken": 12
+      },
+      "skeleton_retargeting": {
+        "corrected": 0,
+        "broken": 1
+      },
+      "cross_user_contrast": {
+        "corrected": 5,
+        "broken": 6
+      },
+      "prelogit_feature_tcn": {
+        "corrected": 6,
+        "broken": 4
+      }
+    },
+    "per_candidate_baseline_error_corrections": {
+      "visual_masked_only": 0,
+      "temporal_masked_only": 8,
+      "both_masked": 8,
+      "skeleton_retargeting": 0,
+      "cross_user_contrast": 5,
+      "prelogit_feature_tcn": 6
+    },
+    "ever_corrected_by_error_type": {
+      "no_primary_input": 0,
+      "temporal_top1_only": 0,
+      "visual_top1_only": 8,
+      "both_top1_wrong": 2
+    },
+    "persistent_by_error_type": {
+      "no_primary_input": 73,
+      "temporal_top1_only": 6,
+      "visual_top1_only": 45,
+      "both_top1_wrong": 13
+    },
+    "not_an_ensemble_or_training_target": true
+  },
+  "notes": {
+    "top1_coverage_is_not_a_soft_fusion_upper_bound": true,
+    "descriptive_only_no_threshold_or_weight_scan": true,
+    "anonymous_test_accessed": false
+  }
+}

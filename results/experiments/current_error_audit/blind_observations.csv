@@ -1,0 +1,21 @@
+blind_id,sampling_loss,spatial_loss,skeleton_quality,review_note
+audit_001,no_clear_loss,no_clear_loss,no_clear_anomaly,All source frames are represented because the source clip is shorter than 16; crop enlarges the actor.
+audit_002,no_clear_loss,no_clear_loss,no_clear_anomaly,Selected frames cover the complete motion and the crop preserves hands and body.
+audit_003,no_clear_loss,no_clear_loss,no_clear_anomaly,All source frames are repeated into 16 and the crop preserves the actor.
+audit_004,no_clear_loss,no_clear_loss,no_clear_anomaly,Uniform samples cover the full gradual motion; cache retains the visible interaction region.
+audit_005,no_clear_loss,no_clear_loss,suspected_anomaly,Only four Depth frames exist and are all represented; skeleton sequence changes much more than the repeated image sequence.
+audit_006,no_clear_loss,no_clear_loss,no_clear_anomaly,All 14 frames are represented and spatial processing preserves the action region.
+audit_007,no_clear_loss,no_clear_loss,no_clear_anomaly,The long clip changes gradually and selected frames span all phases; crop preserves the table and hands.
+audit_008,no_clear_loss,no_clear_loss,no_clear_anomaly,Nearly all source frames are represented and the crop preserves the upper body and hands.
+audit_009,no_clear_loss,no_clear_loss,no_clear_anomaly,Selected frames span the full gradual action and cropping increases actor scale without visible truncation.
+audit_010,no_clear_loss,no_clear_loss,suspected_anomaly,All 12 image frames are represented; early skeleton poses are incomplete or discontinuous relative to later poses.
+audit_011,no_clear_loss,no_clear_loss,no_clear_anomaly,Selected frames cover nearly the complete clip and no discriminative region is visibly removed.
+audit_012,no_clear_loss,no_clear_loss,suspected_anomaly,All 10 image frames are represented; initial skeleton poses show a large discontinuity before stabilizing.
+audit_013,no_clear_loss,no_clear_loss,no_clear_anomaly,All 12 frames are represented and the crop preserves person-object context.
+audit_014,no_clear_loss,no_clear_loss,suspected_anomaly,Selected images cover the full motion; multiple skeleton poses have implausible scale and limb geometry.
+audit_015,no_clear_loss,no_clear_loss,no_clear_anomaly,Selected frames cover the 30-frame gradual action and the crop retains the hand/table region.
+audit_016,no_clear_loss,no_clear_loss,no_clear_anomaly,Selected frames cover the complete action phases and the crop retains actor and nearby objects.
+audit_017,no_clear_loss,no_clear_loss,no_clear_anomaly,Selected frames cover most of the 23-frame clip and the cache retains the action region.
+audit_018,no_clear_loss,no_clear_loss,no_clear_anomaly,All phases of the 102-frame gradual motion appear in the 16 selected frames and crop.
+audit_019,no_clear_loss,no_clear_loss,no_clear_anomaly,Selected frames span the complete hand motion and the crop preserves the document and hands.
+audit_020,no_clear_loss,no_clear_loss,no_clear_anomaly,All 11 source frames are represented and no spatial evidence is visibly removed.

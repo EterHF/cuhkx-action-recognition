@@ -132,3 +132,12 @@ lost eight rows; frozen T+V gained two (6 corrected, 4 broken), with an exact
 McNemar p=0.7539 and a user-bootstrap interval crossing zero. This weak mixed
 signal is not promoted, full-fit, submitted, or followed by a PCA/attention
 scan.
+
+The [`current_error_audit`](current_error_audit/) updates the analysis to the
+2,889-row paired T+V baseline. Of 74 errors outside the no-primary group,
+Visual alone is top-1 correct on 53, Temporal alone on 6, and both are top-1
+wrong on 15; Temporal ranks the truth second in all 15. Only 10/147 errors were
+ever corrected by any of six comparable candidates. A blinded raw-to-cache
+review of 10 persistent joint-error clusters plus matched controls found no
+repeated sampling, crop/resolution, or skeleton-quality mechanism, so no new
+training route was opened.

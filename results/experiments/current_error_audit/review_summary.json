@@ -1,0 +1,44 @@
+{
+  "schema_version": "cuhkx-current-error-input-review/v1",
+  "selection": {
+    "persistent_both_top1_wrong_mechanism_groups": 10,
+    "error_examples": 10,
+    "matched_correct_examples": 10,
+    "matching": "same class, different user, both primary inputs valid",
+    "selection_seed": 2026
+  },
+  "blinding": {
+    "labels_hidden_during_review": true,
+    "predictions_hidden_during_review": true,
+    "error_or_control_role_hidden_during_review": true,
+    "observations_recorded_before_answer_key_opened": true
+  },
+  "pipeline_compared": [
+    "every original Depth_Color frame in temporal order",
+    "the actual uniformly selected 16 uncropped frames",
+    "the release-contract union-cropped 128x128 Depth_Color and IR cache",
+    "the corresponding selected H36M-17 skeleton sequence"
+  ],
+  "findings": {
+    "clear_sampling_loss": {"errors": 0, "controls": 0},
+    "clear_spatial_processing_loss": {"errors": 0, "controls": 0},
+    "suspected_skeleton_anomaly": {"errors": 2, "controls": 2},
+    "depth_ir_skeleton_source_frame_counts_aligned": 20,
+    "skeleton_max_step_median": {
+      "errors": 0.4878539890050888,
+      "controls": 0.628948837518692
+    }
+  },
+  "decision": {
+    "sampling_experiment_authorized": false,
+    "local_or_higher_resolution_view_authorized": false,
+    "skeleton_repair_experiment_authorized": false,
+    "reason": "No actionable information-loss pattern repeated across users or exceeded the matched-control incidence."
+  },
+  "limitations": [
+    "This is a descriptive mechanism audit of 10 independent persistent-error clusters, not an estimate over all 147 errors.",
+    "No candidate predictions were combined and no threshold, top-k rule, fusion weight, or training target was derived from the reviewed rows.",
+    "Absence of a clearly visible loss in these contact sheets does not prove that the raw inputs contain no additional discriminative signal."
+  ],
+  "anonymous_test_accessed": false
+}

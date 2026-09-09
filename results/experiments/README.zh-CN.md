@@ -102,3 +102,10 @@ control，因此没有进行测试推理或提交。
 表示。Temporal 单支下降 8 条，冻结 T+V 增加 2 条（纠正 6、破坏 4）；精确 McNemar
 p=0.7539，按用户 bootstrap 的区间跨过 0。该混合弱信号不晋级、不 full-fit、不提交，
 也不继续扫描 PCA 或 attention 变体。
+
+[`current_error_audit`](current_error_audit/) 将分析更新到 2,889 条正确的配对 T+V
+基线。双主输入缺失组之外的 74 个错误中，Visual 独有 top-1 正确 53 条、Temporal
+独有正确 6 条、两支 top-1 都错 15 条；后 15 条的真实类别在 Temporal 中全部排第 2。
+六个可比候选合计只曾纠正 10/147 个错误。对 10 个持续双错簇和匹配正确样本进行
+raw-to-cache 盲审后，没有发现重复的采样、裁剪/分辨率或骨架质量机制，因此没有开启
+新的训练路线。
