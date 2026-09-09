@@ -1,0 +1,16 @@
+{
+  "schema_version": "cuhkx-prelogit-feature-tcn-stability/v1",
+  "paired_combined_changes": 10,
+  "combined_corrected": 6,
+  "combined_broken": 4,
+  "combined_net": 2,
+  "exact_two_sided_mcnemar_p": 0.75390625,
+  "user_cluster_bootstrap": {
+    "seed": 2026,
+    "replicates": 10000,
+    "accuracy_delta_95_percentile_interval": [-0.00098297, 0.00262816],
+    "probability_delta_non_positive": 0.3041
+  },
+  "interpretation": "The preregistered gate passes, but the confidence interval crosses zero and only 10 predictions change. This is weak, selection-sensitive evidence rather than a robust accuracy gain.",
+  "anonymous_test_accessed": false
+}

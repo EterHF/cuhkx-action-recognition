@@ -33,12 +33,15 @@ class Net(nn.Module):
             }
         )
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward_features(self, inputs: torch.Tensor) -> torch.Tensor:
+        """Return the released 2048-D representation immediately before fc2."""
         features = self.backbone.get_representation(inputs)
         features = features.reshape(inputs.shape[0], inputs.shape[1], 17, -1)
         features = features.permute(0, 2, 3, 1).mean(-1).reshape(inputs.shape[0], -1)
         features = self.head["drop"](features)
         features = self.head["fc1"](features)
         features = self.head["bn"](features)
-        features = self.head["relu"](features)
-        return self.head["fc2"](features)
+        return self.head["relu"](features)
+
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        return self.head["fc2"](self.forward_features(inputs))

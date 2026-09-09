@@ -96,3 +96,9 @@ control，因此没有进行测试推理或提交。
 但严格只屏蔽 CE 后配对 T+V 净下降 4 条。[`skeleton_retargeting`](skeleton_retargeting/)
 通过几何质检但 T+V 下降 1 条；[`cross_user_contrast`](cross_user_contrast/) 每折获得数千
 个同类不同用户 anchor，T+V 仍下降 1 条。三者均未晋级，也未继续扫描。
+
+[`prelogit_feature_tcn`](prelogit_feature_tcn/) 配对实验保留静态 frame-logit 均值，
+只让同容量 TCN 改读发布 DSTFormer 的 2048 维 fc2 前特征经训练折内 PCA 得到的 40 维
+表示。Temporal 单支下降 8 条，冻结 T+V 增加 2 条（纠正 6、破坏 4）；精确 McNemar
+p=0.7539，按用户 bootstrap 的区间跨过 0。该混合弱信号不晋级、不 full-fit、不提交，
+也不继续扫描 PCA 或 attention 变体。

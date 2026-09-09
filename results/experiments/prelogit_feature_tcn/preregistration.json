@@ -1,0 +1,43 @@
+{
+  "schema_version": "cuhkx-prelogit-feature-tcn-preregistration/v1",
+  "locked_utc": "2026-09-09T01:49:21Z",
+  "question": "Does the released DSTFormer retain useful temporal evidence in its 2048-D representation immediately before fc2 that is lost in the 40-D frame logits?",
+  "single_change": "The residual TCN reads a fold-train PCA projection of the 2048-D pre-fc2 frame representation instead of the 40-D frame logits.",
+  "paired_control": "mean(frame_logits) + TCN(frame_logits)",
+  "paired_candidate": "mean(frame_logits) + TCN(PCA40(pre_fc2_features))",
+  "pca_protocol": {
+    "fit_rows": "all 16 frames from outer-training users only",
+    "held_user_frames_used_for_fit": false,
+    "components": 40,
+    "whiten": false,
+    "solver": "randomized",
+    "seed": 2026,
+    "frozen_during_tcn_training": true
+  },
+  "unchanged": {
+    "dstformer_weights": "released strictV3 DSTFormer",
+    "dstformer_finetuning": false,
+    "frame_logits_and_features": "exported by the same forward pass",
+    "static_path": "mean of the same 16 frame logits",
+    "frames": 16,
+    "folds": "subject folds A-E",
+    "seed": 2026,
+    "temporal_recipe": "same TCN, five epochs, 30-epoch cosine period, fixed final checkpoint",
+    "visual_branch": "frozen input-validity control OOF",
+    "fusion_contract": "frozen release T+V gate",
+    "input_validity_masking": false,
+    "bone_retargeting": false,
+    "cross_user_contrast": false,
+    "external_pretraining": false,
+    "anonymous_test_access": false
+  },
+  "promotion_gate": {
+    "combined_oof_net_positive": true,
+    "at_least_four_of_five_folds_non_degrading": true,
+    "subject_macro_accuracy_non_degrading": true,
+    "both_primary_valid_accuracy_non_degrading": true
+  },
+  "stopping_rule": "If the candidate fails, lower the priority of the 40-D classification bottleneck hypothesis; do not scan PCA widths or replace PCA with attention in this experiment family.",
+  "local_view_rule": "Do not train a local-view model unless an original-frame audit first demonstrates crop, resolution, or 16-frame sampling loss.",
+  "no_hyperparameter_scan_after_result": true
+}

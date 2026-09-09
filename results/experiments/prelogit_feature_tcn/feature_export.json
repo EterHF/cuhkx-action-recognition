@@ -1,0 +1,22 @@
+{
+  "schema_version": "cuhkx-prelogit-pca40-summary/v1",
+  "rows": 3036,
+  "frames": 16,
+  "source_dimensions": 2048,
+  "projected_dimensions": 40,
+  "feature_definition": "post-ReLU representation immediately before fc2",
+  "features_sha256": "99bb873e1cf61f435c0e1935eb6387bf3a61e3e53331ddd738189bb142865330",
+  "frame_logits_sha256": "13ccce61659f848d00d6b37a1789648dedaa4a8548bd3bb5b465b4d50a592b11",
+  "reference_frame_logits_sha256": "13ccce61659f848d00d6b37a1789648dedaa4a8548bd3bb5b465b4d50a592b11",
+  "reference_max_abs_difference": 0.0,
+  "fold_explained_variance_ratio_sum": {
+    "A": 0.6664994955062866,
+    "B": 0.6699220538139343,
+    "C": 0.6668838262557983,
+    "D": 0.6627427339553833,
+    "E": 0.6545983552932739
+  },
+  "held_user_frames_used_for_pca_fit": 0,
+  "held_labels_accessed_during_export_or_pca_fit": false,
+  "anonymous_test_accessed": false
+}

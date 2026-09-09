@@ -124,3 +124,11 @@ errors, but exact CE masking reduced paired T+V by four rows.
 T+V by one row. [`cross_user_contrast`](cross_user_contrast/) supplied thousands
 of valid same-class/different-user anchors per fold, yet also reduced T+V by one
 row. None was promoted or scanned further.
+
+The [`prelogit_feature_tcn`](prelogit_feature_tcn/) paired study keeps the
+static frame-logit mean but lets the same-size TCN read a fold-train-only PCA-40
+projection of the released DSTFormer's 2048-D pre-fc2 features. Temporal alone
+lost eight rows; frozen T+V gained two (6 corrected, 4 broken), with an exact
+McNemar p=0.7539 and a user-bootstrap interval crossing zero. This weak mixed
+signal is not promoted, full-fit, submitted, or followed by a PCA/attention
+scan.

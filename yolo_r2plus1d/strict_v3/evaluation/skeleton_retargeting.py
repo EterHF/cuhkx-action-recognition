@@ -58,14 +58,36 @@ def main() -> None:
     }
     fused = {arm: fuse(visual, values, release) for arm, values in temporal.items()}
     control = fused["control"].argmax(1)
+    temporal_control = temporal["control"].argmax(1)
     arms = {}
     for arm, logits in fused.items():
         prediction = logits.argmax(1)
+        temporal_prediction = temporal[arm].argmax(1)
         arms[arm] = {
-            "temporal_correct": int(np.sum(temporal[arm].argmax(1) == labels)),
+            "temporal_correct": int(np.sum(temporal_prediction == labels)),
+            "temporal_overall": classification_metrics(
+                temporal_prediction, labels, users
+            ),
+            "temporal_delta_vs_control": prediction_delta(
+                temporal_control, temporal_prediction, labels
+            ),
             "overall": classification_metrics(prediction, labels, users),
             "subsets": subset_metrics(prediction, labels, masks),
             "delta_vs_control": prediction_delta(control, prediction, labels),
+            "subset_delta_vs_control": {
+                name: prediction_delta(
+                    control[mask], prediction[mask], labels[mask]
+                )
+                for name, mask in masks.items()
+            },
+            "user_delta_vs_control": {
+                str(user): prediction_delta(
+                    control[users == user],
+                    prediction[users == user],
+                    labels[users == user],
+                )
+                for user in np.unique(users)
+            },
             "fold_delta_vs_control": {
                 fold: prediction_delta(
                     control[np.isin(users, held)],

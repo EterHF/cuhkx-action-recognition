@@ -1,0 +1,449 @@
+{
+  "schema_version": "cuhkx-temporal-paired-oof/v1",
+  "candidate_name": "feature",
+  "arms": {
+    "control": {
+      "temporal_correct": 2847,
+      "temporal_overall": {
+        "correct": 2847,
+        "accuracy": 0.9377470355731226,
+        "macro_recall": 0.9360627975189371,
+        "subject_macro_accuracy": 0.9370860074653495,
+        "worst_user_accuracy": 0.8125,
+        "user_accuracy": {
+          "1": 0.954248366013072,
+          "2": 0.9821428571428571,
+          "3": 0.9202453987730062,
+          "4": 0.9090909090909091,
+          "5": 0.8125,
+          "6": 0.8669950738916257,
+          "7": 0.9405405405405406,
+          "8": 0.9112426035502958,
+          "9": 0.9625668449197861,
+          "16": 0.9731182795698925,
+          "17": 0.9518072289156626,
+          "18": 0.9385474860335196,
+          "19": 0.9840425531914894,
+          "20": 0.9874213836477987,
+          "21": 1.0,
+          "22": 0.979381443298969,
+          "23": 0.8439716312056738,
+          "24": 0.949685534591195
+        }
+      },
+      "temporal_delta_vs_control": {
+        "corrected": 0,
+        "broken": 0,
+        "net": 0
+      },
+      "overall": {
+        "correct": 2889,
+        "accuracy": 0.9515810276679841,
+        "macro_recall": 0.9503060842310698,
+        "subject_macro_accuracy": 0.9506166398834098,
+        "worst_user_accuracy": 0.8125,
+        "user_accuracy": {
+          "1": 0.9673202614379085,
+          "2": 0.9821428571428571,
+          "3": 0.9570552147239264,
+          "4": 0.9230769230769231,
+          "5": 0.8125,
+          "6": 0.9113300492610837,
+          "7": 0.972972972972973,
+          "8": 0.9408284023668639,
+          "9": 0.9679144385026738,
+          "16": 0.9731182795698925,
+          "17": 0.9578313253012049,
+          "18": 0.9497206703910615,
+          "19": 0.9840425531914894,
+          "20": 0.9937106918238994,
+          "21": 1.0,
+          "22": 0.9845360824742269,
+          "23": 0.8581560283687943,
+          "24": 0.9748427672955975
+        }
+      },
+      "subsets": {
+        "all": {
+          "rows": 3036,
+          "correct": 2889,
+          "accuracy": 0.9515810276679841
+        },
+        "both_primary_valid": {
+          "rows": 2931,
+          "correct": 2859,
+          "accuracy": 0.9754350051177073
+        },
+        "no_primary_input": {
+          "rows": 103,
+          "correct": 30,
+          "accuracy": 0.2912621359223301
+        }
+      },
+      "delta_vs_control": {
+        "corrected": 0,
+        "broken": 0,
+        "net": 0
+      },
+      "subset_delta_vs_control": {
+        "all": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "both_primary_valid": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "no_primary_input": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        }
+      },
+      "user_delta_vs_control": {
+        "1": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "2": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "3": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "4": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "5": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "6": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "7": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "8": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "9": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "16": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "17": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "18": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "19": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "20": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "21": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "22": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "23": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "24": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        }
+      },
+      "fold_delta_vs_control": {
+        "A": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "B": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "C": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "D": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "E": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        }
+      }
+    },
+    "feature": {
+      "temporal_correct": 2839,
+      "temporal_overall": {
+        "correct": 2839,
+        "accuracy": 0.9351119894598156,
+        "macro_recall": 0.9358626282824094,
+        "subject_macro_accuracy": 0.9343963163019541,
+        "worst_user_accuracy": 0.8125,
+        "user_accuracy": {
+          "1": 0.954248366013072,
+          "2": 0.9642857142857143,
+          "3": 0.9202453987730062,
+          "4": 0.9020979020979021,
+          "5": 0.8125,
+          "6": 0.8571428571428571,
+          "7": 0.9405405405405406,
+          "8": 0.9053254437869822,
+          "9": 0.9625668449197861,
+          "16": 0.9731182795698925,
+          "17": 0.9518072289156626,
+          "18": 0.9441340782122905,
+          "19": 0.9840425531914894,
+          "20": 0.9937106918238994,
+          "21": 1.0,
+          "22": 0.979381443298969,
+          "23": 0.8368794326241135,
+          "24": 0.9371069182389937
+        }
+      },
+      "temporal_delta_vs_control": {
+        "corrected": 7,
+        "broken": 15,
+        "net": -8
+      },
+      "overall": {
+        "correct": 2891,
+        "accuracy": 0.9522397891963109,
+        "macro_recall": 0.951364138423297,
+        "subject_macro_accuracy": 0.951393206972159,
+        "worst_user_accuracy": 0.8125,
+        "user_accuracy": {
+          "1": 0.9738562091503268,
+          "2": 0.9821428571428571,
+          "3": 0.9570552147239264,
+          "4": 0.9230769230769231,
+          "5": 0.8125,
+          "6": 0.9064039408866995,
+          "7": 0.972972972972973,
+          "8": 0.9408284023668639,
+          "9": 0.9679144385026738,
+          "16": 0.978494623655914,
+          "17": 0.9578313253012049,
+          "18": 0.9441340782122905,
+          "19": 0.9840425531914894,
+          "20": 0.9937106918238994,
+          "21": 1.0,
+          "22": 0.9845360824742269,
+          "23": 0.8581560283687943,
+          "24": 0.9874213836477987
+        }
+      },
+      "subsets": {
+        "all": {
+          "rows": 3036,
+          "correct": 2891,
+          "accuracy": 0.9522397891963109
+        },
+        "both_primary_valid": {
+          "rows": 2931,
+          "correct": 2861,
+          "accuracy": 0.9761173660866599
+        },
+        "no_primary_input": {
+          "rows": 103,
+          "correct": 30,
+          "accuracy": 0.2912621359223301
+        }
+      },
+      "delta_vs_control": {
+        "corrected": 6,
+        "broken": 4,
+        "net": 2
+      },
+      "subset_delta_vs_control": {
+        "all": {
+          "corrected": 6,
+          "broken": 4,
+          "net": 2
+        },
+        "both_primary_valid": {
+          "corrected": 6,
+          "broken": 4,
+          "net": 2
+        },
+        "no_primary_input": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        }
+      },
+      "user_delta_vs_control": {
+        "1": {
+          "corrected": 1,
+          "broken": 0,
+          "net": 1
+        },
+        "2": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "3": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "4": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "5": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "6": {
+          "corrected": 0,
+          "broken": 1,
+          "net": -1
+        },
+        "7": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "8": {
+          "corrected": 2,
+          "broken": 2,
+          "net": 0
+        },
+        "9": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "16": {
+          "corrected": 1,
+          "broken": 0,
+          "net": 1
+        },
+        "17": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "18": {
+          "corrected": 0,
+          "broken": 1,
+          "net": -1
+        },
+        "19": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "20": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "21": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "22": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "23": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "24": {
+          "corrected": 2,
+          "broken": 0,
+          "net": 2
+        }
+      },
+      "fold_delta_vs_control": {
+        "A": {
+          "corrected": 1,
+          "broken": 1,
+          "net": 0
+        },
+        "B": {
+          "corrected": 0,
+          "broken": 1,
+          "net": -1
+        },
+        "C": {
+          "corrected": 4,
+          "broken": 2,
+          "net": 2
+        },
+        "D": {
+          "corrected": 0,
+          "broken": 0,
+          "net": 0
+        },
+        "E": {
+          "corrected": 1,
+          "broken": 0,
+          "net": 1
+        }
+      }
+    }
+  },
+  "promotion_gate_passed": true,
+  "held_labels_used_for_checkpoint_selection": false,
+  "anonymous_test_accessed": false
+}

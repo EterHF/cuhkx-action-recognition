@@ -36,6 +36,33 @@ def test_temporal_prediction_supports_cpu(tmp_path: Path) -> None:
     assert len(sha256(logits_path)) == 64
 
 
+def test_alternate_temporal_input_does_not_replace_static_logits(tmp_path: Path) -> None:
+    logits_path = tmp_path / "frame_logits.npy"
+    temporal_path = tmp_path / "prelogit_pca.npy"
+    logits = np.zeros((3, 16, 40), dtype=np.float32)
+    logits[:, :, 7] = 2.0
+    temporal = np.random.default_rng(2026).normal(size=(3, 16, 40)).astype(np.float32)
+    np.save(logits_path, logits)
+    np.save(temporal_path, temporal)
+
+    model = Residual("tcn")
+    output = pred(
+        model,
+        logits_path,
+        np.arange(3),
+        np.zeros(3, dtype=np.int64),
+        torch.device("cpu"),
+        batch=2,
+        workers=0,
+        temporal_path=temporal_path,
+    )
+
+    # The residual head is zero-initialized, so this exactly isolates the
+    # unchanged static mean path even when the TCN reads another tensor.
+    assert (output.argmax(1) == 7).all()
+    assert np.allclose(output[:, 7], 2.0)
+
+
 def test_visual_member_state_supports_compact_release_schema() -> None:
     state = {"head.weight": object()}
     package = {"visual_member0": {"model_state_packed": state, "bits": 5}}

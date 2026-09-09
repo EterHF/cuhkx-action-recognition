@@ -1,0 +1,24 @@
+{
+  "schema_version": "cuhkx-prior-experiment-input-subset-decomposition/v1",
+  "source": "Existing frozen OOF predictions; no retraining",
+  "subsets": {
+    "both_primary_valid": 2931,
+    "no_primary_input": 103
+  },
+  "experiments": {
+    "input_validity_both_masked": {
+      "both_primary_valid": {"corrected": 8, "broken": 12, "net": -4},
+      "no_primary_input": {"corrected": 0, "broken": 0, "net": 0}
+    },
+    "skeleton_retargeting": {
+      "both_primary_valid": {"corrected": 0, "broken": 1, "net": -1},
+      "no_primary_input": {"corrected": 0, "broken": 0, "net": 0}
+    },
+    "cross_user_contrast": {
+      "both_primary_valid": {"corrected": 5, "broken": 6, "net": -1},
+      "no_primary_input": {"corrected": 0, "broken": 0, "net": 0}
+    }
+  },
+  "interpretation": "None of the three treatments corrected a no-primary-input row. Their prediction changes and all net losses occurred on rows where both primary inputs were valid; they therefore changed action discrimination rather than improving missing-input defaults.",
+  "anonymous_test_accessed": false
+}

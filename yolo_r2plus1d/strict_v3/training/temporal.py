@@ -42,6 +42,7 @@ class Set(Dataset):
         secondary_path=None,
         secondary_probability=0.5,
         users=None,
+        temporal_path=None,
     ):
         self.x = np.load(path, mmap_mode="r")
         self.idx = np.asarray(idx)
@@ -56,8 +57,13 @@ class Set(Dataset):
         )
         self.secondary_probability = float(secondary_probability)
         self.users = users
+        self.temporal_x = (
+            None if temporal_path is None else np.load(temporal_path, mmap_mode="r")
+        )
         if self.secondary is not None and self.secondary.shape != self.x.shape:
             raise ValueError("primary and secondary temporal logits must align")
+        if self.temporal_x is not None and self.temporal_x.shape != self.x.shape:
+            raise ValueError("static logits and temporal inputs must align")
 
     def __len__(self):
         return len(self.idx)
@@ -73,13 +79,26 @@ class Set(Dataset):
             else self.x
         )
         x = np.array(source[i], copy=True).astype(np.float32)
+        temporal_x = (
+            None
+            if self.temporal_x is None
+            else np.array(self.temporal_x[i], copy=True).astype(np.float32)
+        )
         if self.train:
             rng = np.random.default_rng(self.seed + k * 7919)
             if rng.random() < self.reverse_prob:
                 x = x[::-1].copy()
+                if temporal_x is not None:
+                    temporal_x = temporal_x[::-1].copy()
             if self.noise_std:
                 x += rng.normal(0, self.noise_std, x.shape).astype(np.float32)
+                if temporal_x is not None:
+                    temporal_x += rng.normal(
+                        0, self.noise_std, temporal_x.shape
+                    ).astype(np.float32)
         result = (torch.from_numpy(x), int(self.y[i]) if self.train else i)
+        if temporal_x is not None:
+            result += (torch.from_numpy(temporal_x),)
         if self.train and self.loss_mask is not None:
             result += (bool(self.loss_mask[i]),)
         if self.train and self.users is not None:
@@ -119,9 +138,9 @@ class Residual(nn.Module):
         nn.init.zeros_(self.out[-1].weight)
         nn.init.zeros_(self.out[-1].bias)
 
-    def forward_features(self, x):
+    def forward_features(self, x, temporal_inputs=None):
         base = x.mean(1)
-        z = self.norm(x)
+        z = self.norm(x if temporal_inputs is None else temporal_inputs)
         if self.kind == "gru":
             z, _ = self.temporal(z)
         elif self.kind == "tcn":
@@ -130,8 +149,8 @@ class Residual(nn.Module):
             z = self.temporal(z + self.pos)
         return base, z.mean(1)
 
-    def forward(self, x):
-        base, features = self.forward_features(x)
+    def forward(self, x, temporal_inputs=None):
+        base, features = self.forward_features(x, temporal_inputs)
         return base + self.out(features)
 
 
@@ -160,8 +179,8 @@ def cross_user_supervised_contrastive_loss(
 
 
 @torch.inference_mode()
-def pred(model, path, idx, y, dev, batch, workers):
-    ds = Set(path, idx, y, False)
+def pred(model, path, idx, y, dev, batch, workers, temporal_path=None):
+    ds = Set(path, idx, y, False, temporal_path=temporal_path)
     ld = DataLoader(
         ds,
         batch,
@@ -172,13 +191,20 @@ def pred(model, path, idx, y, dev, batch, workers):
     out = np.zeros((len(idx), 40), np.float32)
     loc = {int(v): i for i, v in enumerate(idx)}
     model.eval()
-    for x, ii in ld:
+    for batch_values in ld:
+        x, ii = batch_values[:2]
+        temporal_x = batch_values[2] if len(batch_values) == 3 else None
         with torch.autocast(
             device_type=dev.type,
             dtype=torch.bfloat16,
             enabled=dev.type == "cuda",
         ):
-            z = model(x.to(dev, non_blocking=True))
+            z = model(
+                x.to(dev, non_blocking=True),
+                None
+                if temporal_x is None
+                else temporal_x.to(dev, non_blocking=True),
+            )
         for r, v in enumerate(ii.numpy()):
             out[loc[int(v)]] = z[r].float().cpu().numpy()
     return out
@@ -200,6 +226,12 @@ def main():
     )
     ap.add_argument("--validity-key", default="skeleton")
     ap.add_argument("--secondary-logits", type=Path)
+    ap.add_argument(
+        "--temporal-input",
+        type=Path,
+        help="optional [N,16,40] input for TCN; static mean still uses --logits",
+    )
+    ap.add_argument("--test-temporal-input", type=Path)
     ap.add_argument("--secondary-probability", type=float, default=0.5)
     ap.add_argument("--cross-user-contrast-weight", type=float, default=0.0)
     ap.add_argument("--contrast-temperature", type=float, default=0.1)
@@ -252,6 +284,15 @@ def main():
         raise ValueError("--contrast-temperature must be positive")
     if args.cross_user_contrast_weight > 0.0 and args.validity_mask is not None:
         raise ValueError("contrast and validity masking are separate experiments")
+    if args.temporal_input is not None and (
+        args.validity_mask is not None
+        or args.secondary_logits is not None
+        or args.cross_user_contrast_weight > 0.0
+    ):
+        raise ValueError("alternate temporal input must be tested as a single change")
+    if (args.test_logits is None) != (args.test_temporal_input is None):
+        if args.temporal_input is not None or args.test_temporal_input is not None:
+            raise ValueError("test logits and test temporal input must be provided together")
     scheduler_epochs = (
         args.epochs if args.scheduler_epochs is None else args.scheduler_epochs
     )
@@ -299,6 +340,7 @@ def main():
             secondary_path=args.secondary_logits,
             secondary_probability=args.secondary_probability,
             users=u if args.cross_user_contrast_weight > 0.0 else None,
+            temporal_path=args.temporal_input,
         ),
         args.batch,
         shuffle=sampler is None,
@@ -316,7 +358,11 @@ def main():
         total = 0.0
         contrast_total = contrast_anchors = 0
         for batch_values in ld:
-            if args.cross_user_contrast_weight > 0.0:
+            temporal_inputs = None
+            if args.temporal_input is not None:
+                x, t, temporal_inputs = batch_values
+                loss_mask = None
+            elif args.cross_user_contrast_weight > 0.0:
                 x, t, batch_users = batch_values
                 batch_users = batch_users.to(dev, non_blocking=True)
                 loss_mask = None
@@ -337,7 +383,12 @@ def main():
                     base, features = model.forward_features(inputs)
                     z = base + model.out(features)
                 else:
-                    z = model(inputs)
+                    z = model(
+                        inputs,
+                        None
+                        if temporal_inputs is None
+                        else temporal_inputs.to(dev, non_blocking=True),
+                    )
                 target = t.to(dev, non_blocking=True)
                 loss = masked_classification_loss(lossfn, z, target, loss_mask)
                 if args.cross_user_contrast_weight > 0.0:
@@ -358,7 +409,16 @@ def main():
             n += len(t)
         sch.step()
         if len(va) and not args.defer_val_metrics:
-            q = pred(model, args.logits, va, y, dev, args.batch, args.workers)
+            q = pred(
+                model,
+                args.logits,
+                va,
+                y,
+                dev,
+                args.batch,
+                args.workers,
+                args.temporal_input,
+            )
             acc = float((q.argmax(1) == y[va]).mean())
         elif len(va):
             # In the strict fixed-final protocol, held labels are not opened
@@ -413,7 +473,16 @@ def main():
     if len(va) and args.defer_val_metrics:
         # This is the only point at which held-user labels are read.  It is a
         # post-training OOF measurement, never a checkpoint/schedule choice.
-        q = pred(model, args.logits, va, y, dev, args.batch, args.workers)
+        q = pred(
+            model,
+            args.logits,
+            va,
+            y,
+            dev,
+            args.batch,
+            args.workers,
+            args.temporal_input,
+        )
         np.save(args.out / "val_logits.npy", q)
         best = float((q.argmax(1) == y[va]).mean())
     if args.test_logits is not None:
@@ -428,6 +497,7 @@ def main():
                 dev,
                 args.batch,
                 args.workers,
+                args.test_temporal_input,
             ),
         )
     (args.out / "metrics.json").write_text(
@@ -472,6 +542,16 @@ def main():
                 "inputs": {
                     "frame_logits": str(args.logits.resolve()),
                     "frame_logits_sha256": sha256(args.logits),
+                    "temporal_input": (
+                        None
+                        if args.temporal_input is None
+                        else str(args.temporal_input.resolve())
+                    ),
+                    "temporal_input_sha256": (
+                        None
+                        if args.temporal_input is None
+                        else sha256(args.temporal_input)
+                    ),
                     "test_frame_logits": (
                         None
                         if args.test_logits is None

@@ -994,6 +994,39 @@ anchors per epoch and decreasing contrast loss, but Temporal changed
 failed their gates, and no post-result mask, magnitude, weight, or temperature
 scan was performed.
 
+### 5.23 Temporal modelling before the 40-class frame head, 2026-09-09
+
+Before retraining, the three §5.22 treatments were decomposed by source-input
+validity. None corrected or broke any of the 103 rows with neither primary
+input. All changes occurred among the 2,931 rows with both primary inputs,
+confirming that the negative results reflected action-discrimination changes
+rather than a changed missing-input default.
+
+A preregistered paired experiment then isolated whether the final 40-class
+frame head discards motion evidence. One released DSTFormer forward pass
+exported both frame logits and its post-ReLU 2,048-D representation immediately
+before `fc2`; the logits exactly matched the prior control cache (maximum
+difference zero and identical SHA256). For each outer fold, PCA-40 was fitted
+only on frames from outer-training users and frozen. Its explained-variance
+sum was 0.655–0.670. The static path remained the mean of the same 16 frame
+logits, while only the equal-capacity TCN input changed from logits to PCA
+features. Architecture, seed, training budget, Visual outputs and release T+V
+gate were unchanged.
+
+Feature-TCN reduced Temporal from 2,847 to 2,839 correct. After frozen T+V
+fusion it changed 2,889 to 2,891: six corrected and four broken, with fold nets
+0/-1/+2/0/+1. Both gains occurred on valid-primary rows; the 103 missing rows
+were unchanged. Subject-macro accuracy rose by 0.000777 and the preregistered
+minimal gate technically passed. However, exact two-sided McNemar p was 0.7539,
+the user-cluster bootstrap 95% interval for accuracy delta was
+[-0.000983, 0.002628], and Temporal alone degraded in three folds. Corrections
+and failures also swapped within the same confusable actions and users. This is
+weak fusion-interaction evidence, not confirmation that the 40-D head is the
+main temporal bottleneck. The candidate is not promoted, full-fit, submitted,
+or followed by PCA-width/attention scans. A local-view experiment remains
+conditional on direct original-frame evidence of crop, resolution, or sampling
+loss.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)
