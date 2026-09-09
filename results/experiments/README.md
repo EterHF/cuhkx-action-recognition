@@ -152,3 +152,5 @@ This paired comparison is distinct from historical strictV3 2,903 and
 inherited-gate T+V 2,909; it updates neither result nor the released 0.97512
 score. Its predictions, hashes and rejection decision are frozen in the
 experiment directory, and the current T+V path is closed pending new evidence.
+After the freeze, a user-authorized deployment override submitted the gate-off
+CSV as ref 56117280; its 0.97512 public tie did not change the rejection.

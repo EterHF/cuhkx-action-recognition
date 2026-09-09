@@ -1,0 +1,66 @@
+{
+  "schema_version": "cuhkx-quality-gate-off-submission/v1",
+  "authorization": "explicit user override after the preregistered promotion gate failed",
+  "promotion_gate_passed": false,
+  "candidate": "fixed T/V base weights with confidence quality factors disabled",
+  "rows": 405,
+  "classes": 40,
+  "both_primary_valid": 405,
+  "partial_primary": 0,
+  "no_primary": 0,
+  "changed_vs_inherited_gate": 1,
+  "anonymous_test_labels_used": false,
+  "decision_scope": "This submission does not retroactively pass the OOF promotion gate and must not be described as an updated release baseline.",
+  "inputs": {
+    "manifest": {
+      "path": "results/strict_v3/release_manifest.json",
+      "bytes": 15248,
+      "sha256": "32bdaa22b2bd9abd9f1e1029c2bcd818d251e8a28da2ce4df8496058937ebcd6"
+    },
+    "package": {
+      "path": "checkpoints/strict_v3/model.pt",
+      "bytes": 64206000,
+      "sha256": "c1feb649267aaa41ef490a93660735a76af4eae4629a687a90a102ac4e63bd75"
+    },
+    "visual_logits": {
+      "path": ".cache/canonical_raw_release_verify/visual_logits.npy",
+      "bytes": 64928,
+      "sha256": "8ba08a23677e4f70db63e7b8360f7257414465fa2c11848e6fd47ee683859ed2"
+    },
+    "temporal_logits": {
+      "path": "runs/experiments/conditional_corrector_deployment_inputs_v1/temporal_test_logits.npy",
+      "bytes": 64928,
+      "sha256": "b20004021a8cee04af271348e63f2f30a43b19c209917227441b6ef6184edb30"
+    },
+    "skeleton_validity": {
+      "path": ".cache/canonical_raw_release_verify/skeleton/test_skeleton_mask.npy",
+      "bytes": 533,
+      "sha256": "1680492d4f5204395897d397160f6c85b001492860470d22410261c0a3c16bd7"
+    },
+    "sample_submission": {
+      "path": "data/Small-Model-Track/Testing/test_file/sample_submission.csv",
+      "bytes": 16531,
+      "sha256": "76aa7c2c4fc8759d31f2eda6d6f9fd22dfe3ad30f56d4752dd9ff8e586d25a1b"
+    }
+  },
+  "outputs": {
+    "submission": {
+      "path": "results/experiments/quality_gate_ablation/kaggle_submission/submission.csv",
+      "bytes": 16091,
+      "sha256": "36a8c48a094a10721eb7b6831df502675ff5c2bced5d9c195b995368b4f4c723"
+    },
+    "predictions": {
+      "path": "results/experiments/quality_gate_ablation/kaggle_submission/predictions.npz",
+      "bytes": 3439,
+      "sha256": "667c7df334f1730787b6d14744f89a1f5cb7dbb77c8ad8c52ef07a059be2c93a"
+    }
+  },
+  "kaggle": {
+    "competition": "cuhk-x-competition-small-model-track",
+    "submission_ref": 56117280,
+    "status": "complete",
+    "public_score": 0.97512,
+    "private_score": null,
+    "remaining_daily_submissions_after_submit": 4
+  }
+}

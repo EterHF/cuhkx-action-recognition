@@ -48,6 +48,14 @@ change the released public score claim of 0.97512. The release baseline is
 retained and this T+V fusion path is frozen until new evidence supports a new,
 independently testable mechanism.
 
+On 2026-09-09, the user explicitly overrode the no-submission action after the
+freeze. A deployment-matched gate-off CSV was generated without anonymous
+labels and submitted as Kaggle ref `56117280`; it scored `0.97512`, tying the
+existing release. This external action does not retroactively pass the
+preregistered gate, promote the candidate, or reopen fusion tuning. Its inputs,
+predictions and submission record are preserved in
+[`kaggle_submission/`](kaggle_submission/).
+
 The archive retains [preregistration.json](preregistration.json), full paired
 [predictions.npz](predictions.npz), [input and output hashes](provenance.json),
 [metrics.json](metrics.json), [changes.csv](changes.csv), and the frozen

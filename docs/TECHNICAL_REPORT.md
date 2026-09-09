@@ -1100,6 +1100,13 @@ are archived under `results/experiments/quality_gate_ablation/`. The current
 T+V fusion experiment chain is closed until new evidence supports a new,
 independently testable mechanism.
 
+After this freeze, the user explicitly authorized an external submission
+override. The deployment-matched gate-off prediction changed one of 405 rows
+relative to inherited-gate T+V, used no anonymous labels, and scored 0.97512 as
+Kaggle ref 56117280. The public tie does not retroactively satisfy the failed
+OOF gate, promote the candidate, update the release baseline, or authorize
+further tuning.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)

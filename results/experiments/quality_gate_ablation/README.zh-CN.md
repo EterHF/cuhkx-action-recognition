@@ -37,6 +37,11 @@ top-1 正确错误中修复 5 条，6 条 Temporal 独有正确中修复 1 条�
 已发布的 0.97512 public score 声明。保留发布基线，并冻结当前 T+V 融合路径；只有出现由
 新证据支持、可独立检验的新机制时才可重启。
 
+2026-09-09，用户在冻结完成后明确覆盖“不提交”这一执行决定。未使用匿名标签生成了与部署
+匹配的 gate-off CSV，并以 Kaggle ref `56117280` 提交，得分 `0.97512`，与现有发布持平。
+该外部操作不使预注册门槛事后通过、不晋升候选，也不重启融合调参。输入、预测和提交记录
+保存在 [`kaggle_submission/`](kaggle_submission/) 中。
+
 归档保留 [preregistration.json](preregistration.json)、完整配对
 [predictions.npz](predictions.npz)、[输入与输出哈希](provenance.json)、
 [metrics.json](metrics.json)、[changes.csv](changes.csv) 和冻结的
