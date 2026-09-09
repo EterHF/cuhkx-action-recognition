@@ -148,3 +148,7 @@ sample weighting on both-primary-valid rows. OOF rises 2,889→2,893 (6 correcte
 2 broken; folds +1/0/+1/+1/+1), but the user-bootstrap interval crosses zero
 and both failures concentrate in user 18. It fails the preregistered promotion
 gate; no release candidate, test inference, or follow-up fusion scan is made.
+This paired comparison is distinct from historical strictV3 2,903 and
+inherited-gate T+V 2,909; it updates neither result nor the released 0.97512
+score. Its predictions, hashes and rejection decision are frozen in the
+experiment directory, and the current T+V path is closed pending new evidence.

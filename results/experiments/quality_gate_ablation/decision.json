@@ -1,0 +1,17 @@
+{
+  "schema_version": "cuhkx-quality-gate-ablation-decision/v1",
+  "status": "frozen_negative_result",
+  "promotion_gate_passed": false,
+  "retain_release_baseline": true,
+  "build_release_candidate": false,
+  "anonymous_test_inference": false,
+  "submission": false,
+  "follow_up": "Do not derive thresholds, tests, seeds, splits, post-processing rules, or further experiments from the current T+V OOF. Reopen this path only for a new, independently testable mechanism supported by new evidence.",
+  "score_lineage": {
+    "historical_strict_v3_oof": "2903/3036",
+    "historical_inherited_gate_t_plus_v_oof": "2909/3036",
+    "current_paired_control_oof": "2889/3036",
+    "current_gate_off_candidate_oof": "2893/3036",
+    "interpretation": "The current paired result is a separate comparison. The 2893 result does not improve or update the historical 2903/2909 OOF figures or the released 0.97512 public score."
+  }
+}

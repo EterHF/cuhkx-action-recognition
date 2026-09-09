@@ -32,6 +32,13 @@ top-1 正确错误中修复 5 条，6 条 Temporal 独有正确中修复 1 条�
 1、一折持平，预注册 bootstrap 门槛仍失败。因此不构建发布候选、不运行测试推理、不
 提交，也不继续扫描复杂融合规则。
 
-证据见 [preregistration.json](preregistration.json)、[metrics.json](metrics.json) 和
-[changes.csv](changes.csv)。可复现入口为
+本轮比较的成绩谱系与历史 strictV3 2,903/3,036、继承门控的 T+V 诊断
+2,909/3,036 均不同。当前配对的 2,889→2,893 不能解释为改善或更新上述成绩，也不改变
+已发布的 0.97512 public score 声明。保留发布基线，并冻结当前 T+V 融合路径；只有出现由
+新证据支持、可独立检验的新机制时才可重启。
+
+归档保留 [preregistration.json](preregistration.json)、完整配对
+[predictions.npz](predictions.npz)、[输入与输出哈希](provenance.json)、
+[metrics.json](metrics.json)、[changes.csv](changes.csv) 和冻结的
+[decision.json](decision.json)。可复现入口为
 [`quality_gate_ablation.py`](../../../yolo_r2plus1d/strict_v3/evaluation/quality_gate_ablation.py)。

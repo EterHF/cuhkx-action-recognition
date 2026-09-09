@@ -41,6 +41,15 @@ user's net -2 even though four folds gain one row and one fold is flat. The
 preregistered bootstrap gate therefore fails. No release-path candidate, test
 inference, submission, or more complex fusion scan follows.
 
-See [preregistration.json](preregistration.json), [metrics.json](metrics.json),
-and [changes.csv](changes.csv). The reproducible evaluator is
+This comparison has a separate score lineage from both historical strictV3
+2,903/3,036 and the inherited-gate T+V diagnostic 2,909/3,036. The current
+paired 2,889→2,893 result does not improve or update those figures and does not
+change the released public score claim of 0.97512. The release baseline is
+retained and this T+V fusion path is frozen until new evidence supports a new,
+independently testable mechanism.
+
+The archive retains [preregistration.json](preregistration.json), full paired
+[predictions.npz](predictions.npz), [input and output hashes](provenance.json),
+[metrics.json](metrics.json), [changes.csv](changes.csv), and the frozen
+[decision](decision.json). The reproducible evaluator is
 [`quality_gate_ablation.py`](../../../yolo_r2plus1d/strict_v3/evaluation/quality_gate_ablation.py).

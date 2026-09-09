@@ -1090,6 +1090,16 @@ further fusion scan is performed. The supported conclusion is only that direct
 gate removal shows a small exploratory benefit without adequate positive
 generalization evidence.
 
+These numbers belong to the current paired comparison only. Historical
+strictV3 2,903/3,036, inherited-gate T+V 2,909/3,036, and current
+2,889→2,893/3,036 are three distinct result systems. Therefore 2,893 is not an
+improvement to either historical OOF result and does not update the released
+0.97512 public-score claim. The baseline is retained; complete predictions,
+input hashes, paired changes, the clustered interval and the rejection decision
+are archived under `results/experiments/quality_gate_ablation/`. The current
+T+V fusion experiment chain is closed until new evidence supports a new,
+independently testable mechanism.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)

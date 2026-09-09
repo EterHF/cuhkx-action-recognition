@@ -1,0 +1,102 @@
+{
+  "schema_version": "cuhkx-quality-gate-ablation-provenance/v1",
+  "implementation": {
+    "path": "yolo_r2plus1d/strict_v3/evaluation/quality_gate_ablation.py",
+    "bytes": 15443,
+    "sha256": "0bbf68d67b16d2505a047b576da607593992d4240404424d86345c4c4accb840"
+  },
+  "inputs": {
+    "metadata": {
+      "path": "results/strict_v3/metadata.npz",
+      "bytes": 17514,
+      "sha256": "bf2e93e558b4ae148b14835c1f65c943828bff97dfaaf224a39c249c7599f099"
+    },
+    "validity": {
+      "path": "runs/experiments/input_validity_masking_v1/validity.npz",
+      "bytes": 1813,
+      "sha256": "30113907b3b7d1dd70d17488e4f40093014c853cd17202ce299cb7d5fc3f9353"
+    },
+    "release_package": {
+      "path": "checkpoints/strict_v3/model.pt",
+      "bytes": 64206000,
+      "sha256": "c1feb649267aaa41ef490a93660735a76af4eae4629a687a90a102ac4e63bd75"
+    },
+    "visual_A_logits": {
+      "path": "runs/experiments/input_validity_masking_v1/visual/control/foldA/best_val_logits.npy",
+      "bytes": 114688,
+      "sha256": "5b3781d50b122ed4f25e516a439c2bb7cb021ccebb5a9013da3d5725d6aeedea"
+    },
+    "visual_B_logits": {
+      "path": "runs/experiments/input_validity_masking_v1/visual/control/foldB/best_val_logits.npy",
+      "bytes": 107808,
+      "sha256": "443d3ee739c5d015e267fb827a9f062c40121980cb10ee9408a79353d2612715"
+    },
+    "visual_C_logits": {
+      "path": "runs/experiments/input_validity_masking_v1/visual/control/foldC/best_val_logits.npy",
+      "bytes": 108768,
+      "sha256": "60230d70a2ecc976eb69e6249d61d755fe608a3f8878e8c722a8642af3c48e15"
+    },
+    "visual_D_logits": {
+      "path": "runs/experiments/input_validity_masking_v1/visual/control/foldD/best_val_logits.npy",
+      "bytes": 78368,
+      "sha256": "92c0b1716517d8500ded62f525b251f81bfdfc69cb20cdfdb096ef587b552eda"
+    },
+    "visual_E_logits": {
+      "path": "runs/experiments/input_validity_masking_v1/visual/control/foldE/best_val_logits.npy",
+      "bytes": 76768,
+      "sha256": "8493b118a06a80bba73d04b3f08f157ed50f0fc09a0c91bc79cb50fef28fa549"
+    },
+    "temporal_A_logits": {
+      "path": "runs/experiments/prelogit_feature_tcn_v1/temporal/control/foldA/val_logits.npy",
+      "bytes": 114688,
+      "sha256": "343415abc3b528c223c8cbd46df0504c0cf95456b1ad04b6ca933a055647dab9"
+    },
+    "temporal_B_logits": {
+      "path": "runs/experiments/prelogit_feature_tcn_v1/temporal/control/foldB/val_logits.npy",
+      "bytes": 107808,
+      "sha256": "6a39b08bec5b631344e5615d733b854405c34f36af8fadf3c2725c13694bbfc1"
+    },
+    "temporal_C_logits": {
+      "path": "runs/experiments/prelogit_feature_tcn_v1/temporal/control/foldC/val_logits.npy",
+      "bytes": 108768,
+      "sha256": "009610edb6a289191e8eed30a9b45cf00563e26e7226d515ff03dfe194e885e6"
+    },
+    "temporal_D_logits": {
+      "path": "runs/experiments/prelogit_feature_tcn_v1/temporal/control/foldD/val_logits.npy",
+      "bytes": 78368,
+      "sha256": "8f7b494461c8e98d16112ed3b294cfe4dffeff480bed18acb755bf3651b051cd"
+    },
+    "temporal_E_logits": {
+      "path": "runs/experiments/prelogit_feature_tcn_v1/temporal/control/foldE/val_logits.npy",
+      "bytes": 76768,
+      "sha256": "07b093f6ce27a1fda1fcb5ec61bd6275b3cd5fd81adbdc25c0b00c8b257d7ba2"
+    }
+  },
+  "archived_outputs": {
+    "preregistration": {
+      "path": "results/experiments/quality_gate_ablation/preregistration.json",
+      "bytes": 2276,
+      "sha256": "5629b06636bf14f3a3cbfbabee1572ab63924277dcdd34b8de99ac3a1e95a04f"
+    },
+    "metrics": {
+      "path": "results/experiments/quality_gate_ablation/metrics.json",
+      "bytes": 5126,
+      "sha256": "feda10b7afded3c314af545db3ff4a23352bc938077b4142f9bcddcdf2580c19"
+    },
+    "paired_changes": {
+      "path": "results/experiments/quality_gate_ablation/changes.csv",
+      "bytes": 942,
+      "sha256": "222290e60e2f4ca5981dd6c14d594a433b74686841b1127f8038777c163f113b"
+    },
+    "predictions": {
+      "path": "results/experiments/quality_gate_ablation/predictions.npz",
+      "bytes": 21702,
+      "sha256": "a0c39fbec1609e010ca97dbe227ee36075d0dbf355101712685d30da8a30880b"
+    },
+    "decision": {
+      "path": "results/experiments/quality_gate_ablation/decision.json",
+      "bytes": 922,
+      "sha256": "c28e4e46145992af1371eb75e4c43c236e81bf86dbf74b8336284ccbdf77a861"
+    }
+  }
+}

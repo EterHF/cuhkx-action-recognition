@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -19,6 +20,23 @@ from yolo_r2plus1d.strict_v3.training.conditional_corrector import (
     classification_metrics,
     prediction_delta,
 )
+
+
+def file_record(path: Path) -> dict[str, str | int]:
+    """Return a portable identity record for one immutable experiment input."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    try:
+        display_path = str(path.resolve().relative_to(Path.cwd().resolve()))
+    except ValueError:
+        display_path = str(path.resolve())
+    return {
+        "path": display_path,
+        "bytes": path.stat().st_size,
+        "sha256": digest.hexdigest(),
+    }
 
 
 def fixed_quality_logits(
@@ -89,6 +107,19 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument("--bootstrap-replicates", type=int, default=10000)
     args = parser.parse_args()
+
+    input_paths = {
+        "metadata": args.metadata,
+        "validity": args.validity,
+        "release_package": args.package,
+    }
+    for branch, root, filename in (
+        ("visual", args.visual_root, "best_val_logits.npy"),
+        ("temporal", args.temporal_root, "val_logits.npy"),
+    ):
+        for fold in FOLDS:
+            input_paths[f"{branch}_{fold}_logits"] = root / f"fold{fold}" / filename
+    input_records = {name: file_record(path) for name, path in input_paths.items()}
 
     with np.load(args.metadata, allow_pickle=False) as metadata:
         labels = np.asarray(metadata["train_y"], dtype=np.int64)
@@ -163,6 +194,8 @@ def main() -> None:
         ),
     }
     delta = prediction_delta(control, candidate, labels)
+    if delta != {"corrected": 6, "broken": 2, "net": 4}:
+        raise RuntimeError("candidate does not reproduce the frozen 6/2 paired changes")
     fold_delta = {
         fold: prediction_delta(
             control[np.isin(users, held)],
@@ -288,6 +321,66 @@ def main() -> None:
                     "candidate_effective_visual_weight": fixed_visual_weight,
                 }
             )
+
+    archive_dir = args.output.parent
+    predictions_path = archive_dir / "predictions.npz"
+    np.savez_compressed(
+        predictions_path,
+        row=np.arange(len(control), dtype=np.int64),
+        key=keys,
+        user=users,
+        label=labels,
+        both_primary_valid=both_valid,
+        control_top1=control,
+        candidate_top1=candidate,
+    )
+    decision_path = archive_dir / "decision.json"
+    decision = {
+        "schema_version": "cuhkx-quality-gate-ablation-decision/v1",
+        "status": "frozen_negative_result",
+        "promotion_gate_passed": False,
+        "retain_release_baseline": True,
+        "build_release_candidate": False,
+        "anonymous_test_inference": False,
+        "submission": False,
+        "follow_up": (
+            "Do not derive thresholds, tests, seeds, splits, post-processing rules, "
+            "or further experiments from the current T+V OOF. Reopen this path only "
+            "for a new, independently testable mechanism supported by new evidence."
+        ),
+        "score_lineage": {
+            "historical_strict_v3_oof": "2903/3036",
+            "historical_inherited_gate_t_plus_v_oof": "2909/3036",
+            "current_paired_control_oof": "2889/3036",
+            "current_gate_off_candidate_oof": "2893/3036",
+            "interpretation": (
+                "The current paired result is a separate comparison. The 2893 result "
+                "does not improve or update the historical 2903/2909 OOF figures or "
+                "the released 0.97512 public score."
+            ),
+        },
+    }
+    decision_path.write_text(json.dumps(decision, indent=2) + "\n", encoding="utf-8")
+
+    preregistration_path = archive_dir / "preregistration.json"
+    archived_outputs = {
+        "preregistration": preregistration_path,
+        "metrics": args.output,
+        "paired_changes": args.changes_output,
+        "predictions": predictions_path,
+        "decision": decision_path,
+    }
+    provenance = {
+        "schema_version": "cuhkx-quality-gate-ablation-provenance/v1",
+        "implementation": file_record(Path(__file__)),
+        "inputs": input_records,
+        "archived_outputs": {
+            name: file_record(path) for name, path in archived_outputs.items()
+        },
+    }
+    (archive_dir / "provenance.json").write_text(
+        json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
+    )
     print(json.dumps(report, indent=2))
 
 
