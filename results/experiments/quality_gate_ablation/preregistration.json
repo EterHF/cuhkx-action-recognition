@@ -1,0 +1,42 @@
+{
+  "schema_version": "cuhkx-quality-gate-ablation-preregistration/v1",
+  "locked_utc": "2026-09-09T03:29:50Z",
+  "status": "mechanism-driven exploratory ablation after inspecting reused OOF errors",
+  "question": "Does the existing per-sample confidence quality gate add net value beyond the frozen Temporal/Visual base weights?",
+  "control": "current 2889/3036 T+V paired OOF using apply_gate with confidence-derived quality factors",
+  "candidate": "on both-primary-valid rows only, set both quality factors to the same constant and normalize the unchanged base weights",
+  "single_change": "disable confidence-derived quality factors",
+  "unchanged": {
+    "temporal_base_weight": 0.6699999999999999,
+    "visual_base_weight": 0.21999999999999997,
+    "fusion_base_weight": 0.0,
+    "temporal_temperature": 1.1651778344146086,
+    "visual_temperature": 1.5271351958543506,
+    "visual_package_output_scale": 0.5,
+    "branch_logits": "current paired OOF arrays",
+    "no_primary_rows": "retain exact control logits and predictions",
+    "partial_primary_rows": "retain exact control logits and predictions",
+    "checkpoint_sampling_precision_and_class_order": "unchanged",
+    "fitted_parameters": 0,
+    "anonymous_test_access": false
+  },
+  "required_reporting": [
+    "all-row corrected, broken, and net counts",
+    "corrections among temporal-top1-only, visual-top1-only, both-top1-wrong, and no-primary baseline errors",
+    "broken count among every originally correct both-primary-valid row",
+    "fold and user deltas",
+    "user-cluster bootstrap interval",
+    "same-unique-top1 invariance check"
+  ],
+  "promotion_gate": {
+    "overall_net_positive": true,
+    "at_least_four_of_five_folds_non_degrading": true,
+    "subject_macro_accuracy_non_degrading": true,
+    "worst_user_accuracy_non_degrading": true,
+    "both_primary_valid_accuracy_non_degrading": true,
+    "user_cluster_bootstrap_95_percentile_lower_bound_positive": true,
+    "same_unique_branch_top1_changes": 0
+  },
+  "stopping_rule": "If the gate is not passed, do not scan entropy, margin, top-k, class-specific rules, temperatures, or base weights. If passed, only verify the same simplification in the release path before considering deployment.",
+  "not_independent_confirmation": true
+}

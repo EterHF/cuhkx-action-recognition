@@ -141,3 +141,10 @@ ever corrected by any of six comparable candidates. A blinded raw-to-cache
 review of 10 persistent joint-error clusters plus matched controls found no
 repeated sampling, crop/resolution, or skeleton-quality mechanism, so no new
 training route was opened.
+
+The [`quality_gate_ablation`](quality_gate_ablation/) then keeps the current
+Temporal/Visual base weights and temperatures but removes only confidence-based
+sample weighting on both-primary-valid rows. OOF rises 2,889→2,893 (6 corrected,
+2 broken; folds +1/0/+1/+1/+1), but the user-bootstrap interval crosses zero
+and both failures concentrate in user 18. It fails the preregistered promotion
+gate; no release candidate, test inference, or follow-up fusion scan is made.

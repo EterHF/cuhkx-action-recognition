@@ -1059,6 +1059,37 @@ controls. This limited descriptive sample does not prove absence of recoverable
 raw evidence, but it exposes no repeated cross-user mechanism that authorizes
 sampling, local-view, resolution, or skeleton-repair training.
 
+### 5.25 Fixed-base-weight confidence quality-gate ablation, 2026-09-09
+
+The §5.24 coverage result motivated one exploratory, parameter-free fusion
+ablation on the reused 2,889/3,036 OOF. The existing implementation computes a
+temperature-scaled maximum-softmax confidence for each branch, maps it through
+a chance-corrected quality factor, and multiplies the frozen base weight. The
+candidate sets the Temporal and Visual quality factors to the same constant
+only where both primary inputs are valid. It retains base weights 0.67/0.22,
+temperatures 1.16518/1.52714, Visual output scale 0.5, branch logits and every
+missing/partial-input output. Unlike the historical equal-weight experiment,
+it does not change the base T/V ratio.
+
+Removing quality weighting changed only eight predictions: six corrected and
+two broken, moving OOF from 2,889 to 2,893. Fold nets were +1/0/+1/+1/+1;
+subject-macro accuracy rose 0.950617→0.952000 and worst-user accuracy remained
+0.8125. It corrected five of 53 Visual-only-top-1 errors and one of six
+Temporal-only-top-1 errors, but no joint-top-1 or no-primary error. The cost was
+two of the 2,859 originally correct both-primary-valid rows. All changes were
+on T/V disagreement rows; 2,655 same-unique-top-1 rows and every missing or
+partial-input row were invariant, satisfying the mathematical consistency
+check.
+
+The direction is positive but insufficient for promotion. Exact two-sided
+McNemar p is 0.2891 and the 10,000-replicate user-cluster bootstrap 95% interval
+is [-0.000675, 0.003083]. Both broken rows belong to user 18, whose net is -2.
+Because the preregistered bootstrap gate fails, no release-path candidate,
+anonymous-test inference, submission, entropy/margin threshold, top-k rule, or
+further fusion scan is performed. The supported conclusion is only that direct
+gate removal shows a small exploratory benefit without adequate positive
+generalization evidence.
+
 ---
 
 ## 6. General method-discipline rules (hard constraints)
