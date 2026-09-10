@@ -1,0 +1,42 @@
+{
+  "locked_utc": "2026-09-10T13:06:35.368484+00:00",
+  "hypothesis": "Physically consistent local-to-world coordinate transformation reduces wearing-orientation shift, allowing independent IMU motion to correct near-tied primary predictions.",
+  "evidence": {
+    "quaternion_audit": "Every thirtieth training clip, 13053 valid readings. Applying wxyz q rotation gives median stationary acceleration [-0.00363,-0.00425,0.98848] g and horizontal norm .07997; inverse gives horizontal .63689.",
+    "prior_work": "Earlier multirate skeleton+IMU fusion failed; this is a standalone sensor model and physically verified coordinate-view ablation, without the old branch."
+  },
+  "model": "6 InceptionTime-inspired residual Conv1D modules, 16 filters per branch, kernels9/19/39, global average +40-class head; equal parameter count for both views",
+  "control": "60 channels formed by duplicating the local five-sensor 6-channel input",
+  "candidate": "60 channels formed by concatenating local and quaternion-rotated world inputs",
+  "input_contract": "Sort device readings by within-clip time; shared linear resampling to256; acceleration in g and angular velocity/180. No absolute time, duration, hardware identity, temperature, battery, firmware, magnetometer or angle features. At least3 sensors with >=4 valid readings.",
+  "training": {
+    "seeds": [
+      2026,
+      2027,
+      2028
+    ],
+    "folds": "existing A-E subject-disjoint groups",
+    "epochs": 80,
+    "batch_size": 64,
+    "optimizer": "AdamW lr1e-3 wd1e-4 cosine80",
+    "label_smoothing": 0.05,
+    "augmentation": "shared temporal crop205..256 resized256, iid noise.01",
+    "held_evaluation": "once, final fp16 stored state; bfloat16 compute",
+    "normalization": "fixed physical scaling + batchnorm fitted only on outer train"
+  },
+  "candidate_integration": "on both-primary-valid rows with>=3 valid IMUs, fixed probability blend .9 baseline +.1 sensor; unchanged elsewhere; sensor temperature1; no weight search",
+  "deployment_seed": 2026,
+  "promotion_gate": {
+    "global_mean_standalone_accuracy_exceeds_local": true,
+    "candidate_net_positive_every_seed": true,
+    "five_folds_non_degrading_every_seed": true,
+    "subject_macro_non_degrading_every_seed": true,
+    "worst_user_non_degrading_every_seed": true,
+    "unchanged_outside_routing_mask": true,
+    "deployment_seed_user_cluster_ci_lower_positive": true,
+    "bundle_strictly_below100MB": true,
+    "two_raw_replays_match": true
+  },
+  "scope": "Baseline OOF still has target-pretrained upstream contamination; independently trained IMU has held users excluded. Report historical and current paired primary baselines separately.",
+  "stopping_rule": "No coordinate, fusion-weight, epoch, optimizer or architecture scan using these held outcomes; no test inference unless the gates pass."
+}

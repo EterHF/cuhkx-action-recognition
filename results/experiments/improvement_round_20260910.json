@@ -1,0 +1,157 @@
+{
+  "date_utc": "2026-09-10",
+  "best_public_score": 0.97512,
+  "new_submission": {
+    "reference": 56145116,
+    "public_score": 0.96019,
+    "promoted": false
+  },
+  "experiments": {
+    "imu_global": [
+      {
+        "path": "results/experiments/imu_global/metrics.json",
+        "bytes": 54984,
+        "sha256": "18c2d02ce0a29518e21423ce704a7029bcf1352f7182d20d7caa371053a3d839"
+      },
+      {
+        "path": "results/experiments/imu_global/predictions.npz",
+        "bytes": 7073269,
+        "sha256": "aec6a95614b215677774cdb42cfc61135eb50057eead81dbc046c22b09b29c8d"
+      },
+      {
+        "path": "results/experiments/imu_global/preregistration.json",
+        "bytes": 2836,
+        "sha256": "f749a5b31e82a3e403f0a5212fd8e74d46c046013cde1222fabcf2cc8106c824"
+      }
+    ],
+    "available_corrector": [
+      {
+        "path": "results/experiments/available_corrector/metrics.json",
+        "bytes": 16422,
+        "sha256": "97ed9070d3714910c816301cfe35730c7f01c751f5e35ac998012c844a50dad0"
+      },
+      {
+        "path": "results/experiments/available_corrector/predictions.npz",
+        "bytes": 1695102,
+        "sha256": "15a66f64591383cc47580b852fa6fba915e4278d9abeb6c90ea8c21d0a97ffa4"
+      },
+      {
+        "path": "results/experiments/available_corrector/preregistration.json",
+        "bytes": 1768,
+        "sha256": "99187f436136e2988d2bbc40fbf25e4d45d3fcd8953e945859c30409fa918b6d"
+      }
+    ],
+    "branch_selector": [
+      {
+        "path": "results/experiments/branch_selector/metrics.json",
+        "bytes": 15901,
+        "sha256": "8a7ae1f74e410a8e5bad4e01d4740f41f5db1b35762a4e8b52b2d4b1e15f68ae"
+      },
+      {
+        "path": "results/experiments/branch_selector/predictions.npz",
+        "bytes": 1695316,
+        "sha256": "3364cf2d2894431dd98970cf8d8a332ef4d6f93765a226810def0a6fb0f9a689"
+      },
+      {
+        "path": "results/experiments/branch_selector/preregistration.json",
+        "bytes": 1988,
+        "sha256": "424dbae78485c0e5035e5319c03c4dad783a00964f1e1409f03b22d93aba8a3a"
+      }
+    ],
+    "selector_consensus": [
+      {
+        "path": "results/experiments/selector_consensus/deployment.json",
+        "bytes": 3280,
+        "sha256": "486321054c782cbefa56f96395924417f2d3d5153f52ae35baaa0f3ce8c19188"
+      },
+      {
+        "path": "results/experiments/selector_consensus/full_fit.json",
+        "bytes": 982,
+        "sha256": "75dfbda832b86c1b2eff9ae773bfc55e47715a1987c0ff8885bc2555c627e992"
+      },
+      {
+        "path": "results/experiments/selector_consensus/metrics.json",
+        "bytes": 12528,
+        "sha256": "c878679473f87f20a86b69dcfb26e8195abc24ab2fc2c31baec67c0f85ccc49b"
+      },
+      {
+        "path": "results/experiments/selector_consensus/predictions.npz",
+        "bytes": 1275672,
+        "sha256": "3fb5bea8c765e82651a810965ce12e314524a1013bc7b5eabcd3ca81a4d2bfa5"
+      },
+      {
+        "path": "results/experiments/selector_consensus/preregistration.json",
+        "bytes": 1506,
+        "sha256": "166c9783415108a416544852372241ff0c50428f383665884c1bcfd2d520db83"
+      },
+      {
+        "path": "results/experiments/selector_consensus/submission.csv",
+        "bytes": 16089,
+        "sha256": "d91eb5ea0c3eb1e0107d139b63732ed8c7987fdcb8d21aebe0334f12224e4755"
+      }
+    ]
+  },
+  "validation": {
+    "relevant_tests": 29,
+    "ruff": "pass",
+    "git_diff_check": "pass",
+    "canonical_release_verify": "pass"
+  },
+  "source_files": [
+    {
+      "path": "yolo_r2plus1d/strict_v3/data/imu_cache.py",
+      "bytes": 6011,
+      "sha256": "dd52338c93e8c919e874e9e8de970bb56eb95bf5ad46c883609475ffb452bf9c"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/models/imu.py",
+      "bytes": 2428,
+      "sha256": "8729b5eb9a3e274de5a4946b347a0d25d2ee04b759b2225f1e990cdf62ba5c45"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/models/conditional_corrector.py",
+      "bytes": 2127,
+      "sha256": "a309911b6335536fa2e67bf8e89a5517f5cace498dd153735bad6126aa4e584a"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/models/branch_selector.py",
+      "bytes": 2135,
+      "sha256": "a3c70219dbf42bc417a021e88a296403b0dbf02641e537513f73013c4281fb7c"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/training/imu.py",
+      "bytes": 5168,
+      "sha256": "e237f1878e1e0438b11402ebae1dc5b1cce6a4ea9ef7cb652b9bb8f8a253114e"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/training/available_corrector.py",
+      "bytes": 5210,
+      "sha256": "87ff5877aa0aea9e707368fb2fe2a99fcbb395ac9fe4d9d8d09f3d5fc196ab57"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/training/branch_selector.py",
+      "bytes": 5312,
+      "sha256": "369195913a28d5ca1bec70964ca0f45ced4135bafda41ab88ec81c62c82c79f4"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/evaluation/imu_global.py",
+      "bytes": 6770,
+      "sha256": "2e09d8d71c4b611413aca59cb072140356a59b60c05f3270f553f686d06a711e"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/evaluation/selector_consensus.py",
+      "bytes": 4795,
+      "sha256": "16e02c1961875e0923cdf1f8e1125bcf88e6c52ab94467933452f7180c47cece"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/release/selector_consensus.py",
+      "bytes": 5544,
+      "sha256": "4b35c6880ca60136bf37ae3032cf191f463e80d52873dfe3a068cd03a3c521e8"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/release/replay.py",
+      "bytes": 45499,
+      "sha256": "1d999369130659f94d1377993456526db963532705542f3b39fa1c3dee0b0a1f"
+    }
+  ]
+}

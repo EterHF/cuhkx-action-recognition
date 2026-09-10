@@ -1,0 +1,57 @@
+{
+  "experiments": {
+    "thermal_fallback": {
+      "completed_fold_models": 15,
+      "oof_gate_passed": false,
+      "fold_checkpoint_bytes": [
+        22444867
+      ],
+      "training_and_evaluation_gpu_seconds": 750.2907040785067
+    },
+    "thermal_shift": {
+      "completed_fold_models": 15,
+      "oof_gate_passed": false,
+      "fold_checkpoint_bytes": [
+        22444931
+      ],
+      "training_and_evaluation_gpu_seconds": 835.4477014932781
+    },
+    "thermal_crop": {
+      "completed_fold_models": 15,
+      "oof_gate_passed": false,
+      "fold_checkpoint_bytes": [
+        22444867
+      ],
+      "training_and_evaluation_gpu_seconds": 881.9791338159703
+    }
+  },
+  "tests": "tests/test_thermal.py: 8 passed",
+  "ruff": "all changed Python modules pass",
+  "original_release_verified_at_start": true,
+  "original_release_modified": false,
+  "kaggle_submissions": 0,
+  "new_candidate_test_inference": false,
+  "test_experiments_selected_by_public_lb": false,
+  "files": [
+    {
+      "path": "tests/test_thermal.py",
+      "bytes": 3432,
+      "sha256": "fc97c5487e1dcca6ebc6c7e7b62875e304f65f23144fa1108b5dd5358f54933b"
+    },
+    {
+      "path": "results/experiments/thermal_fallback/provenance.json",
+      "bytes": 12024,
+      "sha256": "1783dbd6c2b915f166c924ad35820044cf491c86699192d9be1c5fd2f21d4d7d"
+    },
+    {
+      "path": "results/experiments/thermal_shift/provenance.json",
+      "bytes": 11880,
+      "sha256": "0ffe06621b73276e97c4e00e7ddd57de56467839f942523fac9df260e4abffb6"
+    },
+    {
+      "path": "results/experiments/thermal_crop/provenance.json",
+      "bytes": 12205,
+      "sha256": "7b8afe5f170ae93466425d185b02f7d80a5fc18ab5a1936331b41da0ed667789"
+    }
+  ]
+}

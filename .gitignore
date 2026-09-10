@@ -25,5 +25,9 @@ results/strict_v3/reproduced_submission.csv
 !/data/README.md
 !/data/README.zh-CN.md
 
-# Git LFS pointer files are tracked separately
-.gitattributes
+# Local credentials must never be versioned.
+.env
+.env.*
+!.env.example
+.kaggle/
+kaggle.json

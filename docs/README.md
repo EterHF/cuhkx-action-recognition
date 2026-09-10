@@ -2,6 +2,7 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [Repository home](../README.md)
 
+* [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — current evidence, research opportunities and final candidates.
 * [`TECHNICAL_REPORT.md`](TECHNICAL_REPORT.md) — historical experiments,
   strictV3 design, compliance boundaries and the packaging-gap audit.
 * [`TECHNICAL_REPORT.zh-CN.md`](TECHNICAL_REPORT.zh-CN.md) — 中文技术报告，

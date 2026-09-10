@@ -1,0 +1,525 @@
+{
+  "seeds": {
+    "2026": {
+      "seed": 2026,
+      "baseline": {
+        "correct": 2890,
+        "accuracy": 0.9519104084321476,
+        "macro_recall": 0.9514728565518242,
+        "subject_macro_accuracy": 0.951297119077625,
+        "worst_user_accuracy": 0.8125,
+        "user_accuracy": {
+          "1": 0.9673202614379085,
+          "2": 0.9821428571428571,
+          "3": 0.9570552147239264,
+          "4": 0.9230769230769231,
+          "5": 0.8125,
+          "6": 0.9014778325123153,
+          "7": 0.972972972972973,
+          "8": 0.9408284023668639,
+          "9": 0.9679144385026738,
+          "16": 0.978494623655914,
+          "17": 0.9578313253012049,
+          "18": 0.9385474860335196,
+          "19": 0.9840425531914894,
+          "20": 1.0,
+          "21": 1.0,
+          "22": 0.979381443298969,
+          "23": 0.8723404255319149,
+          "24": 0.9874213836477987
+        }
+      },
+      "candidate": {
+        "correct": 2907,
+        "accuracy": 0.9575098814229249,
+        "macro_recall": 0.952130026163579,
+        "subject_macro_accuracy": 0.9573877293897044,
+        "worst_user_accuracy": 0.8125,
+        "user_accuracy": {
+          "1": 0.9738562091503268,
+          "2": 0.9940476190476191,
+          "3": 0.9877300613496932,
+          "4": 0.9370629370629371,
+          "5": 0.8125,
+          "6": 0.916256157635468,
+          "7": 0.9891891891891892,
+          "8": 0.9289940828402367,
+          "9": 0.9625668449197861,
+          "16": 0.9623655913978495,
+          "17": 0.9578313253012049,
+          "18": 0.9217877094972067,
+          "19": 0.9893617021276596,
+          "20": 1.0,
+          "21": 1.0,
+          "22": 0.9845360824742269,
+          "23": 0.9148936170212766,
+          "24": 1.0
+        }
+      },
+      "delta": {
+        "corrected": 38,
+        "broken": 21,
+        "net": 17
+      },
+      "folds": [
+        {
+          "fold": "A",
+          "train_rows": 2224,
+          "held_rows": 716,
+          "corrected": 13,
+          "broken": 8,
+          "net": 5
+        },
+        {
+          "fold": "B",
+          "train_rows": 2271,
+          "held_rows": 673,
+          "corrected": 13,
+          "broken": 5,
+          "net": 8
+        },
+        {
+          "fold": "C",
+          "train_rows": 2260,
+          "held_rows": 679,
+          "corrected": 10,
+          "broken": 4,
+          "net": 6
+        },
+        {
+          "fold": "D",
+          "train_rows": 2457,
+          "held_rows": 489,
+          "corrected": 2,
+          "broken": 1,
+          "net": 1
+        },
+        {
+          "fold": "E",
+          "train_rows": 2512,
+          "held_rows": 479,
+          "corrected": 0,
+          "broken": 3,
+          "net": -3
+        }
+      ],
+      "bootstrap": {
+        "seed": 2026,
+        "replicates": 10000,
+        "accuracy_delta_95_percentile_interval": [
+          -0.0006607694434647231,
+          0.012287164671347016
+        ],
+        "probability_delta_non_positive": 0.048
+      },
+      "seed_gate_passed": false,
+      "unavailable_rows_unchanged": true,
+      "test_data_loaded": false,
+      "train_only_both_valid": true,
+      "inputs": [
+        {
+          "path": "results/strict_v3/metadata.npz",
+          "bytes": 17514,
+          "sha256": "bf2e93e558b4ae148b14835c1f65c943828bff97dfaaf224a39c249c7599f099"
+        },
+        {
+          "path": "runs/experiments/input_validity_masking_v1/validity.npz",
+          "bytes": 1813,
+          "sha256": "30113907b3b7d1dd70d17488e4f40093014c853cd17202ce299cb7d5fc3f9353"
+        },
+        {
+          "path": "runs/experiments/conditional_corrector_deployment_inputs_v1/visual_oof_logits.npy",
+          "bytes": 485888,
+          "sha256": "627e008d022dc5b4eef2eb5fe54cb2a1d657fbb30dcb5da8d8422bd58dd359a6"
+        },
+        {
+          "path": "runs/experiments/conditional_corrector_deployment_inputs_v1/temporal_oof_logits.npy",
+          "bytes": 485888,
+          "sha256": "4afbdec6e3ebd38b44e139641378acaa1d2cd000176e79d20ff9d5dd9e99acc9"
+        },
+        {
+          "path": "runs/experiments/conditional_corrector_deployment_inputs_v1/baseline_oof_logits.npy",
+          "bytes": 485888,
+          "sha256": "83902549e9595c632ca30a47c7edc5f8b08109e7493017473d01a75fb957e7bd"
+        }
+      ],
+      "checkpoints": [
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2026/foldA.pt",
+          "bytes": 72433,
+          "sha256": "533bc42c47ffe6f376de19b8e1d9e1a6ad82c769840cc2284887d74c5f1b3cb6"
+        },
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2026/foldB.pt",
+          "bytes": 72561,
+          "sha256": "260acb3dcc2c9208c386f64dd9c29a7bdd3c6e45b52d5abcaa0596eeb3a3a4db"
+        },
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2026/foldC.pt",
+          "bytes": 72497,
+          "sha256": "e4a955c59e470b16d6d587c161deb8f576ebfa3095a31b0108c5c8f736252cae"
+        },
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2026/foldD.pt",
+          "bytes": 73137,
+          "sha256": "2582b97d9a4b635ccdf111770902e900ed3fb1e787c33ae03f1a6de52b2d31bc"
+        },
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2026/foldE.pt",
+          "bytes": 73265,
+          "sha256": "06c7ec8b9c0827d794c58495ac8d7293eff96811b2ceed406fa8bce3418e2c38"
+        }
+      ]
+    },
+    "2027": {
+      "seed": 2027,
+      "baseline": {
+        "correct": 2890,
+        "accuracy": 0.9519104084321476,
+        "macro_recall": 0.9514728565518242,
+        "subject_macro_accuracy": 0.951297119077625,
+        "worst_user_accuracy": 0.8125,
+        "user_accuracy": {
+          "1": 0.9673202614379085,
+          "2": 0.9821428571428571,
+          "3": 0.9570552147239264,
+          "4": 0.9230769230769231,
+          "5": 0.8125,
+          "6": 0.9014778325123153,
+          "7": 0.972972972972973,
+          "8": 0.9408284023668639,
+          "9": 0.9679144385026738,
+          "16": 0.978494623655914,
+          "17": 0.9578313253012049,
+          "18": 0.9385474860335196,
+          "19": 0.9840425531914894,
+          "20": 1.0,
+          "21": 1.0,
+          "22": 0.979381443298969,
+          "23": 0.8723404255319149,
+          "24": 0.9874213836477987
+        }
+      },
+      "candidate": {
+        "correct": 2910,
+        "accuracy": 0.958498023715415,
+        "macro_recall": 0.9540371790881739,
+        "subject_macro_accuracy": 0.9583087621543126,
+        "worst_user_accuracy": 0.8125,
+        "user_accuracy": {
+          "1": 0.9738562091503268,
+          "2": 0.9940476190476191,
+          "3": 0.9877300613496932,
+          "4": 0.9370629370629371,
+          "5": 0.8125,
+          "6": 0.916256157635468,
+          "7": 0.9945945945945946,
+          "8": 0.9289940828402367,
+          "9": 0.9625668449197861,
+          "16": 0.9623655913978495,
+          "17": 0.9578313253012049,
+          "18": 0.9329608938547486,
+          "19": 0.9893617021276596,
+          "20": 1.0,
+          "21": 1.0,
+          "22": 0.9845360824742269,
+          "23": 0.9148936170212766,
+          "24": 1.0
+        }
+      },
+      "delta": {
+        "corrected": 37,
+        "broken": 17,
+        "net": 20
+      },
+      "folds": [
+        {
+          "fold": "A",
+          "train_rows": 2224,
+          "held_rows": 716,
+          "corrected": 11,
+          "broken": 6,
+          "net": 5
+        },
+        {
+          "fold": "B",
+          "train_rows": 2271,
+          "held_rows": 673,
+          "corrected": 14,
+          "broken": 3,
+          "net": 11
+        },
+        {
+          "fold": "C",
+          "train_rows": 2260,
+          "held_rows": 679,
+          "corrected": 10,
+          "broken": 4,
+          "net": 6
+        },
+        {
+          "fold": "D",
+          "train_rows": 2457,
+          "held_rows": 489,
+          "corrected": 2,
+          "broken": 1,
+          "net": 1
+        },
+        {
+          "fold": "E",
+          "train_rows": 2512,
+          "held_rows": 479,
+          "corrected": 0,
+          "broken": 3,
+          "net": -3
+        }
+      ],
+      "bootstrap": {
+        "seed": 2026,
+        "replicates": 10000,
+        "accuracy_delta_95_percentile_interval": [
+          0.00033472563288436126,
+          0.013114836809978277
+        ],
+        "probability_delta_non_positive": 0.0198
+      },
+      "seed_gate_passed": false,
+      "unavailable_rows_unchanged": true,
+      "test_data_loaded": false,
+      "train_only_both_valid": true,
+      "inputs": [
+        {
+          "path": "results/strict_v3/metadata.npz",
+          "bytes": 17514,
+          "sha256": "bf2e93e558b4ae148b14835c1f65c943828bff97dfaaf224a39c249c7599f099"
+        },
+        {
+          "path": "runs/experiments/input_validity_masking_v1/validity.npz",
+          "bytes": 1813,
+          "sha256": "30113907b3b7d1dd70d17488e4f40093014c853cd17202ce299cb7d5fc3f9353"
+        },
+        {
+          "path": "runs/experiments/conditional_corrector_deployment_inputs_v1/visual_oof_logits.npy",
+          "bytes": 485888,
+          "sha256": "627e008d022dc5b4eef2eb5fe54cb2a1d657fbb30dcb5da8d8422bd58dd359a6"
+        },
+        {
+          "path": "runs/experiments/conditional_corrector_deployment_inputs_v1/temporal_oof_logits.npy",
+          "bytes": 485888,
+          "sha256": "4afbdec6e3ebd38b44e139641378acaa1d2cd000176e79d20ff9d5dd9e99acc9"
+        },
+        {
+          "path": "runs/experiments/conditional_corrector_deployment_inputs_v1/baseline_oof_logits.npy",
+          "bytes": 485888,
+          "sha256": "83902549e9595c632ca30a47c7edc5f8b08109e7493017473d01a75fb957e7bd"
+        }
+      ],
+      "checkpoints": [
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2027/foldA.pt",
+          "bytes": 72433,
+          "sha256": "05bdf6cb0826eb411109d6242e331697859b38620fd4aacd1ef36808ba26aac0"
+        },
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2027/foldB.pt",
+          "bytes": 72561,
+          "sha256": "ad678551b9c22e61d503dfe3638e3e5f8d4fdf9d825cdcbc292d7b788e71994b"
+        },
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2027/foldC.pt",
+          "bytes": 72497,
+          "sha256": "97fcae6a801e546d3106118574fe2bc120398cb522d33cbf4c1973fa21456993"
+        },
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2027/foldD.pt",
+          "bytes": 73137,
+          "sha256": "4f084459b88381a193057cca05479c345ead3578c1606ab8628e82ab8f849abe"
+        },
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2027/foldE.pt",
+          "bytes": 73265,
+          "sha256": "235d46414d32a3a15a73be86cdd82683a4023655c9019a2c595e02cbef7aecc3"
+        }
+      ]
+    },
+    "2028": {
+      "seed": 2028,
+      "baseline": {
+        "correct": 2890,
+        "accuracy": 0.9519104084321476,
+        "macro_recall": 0.9514728565518242,
+        "subject_macro_accuracy": 0.951297119077625,
+        "worst_user_accuracy": 0.8125,
+        "user_accuracy": {
+          "1": 0.9673202614379085,
+          "2": 0.9821428571428571,
+          "3": 0.9570552147239264,
+          "4": 0.9230769230769231,
+          "5": 0.8125,
+          "6": 0.9014778325123153,
+          "7": 0.972972972972973,
+          "8": 0.9408284023668639,
+          "9": 0.9679144385026738,
+          "16": 0.978494623655914,
+          "17": 0.9578313253012049,
+          "18": 0.9385474860335196,
+          "19": 0.9840425531914894,
+          "20": 1.0,
+          "21": 1.0,
+          "22": 0.979381443298969,
+          "23": 0.8723404255319149,
+          "24": 0.9874213836477987
+        }
+      },
+      "candidate": {
+        "correct": 2907,
+        "accuracy": 0.9575098814229249,
+        "macro_recall": 0.9524658666156384,
+        "subject_macro_accuracy": 0.957225381406755,
+        "worst_user_accuracy": 0.8125,
+        "user_accuracy": {
+          "1": 0.9738562091503268,
+          "2": 0.9880952380952381,
+          "3": 0.9815950920245399,
+          "4": 0.9300699300699301,
+          "5": 0.8125,
+          "6": 0.916256157635468,
+          "7": 0.9945945945945946,
+          "8": 0.9289940828402367,
+          "9": 0.9625668449197861,
+          "16": 0.9731182795698925,
+          "17": 0.9578313253012049,
+          "18": 0.9217877094972067,
+          "19": 0.9893617021276596,
+          "20": 1.0,
+          "21": 1.0,
+          "22": 0.9845360824742269,
+          "23": 0.9148936170212766,
+          "24": 1.0
+        }
+      },
+      "delta": {
+        "corrected": 36,
+        "broken": 19,
+        "net": 17
+      },
+      "folds": [
+        {
+          "fold": "A",
+          "train_rows": 2224,
+          "held_rows": 716,
+          "corrected": 12,
+          "broken": 7,
+          "net": 5
+        },
+        {
+          "fold": "B",
+          "train_rows": 2271,
+          "held_rows": 673,
+          "corrected": 13,
+          "broken": 5,
+          "net": 8
+        },
+        {
+          "fold": "C",
+          "train_rows": 2260,
+          "held_rows": 679,
+          "corrected": 9,
+          "broken": 4,
+          "net": 5
+        },
+        {
+          "fold": "D",
+          "train_rows": 2457,
+          "held_rows": 489,
+          "corrected": 2,
+          "broken": 2,
+          "net": 0
+        },
+        {
+          "fold": "E",
+          "train_rows": 2512,
+          "held_rows": 479,
+          "corrected": 0,
+          "broken": 1,
+          "net": -1
+        }
+      ],
+      "bootstrap": {
+        "seed": 2026,
+        "replicates": 10000,
+        "accuracy_delta_95_percentile_interval": [
+          0.0,
+          0.011854986619949938
+        ],
+        "probability_delta_non_positive": 0.0308
+      },
+      "seed_gate_passed": false,
+      "unavailable_rows_unchanged": true,
+      "test_data_loaded": false,
+      "train_only_both_valid": true,
+      "inputs": [
+        {
+          "path": "results/strict_v3/metadata.npz",
+          "bytes": 17514,
+          "sha256": "bf2e93e558b4ae148b14835c1f65c943828bff97dfaaf224a39c249c7599f099"
+        },
+        {
+          "path": "runs/experiments/input_validity_masking_v1/validity.npz",
+          "bytes": 1813,
+          "sha256": "30113907b3b7d1dd70d17488e4f40093014c853cd17202ce299cb7d5fc3f9353"
+        },
+        {
+          "path": "runs/experiments/conditional_corrector_deployment_inputs_v1/visual_oof_logits.npy",
+          "bytes": 485888,
+          "sha256": "627e008d022dc5b4eef2eb5fe54cb2a1d657fbb30dcb5da8d8422bd58dd359a6"
+        },
+        {
+          "path": "runs/experiments/conditional_corrector_deployment_inputs_v1/temporal_oof_logits.npy",
+          "bytes": 485888,
+          "sha256": "4afbdec6e3ebd38b44e139641378acaa1d2cd000176e79d20ff9d5dd9e99acc9"
+        },
+        {
+          "path": "runs/experiments/conditional_corrector_deployment_inputs_v1/baseline_oof_logits.npy",
+          "bytes": 485888,
+          "sha256": "83902549e9595c632ca30a47c7edc5f8b08109e7493017473d01a75fb957e7bd"
+        }
+      ],
+      "checkpoints": [
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2028/foldA.pt",
+          "bytes": 72433,
+          "sha256": "59f18cab06a104627ed3b4c8f159d9d3fa8f83aff88eeb2fb46d0d1f99ec9640"
+        },
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2028/foldB.pt",
+          "bytes": 72561,
+          "sha256": "c020078369524378d865b5d12366e172a796d1e1e5b4f2ee9ae779f33bdfad75"
+        },
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2028/foldC.pt",
+          "bytes": 72497,
+          "sha256": "07d4814846dd61ed05512a4bf7ebeb20f562a9368323710a799bb35f711eecb4"
+        },
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2028/foldD.pt",
+          "bytes": 73137,
+          "sha256": "ae767703978719e7eb49405fd807607293a47f84c72cf9b82ee6705a55b0da99"
+        },
+        {
+          "path": "runs/experiments/available_corrector_v1/seed2028/foldE.pt",
+          "bytes": 73265,
+          "sha256": "661d08bc3002018e80698418767909079609c69f30b4fa498aa3b395a063d281"
+        }
+      ]
+    }
+  },
+  "oof_gate_passed": false,
+  "decision": "reject standalone recipe; no standalone fullfit/test/submission",
+  "anonymous_test_data_loaded": false,
+  "prediction_artifact": {
+    "path": "results/experiments/available_corrector/predictions.npz",
+    "bytes": 1695102,
+    "sha256": "15a66f64591383cc47580b852fa6fba915e4278d9abeb6c90ea8c21d0a97ffa4"
+  }
+}

@@ -992,6 +992,19 @@ def main() -> None:
                 quality_floor=float(release.get("quality_floor", 0.25)),
                 quality_gamma=float(release.get("quality_gamma", 1.0)),
             )
+            if "selector_consensus" in release:
+                from yolo_r2plus1d.strict_v3.release.selector_consensus import infer_consensus
+
+                np.save(work / "selector_baseline_logits.npy", fused.astype(np.float32))
+                fused, primary_valid = infer_consensus(
+                    package, visual_logits, temporal_logits, fused,
+                    args.test_root, test_ids, args.workers,
+                )
+                np.save(work / "selector_logits.npy", fused)
+                np.save(work / "selector_primary_valid.npy", primary_valid)
+                ensemble_summary = {"mode": "bounded_selector_unanimity",
+                                    "seeds": release["selector_consensus"]["seeds"],
+                                    "both_primary_valid_rows": int(primary_valid.sum())}
             predictions = fused.argmax(1).astype(np.int64)
         sample = pd.read_csv(args.sample_submission)
         if len(sample) != len(predictions) or sample.columns.tolist() != [

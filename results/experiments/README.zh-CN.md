@@ -2,6 +2,17 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [仓库首页](../../README.zh-CN.md) | [技术报告](../../docs/TECHNICAL_REPORT.zh-CN.md)
 
+2026-09-10 后续新增 [IMU 坐标消融](imu_global/README.zh-CN.md)、[有效输入纠错器](available_corrector/README.zh-CN.md)、[受约束选择器](branch_selector/README.zh-CN.md) 和 [三种子一致改判](selector_consensus/README.zh-CN.md)。一致改判在两组固定三种子中均净增加 26 条且五折不退化；50.73 MB 候选两次原始重放完全一致。公开分数与最终决策见其部署记录。
+
+该候选已以 ref **56145116** 提交，公开分数 **0.96019** 低于最佳 **0.97512**，因此拒绝晋级并冻结方向；未覆盖发布文件。
+
+2026-09-10 新增 [热成像缺失输入补偿](thermal_fallback/README.zh-CN.md)、
+[热成像时序位移](thermal_shift/README.zh-CN.md) 和
+[热成像人物裁剪](thermal_crop/README.zh-CN.md)。三组各完成 3 seeds × 5 个用户 folds，
+共 45 个模型。接管净纠错分别为 `+10/+8/+13`、`+11/+5/+8`、`+3/+9/+3`，但固定
+部署 seed 的用户聚类 CI 均包含零；后两组也未超过首组。因此均未 full-fit、测试推理
+或提交，原发布版本不变。
+
 这些候选来自 Codex 任务 `01a04b41-e2ed-79c3-9fce-20eec40a3c73` 中已审计的工作，并已通过当前公开流水线重放。它们与 `checkpoints/strict_v3/model.pt` 有意分离：`main` 基线仍是可以逐字节复现的 0.97512 发布版本。
 
 | 候选 | OOF | 增益 | Fold 门禁 | 单 checkpoint | 测试变化数 | Kaggle |

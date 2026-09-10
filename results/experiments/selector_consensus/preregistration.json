@@ -1,0 +1,17 @@
+{
+  "locked_utc": "2026-09-10T13:21:26.505860+00:00",
+  "hypothesis": "Individual bounded selectors improve aggregate and user-macro consistently but a minority of boundary changes vary by initialization. Unanimous three-seed routing suppresses initialization-dependent changes without selecting a favorable seed.",
+  "training": "Unchanged branch_selector fixed recipe. Deployment members2026,2027,2028 already fitted before consensus design; replication members2029,2030,2031 newly fitted after locking this record.",
+  "routing": "Run three bounded selectors. Change baseline only when all three select the same class different from baseline; otherwise retain exact baseline logits. No vote/weight/threshold scan.",
+  "promotion_gate": [
+    "bothtripletsnetpositive",
+    "5/5foldnondegradingbothtriplets",
+    "subjectmacroandworstusernondegradingbothtriplets",
+    "bothtripletsuserclusterbootstrap95lowerpositive",
+    "exactineligiblebaselinepreservation",
+    "singleallweightscheckpoint<100000000bytes",
+    "twoindependentrawreplaysmatch"
+  ],
+  "limitations": "Exploratory adaptive model design on reused meta-OOF; new seeds only check initialization stability, not independent data generalization. Target-pretrained upstream limitation remains. Private-LB gain is not guaranteed.",
+  "stopping_rule": "A single unanimity rule; no majority/meanprobability scan, changing membership, retraining recipe, or selective subgroup overrides. No fullfit/test/submission unless consensus gates pass."
+}

@@ -2,15 +2,18 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [文档索引](docs/README.zh-CN.md)
 
-这是 CUHK-X 小模型赛道（UbiComp / ISWC 2026）清理后的 strictV3 基线。发布包可以从原始测试数据逐字节复现正式提交 `55712568`，其公开榜分数为 **0.97512**、排名第 3。包含 YOLO11n 检测器的单 checkpoint 推理包占 69.81 MB。
+这是 CUHK-X 小模型赛道（UbiComp / ISWC 2026）的 strictV3 基线与可复现研究记录。发布包可以从原始测试数据逐字节复现正式提交 `55712568`，公开榜分数为 **0.97512**（历史排名第 3）。包含 YOLO11n 检测器的单 checkpoint 为 69,805,793 bytes。
 
-主代码树有意排除了历史实验和已否决方向；它们的方法与结果保存在[技术报告](docs/TECHNICAL_REPORT.zh-CN.md)（[英文版](docs/TECHNICAL_REPORT.md)）中。
+当前状态和后续研究优先级见[项目状态](docs/PROJECT_STATUS.zh-CN.md)。实验代码、预注册、预测和拒绝结论保留在[实验索引](results/experiments/README.zh-CN.md)中；它们不会自动替换 canonical 发布权重。
 
 ## 仓库结构
 
 ```text
 checkpoints/strict_v3/       单文件发布包及其源权重（Git LFS）
+checkpoints/experiments/     另行审计的候选权重（Git LFS）
 results/strict_v3/           OOF/test logits、指标及标准 CSV
+results/experiments/         实验配方、结果、哈希与决策
+results/final_selection/     最终候选与网站选择状态
 yolo_r2plus1d/strict_v3/
 ├── data/                    确定性索引与 cache 构建器
 ├── models/                  R(2+1)D、DSTFormer、融合与优化器代码
@@ -46,7 +49,7 @@ NTU RGB+D 可用；最终报告必须披露获取方式和具体用途。训练�
 请阅读[官方澄清](https://www.kaggle.com/competitions/cuhk-x-competition-small-model-track/discussion/724404)、
 [数据边界](data/README.zh-CN.md#外部研究数据集)及技术报告。
 
-分支 `experiment/strictv3-consensus` 维护两个通过 OOF 资格检查的 consensus 候选。其冻结包、原始重放 hash 和审计命令记录在 [`results/experiments/README.zh-CN.md`](results/experiments/README.zh-CN.md)；两者均未提交 Kaggle。
+截至 2026-09-10，最新三种子选择器已提交为 `56145116`，公开分数 **0.96019**，未晋级。原 strictV3 与 T+V 继承门控 `56036959` 均为 **0.97512**；两份 CSV 相差 3/405 行。推荐的两条最终候选及实际网站选择状态见[最终提交记录](results/final_selection/README.zh-CN.md)。
 
 ## 安装
 

@@ -1,0 +1,107 @@
+{
+  "replay_gate_passed": true,
+  "two_raw_csv_byte_identical": true,
+  "all_raw_branch_logits_exact": true,
+  "raw_array_checks": {
+    "visual_logits": {
+      "shape": [
+        405,
+        40
+      ],
+      "max_abs": 0.0,
+      "sha256": "8ba08a23677e4f70db63e7b8360f7257414465fa2c11848e6fd47ee683859ed2"
+    },
+    "temporal_logits": {
+      "shape": [
+        405,
+        40
+      ],
+      "max_abs": 0.0,
+      "sha256": "812a6e5f3783d5253bcebfc622da439b40ad90635ee92f36e998d471645e9c30"
+    },
+    "selector_baseline_logits": {
+      "shape": [
+        405,
+        40
+      ],
+      "max_abs": 0.0,
+      "sha256": "7c3fac3d918a4b8e1faec7dd92742e555850f4081e190307ac5624c881f12c12"
+    },
+    "selector_logits": {
+      "shape": [
+        405,
+        40
+      ],
+      "max_abs": 0.0,
+      "sha256": "3ac0d2f50150b766de2db35d77a7665459000092f80633c1a9e91185e255d431"
+    },
+    "selector_primary_valid": {
+      "shape": [
+        405
+      ],
+      "max_abs": 0.0,
+      "sha256": "1680492d4f5204395897d397160f6c85b001492860470d22410261c0a3c16bd7"
+    }
+  },
+  "raw_baseline_matches_archived_tv_predictions": true,
+  "single_checkpoint": {
+    "path": "runs/experiments/selector_consensus_v1/submission_bundle.pt",
+    "bytes": 50730395,
+    "sha256": "3301910ff3c53564382153e536a5bc3d0a37b6baf52fd4e136c25af28bc01a96"
+  },
+  "submission": {
+    "path": "results/experiments/selector_consensus/submission.csv",
+    "bytes": 16089,
+    "sha256": "d91eb5ea0c3eb1e0107d139b63732ed8c7987fdcb8d21aebe0334f12224e4755"
+  },
+  "rows": 405,
+  "natural_unique_classes": 40,
+  "eligible_rows": 60,
+  "changed_from_tv_baseline": 7,
+  "protected_logits_unchanged": true,
+  "full_fit_receipt": {
+    "path": "results/experiments/selector_consensus/full_fit.json",
+    "bytes": 982,
+    "sha256": "75dfbda832b86c1b2eff9ae773bfc55e47715a1987c0ff8885bc2555c627e992"
+  },
+  "code": [
+    {
+      "path": "yolo_r2plus1d/strict_v3/models/branch_selector.py",
+      "bytes": 2135,
+      "sha256": "a3c70219dbf42bc417a021e88a296403b0dbf02641e537513f73013c4281fb7c"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/training/branch_selector.py",
+      "bytes": 5312,
+      "sha256": "369195913a28d5ca1bec70964ca0f45ced4135bafda41ab88ec81c62c82c79f4"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/release/selector_consensus.py",
+      "bytes": 5544,
+      "sha256": "4b35c6880ca60136bf37ae3032cf191f463e80d52873dfe3a068cd03a3c521e8"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/release/replay.py",
+      "bytes": 45499,
+      "sha256": "1d999369130659f94d1377993456526db963532705542f3b39fa1c3dee0b0a1f"
+    }
+  ],
+  "kaggle": {
+    "reference": 56145116,
+    "status": "COMPLETE",
+    "submitted_utc": "2026-09-10T13:28:35.197000Z",
+    "public_score": 0.96019,
+    "baseline_public_score": 0.97512,
+    "private_score_available": false
+  },
+  "anonymous_test_labels_used": false,
+  "decision": "Reject promotion: public score lower than current best. Freeze this route; no leaderboard-driven tuning or resubmission.",
+  "canonical_release_unchanged": true,
+  "validation": {
+    "relevant_tests_passed": 29,
+    "ruff_passed": true,
+    "git_diff_check_passed": true,
+    "canonical_release_verify_passed": true
+  },
+  "completed_utc": "2026-09-10T13:30:28.172607+00:00"
+}

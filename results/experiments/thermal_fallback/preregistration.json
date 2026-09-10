@@ -1,0 +1,44 @@
+{
+  "locked_utc": "2026-09-10T12:34:33.756426+00:00",
+  "question": "Can independent thermal frames repair missing-primary clips without changing predictions where primary evidence exists?",
+  "evidence": "103/103 no-primary training clips have Thermal; 0/103 have IMU or Radar. Published Thermal weight is zero.",
+  "data": "training clips only; all source paths and users excluded from model inputs",
+  "model": "ResNet18 ImageNet1K_V1; mean pooling over temporal segments; 40-class head; frozen BatchNorm running stats",
+  "training": {
+    "seeds": [
+      2026,
+      2027,
+      2028
+    ],
+    "epochs": 15,
+    "batch_size": 32,
+    "train_frames": 4,
+    "evaluation_frames": 8,
+    "cache_frames": 16,
+    "image_size": 160,
+    "backbone_lr": 0.0001,
+    "head_lr": 0.001,
+    "optimizer": "AdamW",
+    "weight_decay": 0.001,
+    "schedule": "cosine",
+    "label_smoothing": 0.05,
+    "head_dropout": 0.5,
+    "augmentation": "shared spatial crop 136..160 resized160, shared horizontal flip; temporal segment jitter",
+    "selection": "fixed final epoch; held metrics computed once after training"
+  },
+  "comparison": "canonical release predictions and current paired TV predictions, reported separately; baseline encoders have upstream target-label contamination, thermal member does not",
+  "deployment": "seed2026 only; no seed selection or multi-seed ensemble; fp16 state loaded into fp32 model and bfloat16 compute",
+  "fallback": "if neither visual nor skeleton has valid input AND thermal is valid, replace output with thermal logits; all other outputs bitwise unchanged",
+  "promotion_gate": {
+    "every_seed_net_positive": true,
+    "every_seed_5_folds_non_degrading": true,
+    "every_seed_subject_macro_positive": true,
+    "every_seed_worst_user_improves": true,
+    "seed2026_user_cluster_bootstrap_lower_positive": true,
+    "complete_primary_rows_unchanged": true,
+    "single_bundle_bytes_less_than": 100000000,
+    "two_raw_replays_identical": true
+  },
+  "stopping_rule": "Do not retune this recipe or fallback on held results. No test inference unless the OOF gates pass.",
+  "authorization": "2026-09-10 user authorizes independent experiments and Kaggle confirmation when evidence supports the candidate; standard release remains intact."
+}

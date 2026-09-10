@@ -1,0 +1,34 @@
+{
+  "locked_utc": "2026-09-10T13:14:14.981667+00:00",
+  "hypothesis": "The old semantic corrector extrapolated on missing-primary rows, breaking 30 previously correct all-missing user5 rows. Restrict training and inference to rows with both decodable primary modalities.",
+  "inputs": "Existing deployment-aligned unscaled40-class Visual logits, Temporal logits, baseline; no new upstream tuning. Availability mask from raw training input validity audit.",
+  "training": {
+    "seeds": [
+      2026,
+      2027,
+      2028
+    ],
+    "folds": "A-E subject groups",
+    "epochs": 60,
+    "hidden_dim": 128,
+    "lr": 0.0003,
+    "weight_decay": 0.01,
+    "batch_size": 128,
+    "loss": "CE plus KL weight1 for correct baseline confidence>=.8",
+    "precision": "FP32 head training and stored state",
+    "excluded_rows": "all rows without both primary modalities"
+  },
+  "inference": "baseline + trained residual on both-primary-valid rows only; exact baseline logits elsewhere; no threshold or residual-scale search",
+  "deployment_seed": 2026,
+  "promotion_gate": {
+    "positive_net_every_seed": true,
+    "all_five_folds_non_degrading_every_seed": true,
+    "macro_and_worst_user_non_degrading_every_seed": true,
+    "seed2026_user_cluster_bootstrap95_lower_positive": true,
+    "unchanged_outside_mask": true,
+    "final_allweights_below100MB": true,
+    "two_raw_replays_match": true
+  },
+  "known_limitation": "Engineering meta-OOF, not unbiased unseen-user CV: upstream baseline encoders saw target labels. Availability hypothesis was motivated by old held errors, so this screen is exploratory even though recipe is locked before new fitting.",
+  "stopping_rule": "No recipe tuning on held outcomes. No test inference/full-fit/submission unless gates pass."
+}

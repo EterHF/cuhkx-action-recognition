@@ -1,0 +1,33 @@
+{
+  "training_availability_reproduced": true,
+  "test_data_loaded": false,
+  "source": {
+    "path": "checkpoints/strict_v3/model.pt",
+    "bytes": 64206000,
+    "sha256": "c1feb649267aaa41ef490a93660735a76af4eae4629a687a90a102ac4e63bd75"
+  },
+  "bundle": {
+    "path": "runs/experiments/selector_consensus_v1/submission_bundle.pt",
+    "bytes": 50730395,
+    "sha256": "3301910ff3c53564382153e536a5bc3d0a37b6baf52fd4e136c25af28bc01a96"
+  },
+  "oof_evidence": {
+    "path": "results/experiments/selector_consensus/metrics.json",
+    "bytes": 12528,
+    "sha256": "c878679473f87f20a86b69dcfb26e8195abc24ab2fc2c31baec67c0f85ccc49b"
+  },
+  "contract": {
+    "format": "bounded-selector-unanimity/v1",
+    "seeds": [
+      2026,
+      2027,
+      2028
+    ],
+    "baseline_confidence_threshold": 0.8,
+    "visual_input_scale": 0.5,
+    "both_primary_required": true,
+    "skeleton_validity_native_center_frames": 256,
+    "head_compute_dtype": "float32",
+    "head_device": "cpu"
+  }
+}

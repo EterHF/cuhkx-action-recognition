@@ -1,0 +1,34 @@
+{
+  "locked_utc": "2026-09-10T13:19:40.801066+00:00",
+  "hypothesis": "Unrestricted residual correction can overwrite high-confidence correct baseline decisions or choose a class supported by neither branch. A bounded binary selector addresses both failure modes.",
+  "design_motivation": "Available-corrector failure inspection on held data; explicitly exploratory, not a fresh confirmatory validation. Threshold .8 is reused from original corrector confidence protection, never scanned.",
+  "input_features": [
+    "Ptemporal(t)-Ptemporal(v)",
+    "Pvisual(v)-Pvisual(t)",
+    "Pbaseline(v)-Pbaseline(t)",
+    "normalized temporal entropy",
+    "normalized visual entropy",
+    "baseline confidence"
+  ],
+  "visual_scale": 0.5,
+  "model": "6 -> Linear16 -> GELU -> Linear2",
+  "training": "Only both-primary-valid disagreements where label is one of the two branch choices; labels outside choices cannot distinguish the branches and are excluded from selector training. All such confidence levels used for training. AdamW lr.01 weight_decay.01, CE,100epochs,batch64,finalFP32 stored state, no early stopping.",
+  "seeds": [
+    2026,
+    2027,
+    2028
+  ],
+  "folds": "A-E outer subject groups",
+  "routing": "Only both-primary-valid, branches disagree, baseline softmax max<.8. Select temporal or visual top1; no new class. Everything else retains exact baseline logits.",
+  "deployment_seed": 2026,
+  "promotion_gate": [
+    "netpositiveeveryseed",
+    "5/5foldnondegradingeveryseed",
+    "subjectmacroandworstusernondegradingeveryseed",
+    "seed2026usercluster95CIlowerpositive",
+    "rawreplaytwice",
+    "singleallweightscheckpoint<100000000bytes"
+  ],
+  "known_limitation": "Meta-OOF engineering screen using target-pretrained upstream; not clean unseen-user CV. No test data/labels or leaderboard feedback in design.",
+  "stopping_rule": "One fixed recipe; no threshold/feature/epoch/seed selection on these outcomes; no full-fit or test inference unless every gate passes."
+}

@@ -2,6 +2,17 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [Repository home](../../README.md) | [Technical report](../../docs/TECHNICAL_REPORT.md)
 
+2026-09-10 continuation adds [IMU coordinate ablation](imu_global/README.md), [availability-aware correction](available_corrector/README.md), [bounded selection](branch_selector/README.md), and [three-seed unanimity](selector_consensus/README.md). Both fixed triplets gain26 correct rows with no degrading fold. The50.73MB candidate passes two exact raw replays; see its deployment record for public score and final decision.
+
+Submitted ref **56145116** scored **0.96019**, below the **0.97512** best; promotion was rejected and the route frozen. Canonical release files are unchanged.
+
+Added on 2026-09-10: [thermal fallback](thermal_fallback/README.md),
+[temporal shift](thermal_shift/README.md), and [thermal person cropping](thermal_crop/README.md).
+Each completed three seeds across five subject folds, totaling 45 models. Net fallback
+corrections were `+10/+8/+13`, `+11/+5/+8`, and `+3/+9/+3`, respectively. The fixed deployment
+seed's user-cluster interval included zero in all three experiments, and neither ablation
+outperformed the first. No full fit, anonymous inference, or submission was performed.
+
 These candidates were recovered from the audited work in Codex thread
 `01a04b41-e2ed-79c3-9fce-20eec40a3c73` and replayed with the current public
 pipeline. They are deliberately separate from `checkpoints/strict_v3/model.pt`:

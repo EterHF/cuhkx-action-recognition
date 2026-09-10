@@ -4,19 +4,22 @@
 
 The cleaned strictV3 baseline for the CUHK-X Small Model Track (UbiComp / ISWC
 2026). The released package reproduces the canonical **0.97512** submission
-(rank 3, submission `55712568`) byte-for-byte from raw test data. The deployable
+(historical rank 3, submission `55712568`) byte-for-byte from raw test data. The deployable
 single-checkpoint inference bundle occupies 69.81 MB including the YOLO11n
 detector.
 
-Historical experiments and rejected directions are intentionally excluded
-from the main code tree. Their methods and outcomes are preserved in the
-[technical report](docs/TECHNICAL_REPORT.md) ([中文版](docs/TECHNICAL_REPORT.zh-CN.md)).
+See [project status](docs/PROJECT_STATUS.md) for current evidence and research priorities.
+Experiment code, preregistrations, predictions and rejection decisions remain in the
+[experiment index](results/experiments/README.md); they do not automatically replace canonical weights.
 
 ## Repository layout
 
 ```text
 checkpoints/strict_v3/       released single-file bundle and source weights (Git LFS)
+checkpoints/experiments/     separately audited candidate weights (Git LFS)
 results/strict_v3/           OOF/test logits, metrics and canonical CSV
+results/experiments/         recipes, results, hashes and decisions
+results/final_selection/     final candidates and actual website selection status
 yolo_r2plus1d/strict_v3/
 ├── data/                    deterministic indexing and cache builders
 ├── models/                  R(2+1)D, DSTFormer, fusion and optimizer code
@@ -56,11 +59,11 @@ to their providers' terms. See the
 the [data boundary](data/README.md#external-research-datasets), and the technical
 report before attempting external-data research.
 
-Two OOF-qualified consensus candidates are maintained on the
-`experiment/strictv3-consensus` branch. Their frozen packages, raw replay
-hashes and audit command are documented in
-[`results/experiments/README.md`](results/experiments/README.md); neither has
-been submitted to Kaggle.
+As of 2026-09-10, the latest three-seed selector scored **0.96019** in submission
+`56145116` and was not promoted. Canonical strictV3 and inherited-gate T+V
+`56036959` both score **0.97512**; their CSVs differ on 3/405 rows. The recommended
+final pair and actual website selection status are recorded in
+[final submissions](results/final_selection/README.md).
 
 ## Installation
 

@@ -803,6 +803,68 @@ logits 及全部缺失/部分缺失输出均保持不变。它与历史等权实
 
 ---
 
+### 5.26 热成像补偿主输入缺失，2026-09-10
+
+基于全训练集模态清点，103 条 Visual/Skeleton 双缺失样本全部有 Thermal，而
+IMU/Radar 均无文件。新实验从经 SHA 验证的原始 ImageNet ResNet-18 初始化独立
+热成像分类器，只在主输入双缺失时接管，其余 logits 逐元素不变。训练设置在 held
+评估前固定：15 epochs、3 seeds、5 个 subject folds，最终 FP16 保存状态一次性
+评估，预先指定 seed 2026 用于可能的部署。
+
+| 新机制 | seed 2026/2027/2028 接管净纠错 | 相对首组的三 seed 合计变化 | 决策 |
+| --- | --- | ---: | --- |
+| 全视野 ResNet-18 TSN | +10 / +8 / +13 | 对照 | 固定部署 seed 用户聚类 CI 下界为 0，未晋级 |
+| 无新增参数的 TSM | +11 / +5 / +8 | -7 | CI 与配对改善门槛均失败 |
+| 热成像自身视角 YOLO crop | +3 / +9 / +3 | -16 | CI 与配对改善门槛均失败 |
+
+共完成 45 个训练模型，没有借助排行榜选择参数。首组 seed 2026 的 10 条净改善中
+9 条来自用户 5；其 worst-user 从 0.8125 提高到 0.86875，但按用户聚类的 accuracy
+增量 95% 区间为 `[0, 0.009521]`。跨种子方向一致不代表跨新用户已得到可靠确认，
+也不能事后选择 CI 为正的 seed 2028。
+
+TSM 与 crop 各自仅改变一个结构/输入因素；crop 先通过无标签选样的训练几何检查，
+全训练集人物检测覆盖 2,764/2,891 条有效 Thermal。两者均未优于全视野 TSN。
+所有模型均未 full-fit、匿名测试推理、打包或提交。每个 TSN fold checkpoint 实测
+22,444,867 bytes，预算具备可行性，但没有将估算总量表述为已验证 bundle。
+
+比较同时保留历史 2,903/3,036 与当前配对 T+V 2,889/3,036 的独立谱系；净纠错相同，
+绝对分数不能互换。基线的上游目标标签污染仍存在，组合 OOF 不能当作无偏 private-LB
+估计。原发布 checkpoint 和 0.97512 提交不变。完整结果、命令、逐行预测与哈希见
+[thermal_fallback](../results/experiments/thermal_fallback/README.zh-CN.md)、
+[thermal_shift](../results/experiments/thermal_shift/README.zh-CN.md) 和
+[thermal_crop](../results/experiments/thermal_crop/README.zh-CN.md)。
+
+---
+
+### 5.27 本地／世界坐标 IMU 与受约束选择器，2026-09-10
+
+本轮完成 30 个 IMU、15 个有效输入纠错器和 30 个二选一选择器 OOF 模型，另有 3 个
+完整训练选择器。IMU 的物理旋转通过重力检查，但世界坐标平均 accuracy 30.87% 低于
+本地 31.41%；10% 固定融合收益不足，拒绝推进。详见
+[`imu_global`](../results/experiments/imu_global/README.zh-CN.md)。
+
+[`available_corrector`](../results/experiments/available_corrector/README.zh-CN.md)
+修复了旧纠错器在缺失主输入上仍强行修正的语义问题，三种子净纠错 +17/+20/+17，
+但 E 折仍退化。随后明确提出只能在两支答案中选择、保护 baseline 置信度≥0.8 的
+[`branch_selector`](../results/experiments/branch_selector/README.zh-CN.md)，净纠错
++23/+25/+27；两个种子的 D 折各 -1，因此也未单独晋级。
+
+[`selector_consensus`](../results/experiments/selector_consensus/README.zh-CN.md)
+另行锁定“三种子全部一致才改判”。2026–2028 部署组与新训 2029–2031 复制组都由
+部署对齐 2,890/3,036 增至 2,916/3,036，A–E 净增均为 +6/+13/+6/0/+1。用户聚类
+95% 区间 +0.3560 至 +1.4459 个百分点，subject macro 改善，worst-user 保持不变。
+
+模型设计使用了历史 held 错误诊断，以上属于探索性工程验证；新增种子不构成独立数据集，
+上游目标预训练污染仍在。固定门槛是在各新配方拟合前锁定，不宣称未见用户的无偏估计。
+本轮共 29 项相关测试通过，ruff、diff 检查及 canonical release.verify 通过。
+
+完整候选为 50,730,395 B 单 checkpoint，原始训练有效性重建完全一致。两次独立重放
+CSV 逐字节一致、所有分支/最终 logits max_abs=0，405 行自然覆盖 40 类；在 60 条
+合格分歧样本中改判 7 条。提交和最终决策见
+[`deployment.json`](../results/experiments/selector_consensus/deployment.json)。
+
+公开提交 ref **56145116** 得到 **0.96019**，低于当前最佳 **0.97512**。因此拒绝晋级并冻结方向，不根据分数调整阈值、种子、特征或融合；canonical checkpoint/CSV 未改。该负面验证表明，本次工程 OOF 收益未转化为公开泛化收益。
+
 ## 6. 通用方法纪律（硬约束）
 
 1. **绝不**使用测试/匿名标签、预测历史、提交分数或排行榜逐行反馈作为设计信号。任何接触这些信息的候选立即作废。

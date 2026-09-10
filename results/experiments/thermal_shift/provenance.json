@@ -1,0 +1,319 @@
+{
+  "source": [
+    {
+      "path": "yolo_r2plus1d/strict_v3/data/thermal_cache.py",
+      "bytes": 3740,
+      "sha256": "2a8677a89c138df4da3be75ccb6b1a11dde55ecaec3634842fe55fe22ba22696"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/models/thermal.py",
+      "bytes": 3067,
+      "sha256": "c7ac7f1e1e4722258291721c9bb9accff768d4585051a1dded23f37f49b396dd"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/training/thermal.py",
+      "bytes": 7217,
+      "sha256": "6bdea1592bd8eba5912046a6ae1e5e3ccd1326565585a61ecaab21a093beeb1d"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/training/thermal_suite.py",
+      "bytes": 3168,
+      "sha256": "3c19a91ec5471d93fb3a17e6d1602622f0c883c6a85b1fb2f6d3689efe1a3b29"
+    },
+    {
+      "path": "yolo_r2plus1d/strict_v3/evaluation/thermal_fallback.py",
+      "bytes": 9044,
+      "sha256": "4be553030847f8a09fa3eb4c69f88c55e2c147ac4a90c8b7e7740a9e58f9b786"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "results/strict_v3/metadata.npz",
+      "bytes": 17514,
+      "sha256": "bf2e93e558b4ae148b14835c1f65c943828bff97dfaaf224a39c249c7599f099"
+    },
+    {
+      "path": "checkpoints/strict_v3/model.pt",
+      "bytes": 64206000,
+      "sha256": "c1feb649267aaa41ef490a93660735a76af4eae4629a687a90a102ac4e63bd75"
+    },
+    {
+      "path": "checkpoints/strict_v3/yolo11n.pt",
+      "bytes": 5613764,
+      "sha256": "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1"
+    },
+    {
+      "path": ".cache/torch/hub/checkpoints/resnet18-f37072fd.pth",
+      "bytes": 46830571,
+      "sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec"
+    },
+    {
+      "path": "runs/experiments/input_validity_masking_v1/validity.npz",
+      "bytes": 1813,
+      "sha256": "30113907b3b7d1dd70d17488e4f40093014c853cd17202ce299cb7d5fc3f9353"
+    }
+  ],
+  "cache": [
+    {
+      "path": "runs/experiments/thermal_fallback_v1/inputs/frames.npy",
+      "bytes": 3730636928,
+      "sha256": "38b4bc809faf7ca154adbb82fb1f57970bc2f0d4d2b57d50f87cb384738a0e36"
+    },
+    {
+      "path": "runs/experiments/thermal_fallback_v1/inputs/valid.npy",
+      "bytes": 3164,
+      "sha256": "cc8f84e57e5e9cc8ffc338e915d2b8759e4c3630915927e7fc411859a46f6bff"
+    }
+  ],
+  "preregistration": {
+    "path": "results/experiments/thermal_shift/preregistration.json",
+    "bytes": 2748,
+    "sha256": "ee16d78a82838b5768df12d194fc2933c08422f9e82402b693f74641a4be42fb"
+  },
+  "note": "Source includes optional shift/crop implementations added after the unchanged TSN control; original control used no shift and no crop.",
+  "runtime": {
+    "python": "3.11.15",
+    "torch": "2.13.0+cu129",
+    "torchvision": "0.28.0+cu129",
+    "numpy": "2.4.6"
+  },
+  "fold_artifacts": [
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldA/held.npz",
+      "bytes": 49499,
+      "sha256": "53e7c7c3f99d5b4ee00add7b7612b99f928e973e2c2f4756222b8cf4c69d0ce5"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldA/metrics.json",
+      "bytes": 224,
+      "sha256": "66013923f55da1285f705e981d0b71acb4acfe45b9e3e9f1df2dd7e4d7a10e88"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldA/model.pt",
+      "bytes": 22444931,
+      "sha256": "783449e348e8dc671b9bfc608618a10d718a39c3671ae94467be6ac6d12cb950"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldB/held.npz",
+      "bytes": 43904,
+      "sha256": "b3b7a8ab1363fc79e39dba15fe5dbec9e587a4642d6be0fe5e0164eb2cc4bf4a"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldB/metrics.json",
+      "bytes": 223,
+      "sha256": "6e3e88586b764b3a73d84f10510f9603c654f33b4eaaf6ab98d50554fe3499a8"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldB/model.pt",
+      "bytes": 22444931,
+      "sha256": "69778e95347f4bb572bf03bd44d68d928f413605fb26fa905fddbb36b541d3e3"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldC/held.npz",
+      "bytes": 48499,
+      "sha256": "99f6fdf64fef22436f8ead9cf23961377ce6ce0c64456fe8817b075684d4cd66"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldC/metrics.json",
+      "bytes": 225,
+      "sha256": "f0132c9a4d78998a51ed9d15e641e428f2d20249d80667a31c092ae3b4dd9e50"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldC/model.pt",
+      "bytes": 22444931,
+      "sha256": "9af84cf33351d2e300aefd9712f2a390bcbfaef35682b264cd1d49805009844f"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldD/held.npz",
+      "bytes": 35681,
+      "sha256": "ca774afad100ddfee3197326fa8d73042b8ec736f90cbf5f056c0b05a79e1b6a"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldD/metrics.json",
+      "bytes": 221,
+      "sha256": "969c0ae14a70829f3558ff004a93d892c2c51f568a02c25f0761d573c1dd3527"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldD/model.pt",
+      "bytes": 22444931,
+      "sha256": "24ed0aaf11928ade76e32fe3d8fadbc724a5fc387a54cb25727cabf2d6d40533"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldE/held.npz",
+      "bytes": 34478,
+      "sha256": "a62f3e1c3987db7657dae06d0d6e60e558a5176092fc2665ff1c41677b0e5d56"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldE/metrics.json",
+      "bytes": 223,
+      "sha256": "6de6b654ee620a1aa4b52d6563de8b01aa39aa9b912e4ac31caba245944f1362"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2026/foldE/model.pt",
+      "bytes": 22444931,
+      "sha256": "4f72e5ade580349c3897f046c000cc2d113d18a91e8d72eeed809c16585e83ef"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldA/held.npz",
+      "bytes": 49052,
+      "sha256": "84034452b9e434d673e26a16a088eccf75fbe141c04da0d3bad07b5f56ecde38"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldA/metrics.json",
+      "bytes": 222,
+      "sha256": "d14f36726eae54030c347597fd06c2055cd6aae2ce2b7ae9621e597f76b255c8"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldA/model.pt",
+      "bytes": 22444931,
+      "sha256": "b5cca28a4c549461cafb9a9bf4d2ce347d758c884fa24a889e8a029eda8317dc"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldB/held.npz",
+      "bytes": 42935,
+      "sha256": "12b79eef2228cd277b290fc3151c5379ac3a5b4bce95d7faa25321b8adf4ff95"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldB/metrics.json",
+      "bytes": 222,
+      "sha256": "e0c6c17b8add7f50a812952f1a6a2970a493ba1289585eef1577c1bbb77e102e"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldB/model.pt",
+      "bytes": 22444931,
+      "sha256": "b13b80905aff14959dcc3518db43d28dfdcab7ff892f3b2758fba1e7fd76b0cc"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldC/held.npz",
+      "bytes": 48373,
+      "sha256": "58be7b367330832c2b09b2e680e426a10e2068394f9789046f519b3c29866d1c"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldC/metrics.json",
+      "bytes": 225,
+      "sha256": "ba277d7bf6f9339f4cb8e94178dfd4c93075a055f3e060c36b5f559a2e5dcfbf"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldC/model.pt",
+      "bytes": 22444931,
+      "sha256": "4d93ad0cecb190e997128eb8817db3c0b6f3e5cd0757f85bebaedeace7843ee0"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldD/held.npz",
+      "bytes": 35885,
+      "sha256": "c062b4f3c81bd9169f0c54d647808ae2572dc2afcd5d6b666d64319953e4d328"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldD/metrics.json",
+      "bytes": 224,
+      "sha256": "b2fb1c599db823056b5def41e6f55284f551e8194ac686fc9d5d1f76400f3670"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldD/model.pt",
+      "bytes": 22444931,
+      "sha256": "f85497925c3b3e66a08c89bfe35d96157908387fedc9588aee4270957f9c0bbd"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldE/held.npz",
+      "bytes": 34726,
+      "sha256": "d222364babb2c7ec9bfb9d1108ec13491dcf4297ecd87ee46393133b4f50f52e"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldE/metrics.json",
+      "bytes": 223,
+      "sha256": "483b0bd9fa5feb90d1b254d0189bf7369e6e6d99c080e4876d956b8fc762a196"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2027/foldE/model.pt",
+      "bytes": 22444931,
+      "sha256": "6aff279c97121ef41ef6ed4887d0b8fb86c5ad8d1e32c4c35dc56a8a8f534bae"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldA/held.npz",
+      "bytes": 48847,
+      "sha256": "ea8ea53aecb1cd35ec4c280d17f73b2a603ddf229563947bcf049231e3d443eb"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldA/metrics.json",
+      "bytes": 223,
+      "sha256": "66f6f4383cf3a54f7e88e8c8c7278c6926d3eafa6827f5947a268b211a13c760"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldA/model.pt",
+      "bytes": 22444931,
+      "sha256": "4fbf2026fdd9006f885418b017bc12179b0200d17875c31cae69a6494f4248a6"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldB/held.npz",
+      "bytes": 42920,
+      "sha256": "ee2cfc199df9a90348f2a09bb11bdd5b66dd7d0f82db854ac391cb70999d7896"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldB/metrics.json",
+      "bytes": 225,
+      "sha256": "b6f89da4b50b9faf1b76c26dddba34f5972a96b0067bea362f68f45d5581607f"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldB/model.pt",
+      "bytes": 22444931,
+      "sha256": "6b2ab12334f54dba0c25976cfdb7ec8ab55a67ff0c0d53d4892ee4d92e2b8c9a"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldC/held.npz",
+      "bytes": 47147,
+      "sha256": "c1d9f706b6f450b145d3851420b4dfb894db7b9a6a816754c0a65f117f4a51ea"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldC/metrics.json",
+      "bytes": 225,
+      "sha256": "526a48c04ffd856cf553f04ae2cf494d6ebe2375a56ab4497b9069e93e6d2e11"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldC/model.pt",
+      "bytes": 22444931,
+      "sha256": "ac464ed16d0f5e1c5edd001e718b08d297c22363fd659dd22447f06653bf255d"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldD/held.npz",
+      "bytes": 35456,
+      "sha256": "29a59e63dbeda955680062e8a9f98b09afcd96872668cf7890f7a62892d35017"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldD/metrics.json",
+      "bytes": 223,
+      "sha256": "d0c67e2c50f239b079ad15f0a7e2278d19cb2bfd07fec36d21184c1ba4d599ab"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldD/model.pt",
+      "bytes": 22444931,
+      "sha256": "efd70b564bce6b411d444204e3a94cccc30dd0bc0f10ae90d8ca3b1225930d6b"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldE/held.npz",
+      "bytes": 33940,
+      "sha256": "390a529fa8be5fc6fe432cc761b8f735a4416c6028497196f904964fb69f5451"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldE/metrics.json",
+      "bytes": 222,
+      "sha256": "04456b5a3072b8d1e4e37ec792ab968f738f131812e9cadebb9f252f9deea952"
+    },
+    {
+      "path": "runs/experiments/thermal_shift_v1/seed2028/foldE/model.pt",
+      "bytes": 22444931,
+      "sha256": "7b14f7e9d8ac2a3848e659b133a8172597b91e67b67b085f72b96412db30ba19"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "results/experiments/thermal_shift/metrics.json",
+      "bytes": 26258,
+      "sha256": "927fd9be062eb416d8a32fb7ce8aca94a403164c16f0edead958b390c9b21fc2"
+    },
+    {
+      "path": "results/experiments/thermal_shift/predictions.npz",
+      "bytes": 2315907,
+      "sha256": "02b65c4949c875d5727f61ac9d6a299b43ac3bba873ba551bc757bce7125ce63"
+    }
+  ]
+}

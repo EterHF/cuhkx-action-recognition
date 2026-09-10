@@ -1109,6 +1109,72 @@ further tuning.
 
 ---
 
+### 5.26 Thermal fallback for missing primary inputs, 2026-09-10
+
+All 103 training clips missing both Visual and Skeleton contain Thermal, while none
+have IMU/Radar files. A new ImageNet ResNet-18 temporal segment classifier was trained
+independently in every subject fold. Its output replaces the baseline only when both
+primary inputs are absent and Thermal is present; other logits remain bitwise unchanged.
+The 15-epoch recipe, three seeds, five folds, final FP16-state evaluation, and deployment
+seed 2026 were fixed before held evaluation.
+
+| Mechanism | Net fallback corrections, seeds 2026/2027/2028 | Aggregate change versus TSN |
+| --- | --- | ---: |
+| Full-field thermal TSN | +10 / +8 / +13 | Control |
+| Parameter-free temporal shift | +11 / +5 / +8 | -7 |
+| Thermal-camera-specific YOLO crop | +3 / +9 / +3 | -16 |
+
+All 45 models completed. Nine of the control seed's ten net corrections came from user 5;
+worst-user accuracy rose from 0.8125 to 0.86875, but its user-cluster accuracy-gain interval
+was `[0, 0.009521]`, failing the strictly positive lower-bound gate. Seed consistency is
+not independent evidence about unseen subjects. The two single-factor ablations also
+failed their paired improvement gate. Crop coverage was 2,764/2,891 valid thermal clips,
+following a label-independent geometry audit, so detector feasibility alone did not
+translate into better fallback classification.
+
+No full fit, anonymous inference, deployment bundle, or Kaggle submission was performed.
+Each TSN fold checkpoint is 22,444,867 bytes; budget feasibility is an estimate, not a
+verified combined bundle. Historical release-strict (2,903/3,036) and current paired T+V
+(2,889/3,036) comparisons remain distinct. Their upstream target-label exposure prevents
+interpreting combined OOF as unbiased private-leaderboard performance. The 0.97512 release
+remains unchanged. See [thermal fallback](../results/experiments/thermal_fallback/README.md),
+[temporal shift](../results/experiments/thermal_shift/README.md), and
+[person cropping](../results/experiments/thermal_crop/README.md) for commands and evidence.
+
+---
+
+### 5.27 Local/world IMU and bounded branch selection, 2026-09-10
+
+This round completed 30 IMU, 15 availability-aware residual-corrector and 30 binary-selector
+OOF models, followed by three full-fit selector heads. The physically audited world-coordinate
+IMU view averaged30.87% versus31.41% for local coordinates; its fixed10% contribution failed
+promotion. See [`imu_global`](../results/experiments/imu_global/README.md).
+
+[`available_corrector`](../results/experiments/available_corrector/README.md) restricts training
+and inference to both-primary-valid inputs, yielding +17/+20/+17 net corrections but still
+losing Fold-E rows. The subsequent [`branch_selector`](../results/experiments/branch_selector/README.md)
+can only choose a branch top1 and protects baseline confidence>=.8. It yields +23/+25/+27,
+but two seeds lose one Fold-D row, so individual selectors are not promoted.
+
+The separately locked [`selector_consensus`](../results/experiments/selector_consensus/README.md)
+requires unanimity across all three seeds. Both the original2026–2028 triplet and newly trained
+2029–2031 replication improve deployment-aligned correctness from2,890 to2,916 of3,036.
+Fold nets are +6/+13/+6/0/+1; the user-cluster95% interval is +0.3560 to +1.4459 percentage
+points, subject macro improves and worst-user accuracy is unchanged.
+
+This is exploratory engineering validation informed by historical held errors. Additional seeds
+are not independent data, and upstream target-pretraining contamination remains. Each new recipe
+was locked before its fits, but these results are not unbiased unseen-user estimates. All29
+relevant tests, ruff, diff checks and canonical release verification passed.
+
+The full candidate contains every weight in50,730,395 bytes. Raw training availability exactly
+matches the OOF mask. Two independent raw replays produce byte-identical405-row CSVs and exact
+branch/final logits, naturally covering40 classes. Seven predictions change among60 eligible
+disagreements. Submission and final decision are recorded in
+[`deployment.json`](../results/experiments/selector_consensus/deployment.json).
+
+Public submission ref **56145116** scored **0.96019**, below the current **0.97512** best. Promotion is rejected and the route frozen, without score-driven changes to thresholds, seeds, features or fusion. Canonical checkpoint/CSV are unchanged. This negative validation shows that the engineering OOF gain did not translate into public generalization.
+
 ## 6. General method-discipline rules (hard constraints)
 
 1. **Never** use test / anonymous labels, prediction history,

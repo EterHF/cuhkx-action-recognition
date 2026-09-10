@@ -1,0 +1,86 @@
+{
+  "date_utc": "2026-09-10T15:58:33.769061+00:00",
+  "competition": "cuhk-x-competition-small-model-track",
+  "competition_id": 150044,
+  "recommended_ids": [
+    55712568,
+    56036959
+  ],
+  "pair_prediction_disagreements": 3,
+  "rationale": "Two reproducible artifacts tied at best public score; canonical baseline plus simpler parameter-free T+V ablation. Limited prediction diversity; no private-score guarantee. The known scale-mismatched 2909 OOF gain is not used as a selection argument.",
+  "candidates": [
+    {
+      "id": 55712568,
+      "name": "strictV3 canonical",
+      "public_score": 0.97512,
+      "kaggle_status": "COMPLETE",
+      "csv": {
+        "path": "results/strict_v3/submission.csv",
+        "bytes": 16091,
+        "sha256": "e25094918e57f357e23346f479050bd9bf09dc907c849d4c8938a66812003343"
+      },
+      "all_weights_bundle": {
+        "path": "checkpoints/strict_v3/submission_bundle.pt",
+        "bytes": 69805793,
+        "sha256": "4856eacc9f10043e873a6ac8c4c1359e9cf7d2a13685d8d07c6b2a7594800bf3"
+      },
+      "downloaded_kaggle_csv_matches_local": true,
+      "rows": 405,
+      "natural_class_count": 40
+    },
+    {
+      "id": 56036959,
+      "name": "Temporal+Visual inherited gate",
+      "public_score": 0.97512,
+      "kaggle_status": "COMPLETE",
+      "csv": {
+        "path": "results/experiments/temporal_visual_inherited/submission.csv",
+        "bytes": 16091,
+        "sha256": "c60690cb0f42e8d5ebce40c45dab2bac19652edc44060a546f60e5d244a19055"
+      },
+      "all_weights_bundle": {
+        "path": "checkpoints/experiments/temporal_visual_inherited_bundle.pt",
+        "bytes": 50733469,
+        "sha256": "7d97e22bd3c39b8c1e9f265d12cf2e085f68d11b9efcc73ba414f082c1774aa5"
+      },
+      "downloaded_kaggle_csv_matches_local": true,
+      "rows": 405,
+      "natural_class_count": 40
+    }
+  ],
+  "tv_replay": {
+    "two_independent_raw_runs": true,
+    "csv_byte_identical": true,
+    "csv_matches_kaggle_download": true,
+    "branch_checks": {
+      "visual_logits": {
+        "max_abs": 0.0,
+        "sha256": "8ba08a23677e4f70db63e7b8360f7257414465fa2c11848e6fd47ee683859ed2"
+      },
+      "temporal_logits": {
+        "max_abs": 0.0,
+        "sha256": "812a6e5f3783d5253bcebfc622da439b40ad90635ee92f36e998d471645e9c30"
+      },
+      "fusion_logits": {
+        "max_abs": 0.0,
+        "sha256": "045fcf1431c9b0f2e6173fac8cc3359ae6c95b410350f02dbc3ad181abb0d5e1"
+      }
+    }
+  },
+  "website_selection": {
+    "status": "authentication_required",
+    "http_status": 401,
+    "error": {
+      "code": 401,
+      "message": "Unauthenticated",
+      "status": "UNAUTHENTICATED"
+    },
+    "selected_ids_from_response": null,
+    "verified_selected_ids": null
+  },
+  "private_labels_accessed": false,
+  "validation": {
+    "pytest_passed": 82,
+    "ruff": "pass"
+  }
+}
